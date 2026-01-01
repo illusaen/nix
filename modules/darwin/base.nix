@@ -10,6 +10,22 @@
 }:
 let
   cfg = config.modules.base;
+  feather = pkgs.stdenvNoCC.mkDerivation {
+    name = "feather";
+    src = pkgs.fetchFromGitHub {
+      owner = "AT-UI";
+      repo = "feather-font";
+      rev = "2ac71612ee85b3d1e9e1248cec0a777234315253";
+      sha256 = "sha256-W4CHvOEOYkhBtwfphuDIosQSOgEKcs+It9WPb2Au0jo=";
+    };
+    phases = [
+      "installPhase"
+    ];
+    installPhase = ''
+      mkdir -p $out/share/fonts/truetype
+      cp -r $src/src/fonts/*.ttf $out/share/fonts/truetype/
+    '';
+  };
 in
 {
   # Imports must be at top level (not inside mkIf)
@@ -38,6 +54,7 @@ in
       pkgs.monaspace
       pkgs.nerd-fonts.monaspace
       pkgs.nerd-fonts.symbols-only
+      feather
     ];
 
     system.keyboard = {
