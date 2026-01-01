@@ -11,5 +11,15 @@ in
     home = "/Users/${name}";
   };
 
+  homebrew = {
+    enable = true;
+    onActivation = {
+      cleanup = "zap";
+    };
+    casks = [
+      "bambu-studio"
+    ];
+  };
+
   system.stateVersion = 6;
 }

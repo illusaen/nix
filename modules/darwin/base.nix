@@ -42,17 +42,18 @@ in
     # Preserve existing nixbld GID
     ids.gids.nixbld = 350;
 
-    environment.systemPackages = [
-      pkgs.antigravity
-      pkgs.google-chrome
+    environment.systemPackages = with pkgs; [
+      antigravity
+      google-chrome
+      raycast
     ];
 
     programs._1password-gui.enable = true;
 
-    fonts.packages = [
-      pkgs.monaspace
-      pkgs.nerd-fonts.monaspace
-      pkgs.nerd-fonts.symbols-only
+    fonts.packages = with pkgs; [
+      monaspace
+      nerd-fonts.monaspace
+      nerd-fonts.symbols-only
       feather
     ];
 
