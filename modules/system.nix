@@ -49,7 +49,7 @@
 
     secrets = {
       sshPrivateKey = {
-        reference = "op://Service/SSH-Key-Nix/private key";
+        reference = "op://Service/SSH-Key-Nix/private key?ssh-format=openssh";
         path = "/etc/ssh/id_rsa";
         mode = "0644";
       };
