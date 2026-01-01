@@ -1,5 +1,5 @@
 # Autowiring helper functions for auto-discovering configurations and modules
-{ lib }:
+{ lib, vars }:
 
 let
   inherit (lib)
@@ -14,6 +14,7 @@ let
     elem
     ;
   inherit (builtins) readDir;
+  inherit (vars) name;
 
   # Helper: Filter and map attributes in one pass
   mapFilterAttrs =
@@ -191,10 +192,9 @@ in
       userDirs = filterAttrs (_: type: type == "directory") (safeReadDir dir);
 
       # For each user, get their host configurations
-      userHostConfigs = concatMapAttrs (
-        userName: _:
+      userHostConfigs =
         let
-          hostsDir = dir + "/${userName}/hosts";
+          hostsDir = dir + "/hosts";
           hostFiles = safeReadDir hostsDir;
         in
         mapFilterAttrs (_: v: v != null) (
@@ -202,7 +202,7 @@ in
           if type == "regular" && hasSuffix ".nix" hostName then
             let
               cleanHostName = removeSuffix ".nix" hostName;
-              configName = "${userName}@${cleanHostName}";
+              configName = "${name}@${cleanHostName}";
               configPath = hostsDir + "/${hostName}";
               system = getSystem cleanHostName;
             in
@@ -221,8 +221,7 @@ in
             )
           else
             nameValuePair "" null
-        ) hostFiles
-      ) userDirs;
+        ) hostFiles;
     in
     userHostConfigs;
 

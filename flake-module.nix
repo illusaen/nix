@@ -6,9 +6,12 @@
 }:
 
 let
-  autowire = import ./lib/autowire.nix { inherit lib; };
-  root = ./.;
   vars = import ./lib/vars.nix;
+  autowire = import ./lib/autowire.nix {
+    inherit lib;
+    inherit vars;
+  };
+  root = ./.;
 in
 {
   perSystem =
