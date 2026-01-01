@@ -2,18 +2,16 @@
 {
   config,
   lib,
+  helpers,
   pkgs,
   ...
 }:
 let
   cfg = config.modules.fish;
-  inherit (lib) mkIf;
 in
 {
   options.modules.fish = {
-    enable = lib.mkEnableOption "fish shell" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "fish shell";
   };
 
   config = lib.mkIf cfg.enable {

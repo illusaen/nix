@@ -2,6 +2,7 @@
 {
   config,
   lib,
+  helpers,
   pkgs,
   ...
 }:
@@ -10,9 +11,7 @@ let
 in
 {
   options.modules.cli = {
-    enable = lib.mkEnableOption "CLI tools bundle" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "CLI tools bundle";
   };
 
   config = lib.mkIf cfg.enable {

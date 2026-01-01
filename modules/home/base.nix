@@ -5,6 +5,7 @@
   pkgs,
   inputs,
   outputs,
+  helpers,
   ...
 }:
 let
@@ -17,9 +18,7 @@ in
   ];
 
   options.modules.base = {
-    enable = lib.mkEnableOption "base home-manager configuration" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "base home-manager configuration";
   };
 
   config = lib.mkIf cfg.enable {

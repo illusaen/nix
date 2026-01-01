@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  helpers,
   config,
   vars,
   ...
@@ -14,9 +15,7 @@ let
 in
 {
   options.modules.git = {
-    enable = mkEnableOption "git" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "git";
   };
   config = mkIf cfg.enable {
     programs.git = {

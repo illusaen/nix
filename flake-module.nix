@@ -8,7 +8,7 @@
 let
   autowire = import ./lib/autowire.nix { inherit lib; };
   root = ./.;
-  vars = import ./vars.nix;
+  vars = import ./lib/vars.nix;
 in
 {
   perSystem =
@@ -46,7 +46,10 @@ in
       inherit inputs;
       outputs = self;
       homeModules = self.homeManagerModules;
-      extraSpecialArgs = { inherit vars; };
+      extraSpecialArgs = {
+        inherit vars;
+        helpers = import ./lib/helpers.nix { inherit lib; };
+      };
     };
   };
 }

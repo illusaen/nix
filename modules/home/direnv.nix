@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  helpers,
   config,
   vars,
   ...
@@ -14,9 +15,7 @@ let
 in
 {
   options.modules.direnv = {
-    enable = lib.mkEnableOption "direnv" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "direnv";
   };
   config = mkIf cfg.enable {
     programs.direnv = {

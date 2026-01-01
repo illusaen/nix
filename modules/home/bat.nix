@@ -2,6 +2,7 @@
 {
   config,
   lib,
+  helpers,
   ...
 }:
 let
@@ -9,9 +10,7 @@ let
 in
 {
   options.modules.bat = {
-    enable = lib.mkEnableOption "bat" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "bat";
   };
 
   config = lib.mkIf cfg.enable {

@@ -3,6 +3,7 @@
   config,
   lib,
   pkgs,
+  helpers,
   ...
 }:
 let
@@ -10,9 +11,7 @@ let
 in
 {
   options.modules.gh = {
-    enable = lib.mkEnableOption "GitHub CLI" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "GitHub CLI";
   };
 
   config = lib.mkIf cfg.enable {
