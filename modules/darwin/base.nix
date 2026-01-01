@@ -4,8 +4,6 @@
   lib,
   pkgs,
   inputs,
-  outputs,
-  pkgs-unstable,
   ...
 }:
 let
@@ -47,8 +45,9 @@ in
     environment.systemPackages = [
       pkgs.antigravity
       pkgs.google-chrome
-      inputs.opnix.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
+
+    programs._1password-gui.enable = true;
 
     fonts.packages = [
       pkgs.monaspace

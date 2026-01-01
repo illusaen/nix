@@ -18,6 +18,9 @@ in
   config = lib.mkIf cfg.enable {
     programs.fish = {
       enable = true;
+      interactiveShellInit = ''
+        set -gx OP_SERVICE_ACCOUNT_TOKEN (cat /etc/opnix-token | string collect)
+      '';
       plugins = [
         {
           name = "colored-man-pages";
@@ -80,8 +83,6 @@ in
         l = "eza -alg";
         ll = "eza";
         lt = "eza --tree --git-ignore --all";
-      };
-      shellAliases = {
       };
       functions = {
         fish_greeting = "";

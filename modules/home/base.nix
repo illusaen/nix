@@ -12,11 +12,6 @@ let
   cfg = config.modules.base;
 in
 {
-  # Imports must be at top level (not inside mkIf)
-  imports = [
-    inputs.opnix.homeManagerModules.default
-  ];
-
   options.modules.base = {
     enable = helpers.mkTrueOption "base home-manager configuration";
   };
