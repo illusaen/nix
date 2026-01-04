@@ -1611,6 +1611,10 @@
 			<string>/Users/wendy</string>
 		</dict>
 	</array>
+	<key>OpenArrangementAtStartup</key>
+	<false/>
+	<key>OpenNoWindowsAtStartup</key>
+	<true/>
 	<key>SoundForEsc</key>
 	<false/>
 	<key>SshIntegrationForURLs</key>
@@ -1618,7 +1622,7 @@
 	<key>TabViewType</key>
 	<integer>1</integer>
 	<key>UIElementRequiresHotkeys</key>
-	<true/>
+	<false/>
 	<key>VisualIndicatorForEsc</key>
 	<false/>
 </dict>

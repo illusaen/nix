@@ -19,6 +19,9 @@ in
     casks = [
       "bambu-studio"
     ];
+    masApps = {
+      "Microsoft Word" = 462054704;
+    };
   };
 
   system.stateVersion = 6;
