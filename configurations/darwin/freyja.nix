@@ -21,6 +21,7 @@ in
     ];
     masApps = {
       "Microsoft Word" = 462054704;
+      "Cyberduck" = 409222199;
     };
   };
 
