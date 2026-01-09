@@ -90,6 +90,7 @@ in
       google-chrome
       raycast
       iterm2
+      vlc-bin
     ];
 
     programs._1password-gui.enable = true;

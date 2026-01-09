@@ -166,11 +166,17 @@ in
 
           if not test -f .envrc
             echo "  .envrc doesn't exist, manually creating with default."
-            echo "watch_file flake.nix\nwatch_file flake.lock\nuse flake\n" > .envrc
-          end
+            echo "watch_file flake.nix" > .envrc
+            echo "watch_file flake.lock" >> .envrc
+            echo "use flake" >> .envrc
 
-          if test "$NAME" = "python"
-            echo "layout python3" >> .envrc
+            if test "$NAME" = "python"
+              echo "layout python3" >> .envrc
+            end
+
+            if test "$NAME" = "node"
+              echo "layout node" >> .envrc
+            end
           end
 
           git add -A
