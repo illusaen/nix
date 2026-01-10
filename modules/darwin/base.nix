@@ -103,6 +103,11 @@ in
       sf-pro
     ];
 
+    homebrew.masApps = {
+      "Microsoft Word" = 462054704;
+      "NepTunes for iTunes Spotify" = 1006739057;
+    };
+
     system.keyboard = {
       enableKeyMapping = true;
     };
