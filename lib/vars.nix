@@ -5,4 +5,15 @@
     projects = "$HOME/projects";
     nix = "$HOME/nix";
   };
+
+  seedbox = rec {
+    group = "users";
+    hostName = "modi";
+    ip = "192.168.4.103";
+    domain = "${hostName}.lan";
+    hd = {
+      misc = "misc";
+      hdd = "hdd";
+    };
+  };
 }

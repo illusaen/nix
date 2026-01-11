@@ -72,6 +72,7 @@ in
       experimental-features = [
         "nix-command"
         "flakes"
+        "pipe-operators"
       ];
       warn-dirty = false;
       substituters = [

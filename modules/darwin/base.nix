@@ -76,7 +76,7 @@ in
       SoftwareUpdate.AutomaticallyInstallMacOSUpdates = true;
 
       NSGlobalDomain = {
-        AppleIconAppearanceTheme = "RegularDark";
+        AppleIconAppearanceTheme = "ClearAutomatic";
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
         AppleShowScrollBars = "Automatic";

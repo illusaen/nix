@@ -19,6 +19,7 @@ in
     { pkgs, system, ... }:
     {
       formatter = pkgs.nixfmt-rfc-style;
+      packages.sd = self.outputs.nixosConfigurations.modi.config.system.build.sdImage;
     };
 
   flake = {
