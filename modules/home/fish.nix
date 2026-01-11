@@ -9,6 +9,7 @@
 }:
 let
   cfg = config.modules.fish;
+  inherit (vars.seedbox) ip hostName;
 in
 {
   options.modules.fish = {
@@ -59,12 +60,12 @@ in
         };
         gco = "git checkout";
         ga = "git add -A";
-        gl = "git log";
+        gl = "git pull";
         gd = "git diff";
         gb = "git branch";
-        gpl = "git pull";
+        glg = "git log";
         gp = "git push";
-        gpc = "git push -u origin (git rev-parse --abbrev-ref HEAD)";
+        gpu = "git push -u origin (git rev-parse --abbrev-ref HEAD)";
         gpf = "git push --force-with-lease";
         git_clone_own_repo = {
           function = "_git_clone_own_repo";
@@ -85,6 +86,8 @@ in
         l = "eza -alg";
         ll = "eza";
         lt = "eza --tree --git-ignore --all";
+
+        buildmodi = "nixos-rebuild switch --flake .#${hostName} --target-host ${vars.name}@${ip} --use-remote-sudo";
       };
       functions = {
         fish_greeting = "";
