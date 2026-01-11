@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (vars) name group;
+  inherit (vars) name seedbox;
   cfg = config.modules.navidrome;
 in
 {
@@ -20,7 +20,7 @@ in
       enable = true;
       openFirewall = true;
       user = name;
-      inherit group;
+      group = seedbox.group;
       settings = {
         LogLevel = "DEBUG";
         Scanner.Schedule = "@every 24h";

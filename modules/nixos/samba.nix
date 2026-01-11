@@ -25,7 +25,7 @@ in
           "workgroup" = "WORKGROUP";
         };
       }
-      // (lib.pipe seedbox.hd lib.mapAttrs' (
+      // (lib.mapAttrs' (
         _: value:
         let
           hdName = lib.toLower value;
@@ -41,7 +41,7 @@ in
           "fruit:model" = "MacSamba";
           "vfs objects" = "catia fruit streams_xattr";
         }
-      ));
+      ) seedbox.hd);
     };
 
     services.samba-wsdd = {

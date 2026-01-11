@@ -7,8 +7,7 @@
   ...
 }:
 let
-  inherit (vars) name group seedbox;
-  inherit (seedbox) hd domain ip;
+  inherit (vars) name seedbox;
   cfg = config.modules.modi;
 in
 {
@@ -22,52 +21,29 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.transmission = with pkgs; {
-      enable = true;
-      package = transmission_4;
-      webHome = flood-for-transmission;
-      openRPCPort = true;
-      openFirewall = true;
-      downloadDirPermissions = "770";
-      user = name;
-      inherit group;
-      settings = {
-        umask = 2;
-        watch-dir-enabled = true;
-        rpc-bind-address = "0.0.0.0";
-        rpc-whitelist = "127.0.0.1,192.168.*.*";
-        rpc-host-whitelist = "*.${domain},${domain}";
-        trash-original-torrent-files = true;
-        download-dir = "/mnt/${lib.toLower hd.misc}/books";
-      };
-    };
-
     services.nginx =
       let
-        hosts =
-          lib.pipe
-            {
-              transmission = "http://127.0.0.1:${toString config.services.transmission.settings.rpc-port}";
-              blocky = "http://${toString config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}";
-              jellyfin = "http://127.0.0.1:8096";
-              navidrome = "http://127.0.0.1:${toString config.services.navidrome.settings.Port}";
-            }
-            lib.mapAttrs'
-            (
-              name: value:
-              lib.nameValuePair "${name}.${domain}" {
-                locations."/" = {
-                  proxyPass = value;
-                  proxyWebsockets = true;
-                };
-              }
-            );
+        hosts = {
+          transmission = "http://127.0.0.1:${toString config.services.transmission.settings.rpc-port}";
+          blocky = "http://${toString config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}";
+          jellyfin = "http://127.0.0.1:8096";
+          navidrome = "http://127.0.0.1:${toString config.services.navidrome.settings.Port}";
+        };
+
       in
       {
         enable = true;
         recommendedProxySettings = true;
         recommendedTlsSettings = true;
-        virtualHosts = hosts;
+        virtualHosts = lib.mapAttrs' (
+          name: value:
+          lib.nameValuePair "${name}.${seedbox.domain}" {
+            locations."/" = {
+              proxyPass = value;
+              proxyWebsockets = true;
+            };
+          }
+        ) hosts;
       };
   };
 }

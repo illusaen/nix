@@ -32,7 +32,7 @@ in
       options = [ "zfsutil" ];
     };
   }
-  // (lib.pipe hd lib.mapAttrs' (
+  // (lib.mapAttrs' (
     _: value:
     lib.nameValuePair "/mnt/${lib.toLower value}" {
       device = "/dev/disk/by-label/${value}";
@@ -41,7 +41,7 @@ in
         "gid=100"
       ];
     }
-  ));
+  ) hd);
 
   nixpkgs.overlays = [
     (_: super: {

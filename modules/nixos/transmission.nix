@@ -7,8 +7,8 @@
   ...
 }:
 let
-  inherit (vars) name group seedbox;
-  inherit (seedbox) hd domain;
+  inherit (vars) name seedbox;
+  inherit (seedbox) hd domain group;
   cfg = config.modules.transmission;
 in
 {

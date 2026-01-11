@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (vars) name group;
+  inherit (vars) name seedbox;
   cfg = config.modules.jellyfin;
 in
 {
@@ -22,7 +22,7 @@ in
       enable = true;
       openFirewall = true;
       user = name;
-      inherit group;
+      group = seedbox.group;
     };
   };
 }
