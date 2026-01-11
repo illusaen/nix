@@ -114,7 +114,6 @@ in
     enable = true;
     tokenFile = "/etc/opnix-token";
     users = [ vars.name ];
-    groupId = 600;
 
     secrets = {
       sshPrivateKey = {
