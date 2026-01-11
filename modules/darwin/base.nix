@@ -32,6 +32,7 @@ in
       iterm2
       audacity
       yt-dlp
+      jellyfin
     ];
 
     programs._1password-gui.enable = true;
@@ -46,6 +47,11 @@ in
     };
 
     system.defaults = {
+      dock = {
+        wvous-bl-corner = 5;
+        wvous-br-corner = 11;
+      };
+
       menuExtraClock = {
         ShowDayOfWeek = true;
         ShowDayOfMonth = true;

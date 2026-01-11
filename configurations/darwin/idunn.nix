@@ -1,4 +1,9 @@
-{ pkgs, vars, ... }:
+{
+  pkgs,
+  vars,
+  config,
+  ...
+}:
 let
   inherit (vars) name fullName;
 in
@@ -17,6 +22,8 @@ in
       cleanup = "zap";
     };
   };
+
+  config.modules.idunn.enable = true;
 
   system.stateVersion = 6;
 }
