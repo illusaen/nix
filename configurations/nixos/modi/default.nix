@@ -24,6 +24,8 @@ in
     "${toString modulesPath}/installer/sd-card/sd-image-aarch64.nix"
   ];
 
+  nixpkgs.hostPlatform = "aarch64-linux";
+
   config.modules = {
     modi.enable = true;
     blocky.enable = true;
