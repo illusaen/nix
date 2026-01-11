@@ -3,6 +3,7 @@
   config,
   lib,
   vars,
+  pkgs,
   ...
 }:
 let
@@ -12,7 +13,7 @@ let
 in
 {
   options.modules.transmission = {
-    enable = mkEnableOption "transmission nixos configuration";
+    enable = lib.mkEnableOption "transmission nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

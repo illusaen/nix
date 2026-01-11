@@ -12,7 +12,7 @@ let
 in
 {
   options.modules.navidrome = {
-    enable = mkEnableOption "navidrome nixos configuration";
+    enable = lib.mkEnableOption "navidrome nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

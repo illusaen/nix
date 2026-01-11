@@ -7,7 +7,7 @@
   ...
 }:
 let
-  inherit (vars.seedbox) domain ip;
+  inherit (vars.seedbox) domain ip hostName;
   cfg = config.modules.blocky;
 
   ports = {
@@ -24,7 +24,7 @@ let
 in
 {
   options.modules.blocky = {
-    enable = mkEnableOption "blocky nixos configuration";
+    enable = lib.mkEnableOption "blocky nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

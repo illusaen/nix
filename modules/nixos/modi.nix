@@ -3,6 +3,7 @@
   lib,
   inputs,
   vars,
+  pkgs,
   ...
 }:
 let
@@ -17,7 +18,7 @@ in
   ];
 
   options.modules.modi = {
-    enable = mkEnableOption "modi nixos configuration";
+    enable = lib.mkEnableOption "modi nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

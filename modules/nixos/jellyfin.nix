@@ -12,7 +12,7 @@ let
 in
 {
   options.modules.jellyfin = {
-    enable = mkEnableOption "jellyfin nixos configuration";
+    enable = lib.mkEnableOption "jellyfin nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

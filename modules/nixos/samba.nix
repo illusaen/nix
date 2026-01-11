@@ -11,7 +11,7 @@ let
 in
 {
   options.modules.samba = {
-    enable = mkEnableOption "samba nixos configuration";
+    enable = lib.mkEnableOption "samba nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {
