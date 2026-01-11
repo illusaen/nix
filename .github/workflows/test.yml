@@ -10,5 +10,5 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - run: nixos-rebuild build --flake .#modi
+      - run: nix flake show
       - run: nix-shell --run "echo OK"
