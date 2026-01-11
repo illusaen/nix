@@ -3,6 +3,7 @@
   config,
   lib,
   inputs,
+  helpers,
   ...
 }:
 let
@@ -16,9 +17,7 @@ in
   ];
 
   options.modules.base = {
-    enable = lib.mkEnableOption "base nixos configuration" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "base nixos configuration";
   };
 
   config = lib.mkIf cfg.enable {

@@ -4,69 +4,11 @@
   lib,
   pkgs,
   inputs,
+  helpers,
   ...
 }:
 let
   cfg = config.modules.base;
-  feather = pkgs.stdenvNoCC.mkDerivation {
-    name = "feather";
-    src = pkgs.fetchFromGitHub {
-      owner = "AT-UI";
-      repo = "feather-font";
-      rev = "2ac71612ee85b3d1e9e1248cec0a777234315253";
-      sha256 = "sha256-W4CHvOEOYkhBtwfphuDIosQSOgEKcs+It9WPb2Au0jo=";
-    };
-    phases = [
-      "installPhase"
-    ];
-    installPhase = ''
-      mkdir -p $out/share/fonts/truetype
-      cp -r $src/src/fonts/*.ttf $out/share/fonts/truetype/
-    '';
-  };
-
-  sf-pro = pkgs.stdenvNoCC.mkDerivation {
-    name = "sf-pro";
-    src = pkgs.fetchurl {
-      url = "https://devimages-cdn.apple.com/design/resources/download/SF-Pro.dmg";
-      hash = "sha256-Lk14U5iLc03BrzO5IdjUwORADqwxKSSg6rS3OlH9aa4=";
-    };
-    buildInputs = with pkgs; [
-      undmg
-      p7zip
-    ];
-    phases = [
-      "unpackPhase"
-      "installPhase"
-    ];
-    unpackPhase = ''
-      undmg $src
-      7z x "SF Pro Fonts.pkg"
-      7z x "Payload~"
-    '';
-    installPhase = ''
-      mkdir -p $out/share/fonts/{opentype,truetype}
-      find -name \*.otf -exec mv {} $out/share/fonts/opentype/ \;
-      find -name \*.ttf -exec mv {} $out/share/fonts/truetype/ \;
-    '';
-  };
-
-  sf-mono = pkgs.stdenvNoCC.mkDerivation {
-    name = "sf-mono";
-    src = pkgs.fetchFromGitHub {
-      owner = "shaunsingh";
-      repo = "SFMono-Nerd-Font-Ligaturized";
-      rev = "dc5a3e6";
-      hash = "sha256-AYjKrVLISsJWXN6Cj74wXmbJtREkFDYOCRw1t2nVH2w=";
-    };
-    phases = [
-      "installPhase"
-    ];
-    installPhase = ''
-      mkdir -p $out/share/fonts/opentype
-      cp -r $src/*.otf $out/share/fonts/opentype/
-    '';
-  };
 in
 {
   # Imports must be at top level (not inside mkIf)
@@ -76,9 +18,7 @@ in
   ];
 
   options.modules.base = {
-    enable = lib.mkEnableOption "base darwin configuration" // {
-      default = true;
-    };
+    enable = helpers.mkTrueOption "base darwin configuration";
   };
 
   config = lib.mkIf cfg.enable {
@@ -96,13 +36,6 @@ in
 
     programs._1password-gui.enable = true;
 
-    fonts.packages = with pkgs; [
-      nerd-fonts.symbols-only
-      feather
-      sf-mono
-      sf-pro
-    ];
-
     homebrew.masApps = {
       "Microsoft Word" = 462054704;
       "NepTunes for iTunes Spotify" = 1006739057;
@@ -116,22 +49,32 @@ in
       menuExtraClock = {
         ShowDayOfWeek = true;
         ShowDayOfMonth = true;
+        ShowAMPM = true;
+        ShowDate = 1;
+        ShowSeconds = true;
       };
 
       finder = {
         AppleShowAllExtensions = true;
+        AppleShowAllFiles = true;
+        FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false;
+        FXPreferredViewStyle = "clmv";
+        NewWindowTarget = "Home";
         ShowStatusBar = true;
         ShowPathbar = true;
+        _FXEnableColumnAutoSizing = true;
+        _FXSortFoldersFirst = true;
       };
 
       SoftwareUpdate.AutomaticallyInstallMacOSUpdates = true;
 
-      CustomUserPreferences.NSGlobalDomain = {
-        AppleInterfaceStyle = "Light";
+      NSGlobalDomain = {
+        AppleIconAppearanceTheme = "RegularDark";
         AppleShowAllExtensions = true;
-        NSAutomaticCapitalizationEnabled = false;
-        NSAutomaticDashSubstitutionEnabled = false;
+        AppleShowAllFiles = true;
+        AppleShowScrollBars = "Automatic";
+        NSDocumentSaveNewDocumentsToCloud = false;
       };
 
       CustomUserPreferences = {
@@ -140,13 +83,10 @@ in
       };
     };
 
-    nix.extraOptions = ''
-      experimental-features = nix-command flakes
-      extra-platforms = aarch64-darwin x86_64-darwin
-    '';
-
     security.sudo.extraConfig = ''
       Defaults timestamp_timeout=30
     '';
+
+    security.pam.services.sudo_local.watchIdAuth = true;
   };
 }

@@ -11,6 +11,7 @@ let
     inherit lib;
     inherit vars;
   };
+  helpers = import ./lib/helpers.nix { inherit lib; };
   root = ./.;
 in
 {
@@ -32,7 +33,7 @@ in
       inherit inputs;
       outputs = self;
       nixosModules = self.nixosModules;
-      specialArgs = { inherit vars; };
+      specialArgs = { inherit vars helpers; };
     };
 
     darwinConfigurations = autowire.discoverDarwinConfigurations {
@@ -40,7 +41,7 @@ in
       inherit inputs;
       outputs = self;
       darwinModules = self.darwinModules;
-      specialArgs = { inherit vars; };
+      specialArgs = { inherit vars helpers; };
     };
 
     homeConfigurations = autowire.discoverHomeConfigurations {
@@ -50,8 +51,7 @@ in
       outputs = self;
       homeModules = self.homeManagerModules;
       extraSpecialArgs = {
-        inherit vars;
-        helpers = import ./lib/helpers.nix { inherit lib; };
+        inherit vars helpers;
       };
     };
   };
