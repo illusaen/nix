@@ -25,26 +25,23 @@ in
           "workgroup" = "WORKGROUP";
         };
       }
-      // (
-        seedbox.hd
-        |> lib.mapAttrs' (
-          _: value:
-          let
-            hdName = lib.toLower value;
-          in
-          lib.nameValuePair hdName {
-            "path" = "/mnt/${hdName}";
-            "browseable" = "yes";
-            "valid users" = "${name}";
-            "force user" = "${name}";
-            "public" = "no";
-            "writeable" = "yes";
-            "fruit:aapl" = "yes";
-            "fruit:model" = "MacSamba";
-            "vfs objects" = "catia fruit streams_xattr";
-          }
-        )
-      );
+      // (lib.pipe seedbox.hd lib.mapAttrs' (
+        _: value:
+        let
+          hdName = lib.toLower value;
+        in
+        lib.nameValuePair hdName {
+          "path" = "/mnt/${hdName}";
+          "browseable" = "yes";
+          "valid users" = "${name}";
+          "force user" = "${name}";
+          "public" = "no";
+          "writeable" = "yes";
+          "fruit:aapl" = "yes";
+          "fruit:model" = "MacSamba";
+          "vfs objects" = "catia fruit streams_xattr";
+        }
+      ));
     };
 
     services.samba-wsdd = {

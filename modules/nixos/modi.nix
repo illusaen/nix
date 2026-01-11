@@ -45,21 +45,23 @@ in
     services.nginx =
       let
         hosts =
-          {
-            transmission = "http://127.0.0.1:${toString config.services.transmission.settings.rpc-port}";
-            blocky = "http://${toString config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}";
-            jellyfin = "http://127.0.0.1:8096";
-            navidrome = "http://127.0.0.1:${toString config.services.navidrome.settings.Port}";
-          }
-          |> lib.mapAttrs' (
-            name: value:
-            lib.nameValuePair "${name}.${domain}" {
-              locations."/" = {
-                proxyPass = value;
-                proxyWebsockets = true;
-              };
+          lib.pipe
+            {
+              transmission = "http://127.0.0.1:${toString config.services.transmission.settings.rpc-port}";
+              blocky = "http://${toString config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}";
+              jellyfin = "http://127.0.0.1:8096";
+              navidrome = "http://127.0.0.1:${toString config.services.navidrome.settings.Port}";
             }
-          );
+            lib.mapAttrs'
+            (
+              name: value:
+              lib.nameValuePair "${name}.${domain}" {
+                locations."/" = {
+                  proxyPass = value;
+                  proxyWebsockets = true;
+                };
+              }
+            );
       in
       {
         enable = true;
