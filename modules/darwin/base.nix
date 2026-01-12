@@ -35,8 +35,6 @@ in
       jellyfin
     ];
 
-    services.onepassword-secrets.groupId = 600;
-
     programs._1password-gui.enable = true;
 
     homebrew.masApps = {
