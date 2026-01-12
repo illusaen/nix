@@ -8,6 +8,5 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
-      - run: nix build
       - run: nix flake check
       - run: nixos-rebuild build --flake ./home/runner/work/nix/nix#modi
