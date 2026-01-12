@@ -13,7 +13,6 @@ in
 {
   # Imports must be at top level (not inside mkIf)
   imports = [
-    inputs.opnix.darwinModules.default
     ../system.nix
   ];
 

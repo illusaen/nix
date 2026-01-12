@@ -12,7 +12,6 @@ let
 in
 {
   imports = [
-    inputs.opnix.nixosModules.default
     ../system.nix
   ];
 
