@@ -23,7 +23,7 @@ in
     };
   };
 
-  config.modules.idunn.enable = true;
+  modules.idunn.enable = true;
 
   system.stateVersion = 6;
 }
