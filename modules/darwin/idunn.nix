@@ -18,5 +18,6 @@ in
     system.keyboard.remapCapsLockToControl = true;
     system.defaults.NSGlobalDomain."com.apple.mouse.tapBehavior" = 1;
     security.pam.services.sudo_local.touchIdAuth = true;
+    services.onepassword-secrets.groupId = 350;
   };
 }
