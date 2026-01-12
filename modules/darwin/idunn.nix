@@ -15,8 +15,14 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    system.keyboard.remapCapsLockToControl = true;
-    system.defaults.NSGlobalDomain."com.apple.mouse.tapBehavior" = 1;
+    system = {
+      keyboard.remapCapsLockToControl = true;
+      defaults = {
+        NSGlobalDomain."com.apple.mouse.tapBehavior" = 1;
+        dock.tilesize = 48;
+        dock.largesize = 64;
+      };
+    };
     security.pam.services.sudo_local.touchIdAuth = true;
   };
 }

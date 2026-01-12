@@ -41,6 +41,15 @@ in
       "NepTunes for iTunes Spotify" = 1006739057;
     };
 
+    system.activationScripts.chmodOpnix = {
+      text = ''
+        echo "chmodding opnix-token"
+        if [ -f "/etc/opnix-token" ]; then
+            chmod 644 /etc/opnix-token
+        fi
+      '';
+    };
+
     system.keyboard = {
       enableKeyMapping = true;
     };
@@ -49,7 +58,7 @@ in
       dock = {
         wvous-bl-corner = 5;
         wvous-br-corner = 11;
-        largesize = 24;
+        largesize = lib.mkDefault 72;
         magnification = true;
         minimize-to-application = true;
         orientation = "left";
@@ -93,10 +102,6 @@ in
         "com.apple.desktopservices".DSDontWriteUSBStores = true;
       };
     };
-
-    security.sudo.extraConfig = ''
-      Defaults timestamp_timeout=30
-    '';
 
     security.pam.services.sudo_local.watchIdAuth = true;
   };

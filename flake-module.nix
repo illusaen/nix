@@ -18,7 +18,7 @@ in
   perSystem =
     { pkgs, system, ... }:
     {
-      formatter = pkgs.nixfmt-rfc-style;
+      formatter = pkgs.nixfmt;
       packages.sd = self.outputs.nixosConfigurations.modi.config.system.build.sdImage;
     };
 
