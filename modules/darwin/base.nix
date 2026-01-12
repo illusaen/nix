@@ -50,12 +50,12 @@ in
       dock = {
         wvous-bl-corner = 5;
         wvous-br-corner = 11;
-largesize = 24;
-magnification = true;
-minimize-to-application = true;
-orientation = "left”;
-show-recents = false;
-static-only = true;
+        largesize = 24;
+        magnification = true;
+        minimize-to-application = true;
+        orientation = "left";
+        show-recents = false;
+        static-only = true;
       };
 
       menuExtraClock = {

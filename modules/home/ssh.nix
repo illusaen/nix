@@ -30,13 +30,13 @@ in
           controlMaster = "no";
           controlPath = "~/.ssh/master-%r@%n:%p";
           controlPersist = "no";
-          identityFile = "/etc/ssh/id_rsa";
+          identityFile = "~/.ssh/id_rsa";
         };
 
         "github" = {
           hostname = "github.com";
           user = "git";
-          identityFile = "/etc/ssh/id_rsa";
+          identityFile = "~/.ssh/id_rsa";
         };
       };
     };

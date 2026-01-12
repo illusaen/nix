@@ -110,25 +110,6 @@ in
     sf-pro
   ];
 
-  services.onepassword-secrets = {
-    enable = true;
-    tokenFile = "/etc/opnix-token";
-    users = [ vars.name ];
-
-    secrets = {
-      sshPrivateKey = {
-        reference = "op://Service/SSH-Key-Nix/private key?ssh-format=openssh";
-        path = "/etc/ssh/id_rsa";
-        mode = "0644";
-      };
-      sshPublicKey = {
-        reference = "op://Service/SSH-Key-Nix/public key";
-        path = "/etc/ssh/id_rsa.pub";
-        mode = "0644";
-      };
-    };
-  };
-
   programs.fish.enable = true;
   programs._1password.enable = true;
 }
