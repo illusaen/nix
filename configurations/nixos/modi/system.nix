@@ -72,6 +72,7 @@ in
       interface = "end0";
     in
     {
+      nftables.enable = true;
       hosts = {
         "${ip}" = [
           domain

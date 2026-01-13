@@ -37,7 +37,9 @@ in
           80
           8080
         ];
-      allowedUDPPorts = [ blocky.dns ];
+      allowedUDPPorts = [
+        blocky.dns
+      ];
     };
 
     services.blocky = {

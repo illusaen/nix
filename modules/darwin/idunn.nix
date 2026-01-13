@@ -15,6 +15,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    homebrew.masApps = {
+      "Tailscale" = 1475387142;
+    };
+
     system = {
       keyboard.remapCapsLockToControl = true;
       defaults = {
