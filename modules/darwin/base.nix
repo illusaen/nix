@@ -36,9 +36,12 @@ in
 
     programs._1password-gui.enable = true;
 
-    homebrew.masApps = {
-      "Microsoft Word" = 462054704;
-      "NepTunes for iTunes Spotify" = 1006739057;
+    homebrew = {
+      casks = [ "mac-mouse-fix" ];
+      masApps = {
+        "Microsoft Word" = 462054704;
+        "NepTunes for iTunes Spotify" = 1006739057;
+      };
     };
 
     system.activationScripts.chmodOpnix = {

@@ -24,7 +24,5 @@ in
     };
   };
 
-  modules.freyja.enable = true;
-
   system.stateVersion = 6;
 }
