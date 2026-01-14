@@ -25,6 +25,7 @@ in
         user.email = "jaewchen@gmail.com";
         init.defaultBranch = "main";
         core.excludesfile = "$NIXOS_CONFIG_DIR/scripts/gitignore";
+        pull.rebase = true;
       };
     };
   };
