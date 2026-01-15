@@ -22,7 +22,6 @@ in
   imports = [
     inputs.nixos-hardware.nixosModules.raspberry-pi-4
     "${toString modulesPath}/installer/sd-card/sd-image-aarch64.nix"
-    ./system.nix
   ];
 
   config.modules = {
