@@ -1,8 +1,5 @@
 name: "Build"
-on:
-  pull_request:
-  push:
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
@@ -11,4 +8,4 @@ jobs:
       - uses: cachix/install-nix-action@v31
       - run: nix flake check
       # - run: nixos-rebuild build --flake ./home/runner/work/nix/nix#modi
-      - run: nix build .#packages.sd
+      - run: nix build .#sd
