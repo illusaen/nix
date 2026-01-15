@@ -15,8 +15,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    homebrew.masApps = {
-      casks = [ "mac-mouse-fix" ];
-    };
+    homebrew.casks = [ "mac-mouse-fix" ];
   };
 }

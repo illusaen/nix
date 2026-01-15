@@ -32,5 +32,6 @@ in
     navidrome.enable = true;
     samba.enable = true;
     transmission.enable = true;
+    ha.enable = true;
   };
 }

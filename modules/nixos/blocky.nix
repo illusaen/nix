@@ -14,6 +14,7 @@ let
     grafana = 3000;
     prometheus = 9001;
     exporter = 9090;
+    homeAssistant = config.services.home-assistant.config.http.server_port;
   };
   blocky = {
     dns = 53;
