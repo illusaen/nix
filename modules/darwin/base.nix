@@ -13,7 +13,7 @@ in
 {
   # Imports must be at top level (not inside mkIf)
   imports = [
-    ../system.nix
+    ../system
   ];
 
   options.modules.base = {

@@ -12,7 +12,7 @@ let
 in
 {
   imports = [
-    ../system.nix
+    ../system
   ];
 
   options.modules.modi = {

@@ -26,7 +26,7 @@ let
     name = "sf-pro";
     src = pkgs.fetchurl {
       url = "https://devimages-cdn.apple.com/design/resources/download/SF-Pro.dmg";
-      hash = "sha256-Lk14U5iLc03BrzO5IdjUwORADqwxKSSg6rS3OlH9aa4=";
+      hash = "sha256-u7cLbIRELSNFUa2OW/ZAgIu6vbmK/8kXXqU97xphA+0=";
     };
     buildInputs = with pkgs; [
       undmg
@@ -66,50 +66,10 @@ let
   };
 in
 {
-  nix = {
-    package = lib.mkDefault pkgs.nix;
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-        "pipe-operators"
-      ];
-      warn-dirty = false;
-      substituters = [
-        "https://cache.nixos.org/"
-        "https://nix-community.cachix.org"
-        "https://nixpkgs-unfree.cachix.org"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "nixpkgs-unfree.cachix.org-1:hqvoInulhbV4nJ9yJOEr+4wxhDV4xq2d1DK7S6Nj6rs="
-      ];
-    };
-  };
-
-  nixpkgs.config = {
-    allowUnfree = true;
-    allowUnfreePredicate = _: true;
-  };
-
-  environment = {
-    systemPackages = with pkgs; [
-      coreutils
-      vim
-      home-manager
-      nh
-    ];
-    shells = [ pkgs.fish ];
-  };
-
   fonts.packages = with pkgs; [
     nerd-fonts.symbols-only
     feather
     sf-mono
     sf-pro
   ];
-
-  programs.fish.enable = true;
-  programs._1password.enable = true;
 }

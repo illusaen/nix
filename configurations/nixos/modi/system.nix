@@ -62,7 +62,7 @@ in
       enable = true;
       settings = {
         PermitRootLogin = "yes";
-        PasswordAuthentication = false;
+        PasswordAuthentication = true;
       };
     };
   };
@@ -105,6 +105,7 @@ in
     description = fullName;
     shell = pkgs.fish;
     home = "/home/${name}";
+    password = "asdf";
   };
   systemd.tmpfiles.rules = [ "d /mnt/samba 0755 ${name} ${group}" ];
 }
