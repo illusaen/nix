@@ -6,6 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
-      - run: nix flake check
-      # - run: nixos-rebuild build --flake ./home/runner/work/nix/nix#modi
       - run: nix build .#sd
+      - name: Archive sdImage
+        uses: actions/upload-artifact@v6
+        with:
+          name: modi.sdImage
+          path: readlink result
