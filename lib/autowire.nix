@@ -3,6 +3,7 @@
 
 let
   inherit (lib)
+    pipe
     filterAttrs
     mapAttrs'
     nameValuePair
@@ -12,26 +13,37 @@ let
     pathExists
     concatMapAttrs
     elem
+    replaceString
     ;
-  inherit (builtins) readDir;
-  inherit (vars) name;
+  inherit (builtins) readDir toString;
 
   # Helper: Filter and map attributes in one pass
-  mapFilterAttrs =
-    pred: f: attrs:
-    filterAttrs pred (mapAttrs' f attrs);
-
-  # Helper: Check if path is a valid nix file or directory with default.nix
-  isNixEntry =
-    name: type:
-    (type == "regular" && hasSuffix ".nix" name && name != "default.nix")
-    || (type == "directory" && pathExists (name + "/default.nix"));
-
-  # Helper: Get configuration name from filename or directory
-  getConfigName = name: type: if type == "directory" then name else removeSuffix ".nix" name;
-
-  # Safely read directory, returning empty set if path doesn't exist
+  mapFilterAttrs = f: attrs: filterAttrs (_: v: v != null) (mapAttrs' f attrs);
   safeReadDir = dir: if pathExists dir then readDir dir else { };
+
+  processDir =
+    {
+      dir,
+      ...
+    }:
+    func:
+    lib.pipe dir [
+      (safeReadDir)
+      (mapAttrs' (
+        name: type:
+        let
+          isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
+          isValidDir = type == "directory" && pathExists (dir + "/${name}/default.nix");
+          prefix = replaceString "/" "-" (toString (baseNameOf dir));
+          configName = removeSuffix ".nix" name;
+        in
+        if isValidNixFile || isValidDir then
+          nameValuePair ("${prefix}-${configName}") (func name)
+        else
+          nameValuePair "" null
+      ))
+      (filterAttrs (_: v: v != null))
+    ];
 
   # Derive system architecture from host configurations
   # - Darwin hosts are detected by presence in configurations/darwin/ (always aarch64-darwin)
@@ -45,7 +57,7 @@ let
     in
     if hasDarwinConfig then
       "aarch64-darwin"
-    else if hostname == "cloud" || hostname == "rpi" then
+    else if hostname == "cloud" || hostname == "modi" then
       "aarch64-linux" # Oracle Cloud ARM instance
     else
       "x86_64-linux";
@@ -54,47 +66,16 @@ in
 {
   # Discover and import modules from a directory
   # Each .nix file or directory becomes a module export
-  discoverModules =
-    { dir }:
-    mapFilterAttrs (_: v: v != null) (
-      name: type:
-      let
-        isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
-        isValidDir = type == "directory" && pathExists (dir + "/${name}/default.nix");
-      in
-      if isValidNixFile then
-        nameValuePair (removeSuffix ".nix" name) (import (dir + "/${name}"))
-      else if isValidDir then
-        nameValuePair name (import (dir + "/${name}"))
-      else
-        nameValuePair "" null
-    ) (safeReadDir dir);
+  discoverModules = { dir }@args: processDir args (name: import (dir + "/${name}"));
 
   # Discover overlays from a directory
   discoverOverlays =
-    { dir, inputs }:
-    mapFilterAttrs (_: v: v != null) (
-      name: type:
-      let
-        isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
-      in
-      if isValidNixFile then
-        nameValuePair (removeSuffix ".nix" name) (import (dir + "/${name}") { inherit inputs; })
-      else
-        nameValuePair "" null
-    ) (safeReadDir dir);
+    { dir, inputs }@args: processDir args (name: import (dir + "/${name}") { inherit inputs; });
 
   # Discover packages from a directory
   # Each .nix file should be callPackage-compatible
   discoverPackages =
-    { dir, pkgs }:
-    mapFilterAttrs (_: v: v != null) (
-      name: type:
-      if type == "regular" && hasSuffix ".nix" name && name != "default.nix" then
-        nameValuePair (removeSuffix ".nix" name) (pkgs.callPackage (dir + "/${name}") { })
-      else
-        nameValuePair "" null
-    ) (safeReadDir dir);
+    { dir, pkgs }@args: processDir args (name: pkgs.callPackage (dir + "/${name}") { });
 
   # Discover NixOS configurations
   # configurations/nixos/hostname/ -> nixosConfigurations.hostname
@@ -107,19 +88,30 @@ in
       nixosModules,
       specialArgs ? { },
     }:
-    mapFilterAttrs (_: v: v != null) (
+    mapFilterAttrs (
       name: type:
       let
+        isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
         isValidDir = type == "directory" && pathExists (dir + "/${name}/default.nix");
+        configName = removeSuffix ".nix" name;
+        configPath = if isValidNixFile then dir + "/${name}" else dir + "/${name}";
       in
-      if isValidDir then
-        nameValuePair name (
+      if isValidNixFile || isValidDir then
+        nameValuePair configName (
           inputs.nixpkgs.lib.nixosSystem {
             # System is determined by nixpkgs.hostPlatform in each host's config
             modules = [
-              (dir + "/${name}")
+              configPath
               # Import all discovered NixOS modules
               { imports = builtins.attrValues nixosModules; }
+
+              inputs.home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.${vars.name} = ../modules/home/base.nix;
+                home-manager.extraSpecialArgs = specialArgs;
+              }
             ];
             specialArgs = specialArgs // {
               inherit inputs outputs;
@@ -137,13 +129,11 @@ in
       dir,
       inputs,
       outputs,
+      homeModules,
       darwinModules,
       specialArgs ? { },
     }:
-    let
-      nixpkgs-unstable = inputs.nixpkgs-unstable;
-    in
-    mapFilterAttrs (_: v: v != null) (
+    mapFilterAttrs (
       name: type:
       let
         isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
@@ -159,13 +149,28 @@ in
               configPath
               # Import all discovered Darwin modules
               { imports = builtins.attrValues darwinModules; }
+
+              inputs.home-manager.darwinModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.${vars.name} = {
+                  imports = builtins.attrValues homeModules ++ [ inputs.opnix.homeManagerModules.default ];
+                  home = {
+                    username = lib.mkDefault vars.name;
+                    homeDirectory = "/Users/${vars.name}";
+
+                    # Do NOT change this value. stateVersion determines compatibility for stateful data,
+                    # not which home-manager version you're running. Only change after reading release notes.
+                    # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+                    stateVersion = lib.mkDefault "25.11";
+                  };
+                };
+                home-manager.extraSpecialArgs = specialArgs;
+              }
             ];
             specialArgs = specialArgs // {
               inherit inputs outputs;
-              pkgs-unstable = import nixpkgs-unstable {
-                system = "aarch64-darwin";
-                config.allowUnfree = true;
-              };
             };
           }
         )
@@ -185,11 +190,9 @@ in
       extraSpecialArgs ? { },
     }:
     let
+
       nixpkgs = inputs.nixpkgs;
       getSystem = hostToSystem { inherit darwinDir; };
-
-      # Get all user directories
-      userDirs = filterAttrs (_: type: type == "directory") (safeReadDir dir);
 
       # For each user, get their host configurations
       userHostConfigs =
@@ -197,18 +200,17 @@ in
           hostsDir = dir + "/hosts";
           hostFiles = safeReadDir hostsDir;
         in
-        mapFilterAttrs (_: v: v != null) (
+        mapFilterAttrs (
           hostName: type:
           if type == "regular" && hasSuffix ".nix" hostName then
             let
               cleanHostName = removeSuffix ".nix" hostName;
-              configName = "${name}@${cleanHostName}";
               configPath = hostsDir + "/${hostName}";
               system = getSystem cleanHostName;
             in
-            nameValuePair configName (
+            nameValuePair vars.name (
               inputs.home-manager.lib.homeManagerConfiguration {
-                pkgs = nixpkgs.legacyPackages.${system};
+                # pkgs = nixpkgs.legacyPackages.${system};
                 modules = [
                   configPath
                   # Import all discovered home modules

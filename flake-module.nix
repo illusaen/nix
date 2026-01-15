@@ -8,8 +8,7 @@
 let
   vars = import ./lib/vars.nix;
   autowire = import ./lib/autowire.nix {
-    inherit lib;
-    inherit vars;
+    inherit lib vars;
   };
   helpers = import ./lib/helpers.nix { inherit lib; };
   root = ./.;
@@ -23,8 +22,12 @@ in
     };
 
   flake = {
-    overlays = import ./overlays { inherit inputs; };
+    overlays = autowire.discoverOverlays {
+      dir = root + /overlays;
+      inherit inputs;
+    };
 
+    sharedSystemModules = autowire.discoverModules { dir = root + /modules/system; };
     nixosModules = autowire.discoverModules { dir = root + /modules/nixos; };
     darwinModules = autowire.discoverModules { dir = root + /modules/darwin; };
     homeManagerModules = autowire.discoverModules { dir = root + /modules/home; };
@@ -33,7 +36,7 @@ in
       dir = root + /configurations/nixos;
       inherit inputs;
       outputs = self;
-      nixosModules = self.nixosModules;
+      nixosModules = self.nixosModules // self.sharedSystemModules;
       specialArgs = { inherit vars helpers; };
     };
 
@@ -41,19 +44,20 @@ in
       dir = root + /configurations/darwin;
       inherit inputs;
       outputs = self;
-      darwinModules = self.darwinModules;
+      darwinModules = self.darwinModules // self.sharedSystemModules;
+      homeModules = self.homeManagerModules;
       specialArgs = { inherit vars helpers; };
     };
 
-    homeConfigurations = autowire.discoverHomeConfigurations {
-      dir = root + /users;
-      darwinDir = root + /configurations/darwin;
-      inherit inputs;
-      outputs = self;
-      homeModules = self.homeManagerModules;
-      extraSpecialArgs = {
-        inherit vars helpers;
-      };
-    };
+    # homeConfigurations = autowire.discoverHomeConfigurations {
+    #   dir = root + /users;
+    #   darwinDir = root + /configurations/darwin;
+    #   inherit inputs;
+    #   outputs = self;
+    #   homeModules = self.homeManagerModules;
+    #   extraSpecialArgs = {
+    #     inherit vars helpers;
+    #   };
+    # };
   };
 }

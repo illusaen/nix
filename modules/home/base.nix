@@ -6,16 +6,13 @@
   inputs,
   outputs,
   helpers,
+  vars,
   ...
 }:
 let
   cfg = config.modules.base;
 in
 {
-  imports = [
-    inputs.opnix.homeManagerModules.default
-  ];
-
   options.modules.base = {
     enable = helpers.mkTrueOption "base home-manager configuration";
   };
@@ -40,6 +37,11 @@ in
       };
     };
 
+    home.sessionPath = [
+      "$HOME/.local/bin"
+      "$HOME/.cargo/bin"
+    ];
+
     systemd.user.startServices = "sd-switch";
 
     programs = {
@@ -62,10 +64,5 @@ in
         };
       };
     };
-
-    home.sessionPath = [
-      "$HOME/.local/bin"
-      "$HOME/.cargo/bin"
-    ];
   };
 }

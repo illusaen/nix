@@ -11,11 +11,6 @@ let
   cfg = config.modules.base;
 in
 {
-  # Imports must be at top level (not inside mkIf)
-  imports = [
-    ../system
-  ];
-
   options.modules.base = {
     enable = helpers.mkTrueOption "base darwin configuration";
   };

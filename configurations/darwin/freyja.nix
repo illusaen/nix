@@ -18,13 +18,12 @@ in
     };
     casks = [
       "bambu-studio"
+      "mac-mouse-fix"
     ];
     masApps = {
       "Cyberduck" = 409222199;
     };
   };
-
-  modules.freyja.enable = true;
 
   system.stateVersion = 6;
 }

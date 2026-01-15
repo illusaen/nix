@@ -11,10 +11,6 @@ let
   cfg = config.modules.modi;
 in
 {
-  imports = [
-    ../system
-  ];
-
   options.modules.modi = {
     enable = lib.mkEnableOption "modi nixos configuration";
   };

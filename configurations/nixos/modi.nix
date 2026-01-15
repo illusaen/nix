@@ -1,5 +1,8 @@
 {
+  inputs,
+  config,
   lib,
+  modulesPath,
   pkgs,
   vars,
   ...
@@ -16,6 +19,21 @@ let
     ;
 in
 {
+  imports = [
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
+    "${toString modulesPath}/installer/sd-card/sd-image-aarch64.nix"
+  ];
+
+  modules = {
+    modi.enable = true;
+    blocky.enable = true;
+    jellyfin.enable = true;
+    navidrome.enable = true;
+    samba.enable = true;
+    transmission.enable = true;
+    ha.enable = true;
+  };
+
   nixpkgs.hostPlatform = "aarch64-linux";
 
   system.stateVersion = "25.11";

@@ -36,7 +36,6 @@
     systemPackages = with pkgs; [
       coreutils
       vim
-      home-manager
       nh
     ];
     shells = [ pkgs.fish ];
