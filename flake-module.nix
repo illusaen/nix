@@ -19,7 +19,7 @@ in
     { pkgs, system, ... }:
     {
       formatter = pkgs.nixfmt;
-      packages.sd = self.outputs.nixosConfigurations.modi.config.system.build.sdImage;
+      packages.${system}.sd = self.outputs.nixosConfigurations.modi.config.system.build.sdImage;
     };
 
   flake = {

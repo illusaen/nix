@@ -2,6 +2,7 @@ name: "Build"
 on:
   pull_request:
   push:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
