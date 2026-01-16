@@ -18,12 +18,18 @@ in
     };
     casks = [
       "bambu-studio"
+      "raspberry-pi-imager"
       "mac-mouse-fix"
+      "autodesk-fusion"
     ];
     masApps = {
       "Cyberduck" = 409222199;
     };
   };
+
+  environment.systemPackages = with pkgs; [
+    zstd
+  ];
 
   system.stateVersion = 6;
 }
