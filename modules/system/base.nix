@@ -1,7 +1,7 @@
 {
   lib,
   pkgs,
-  vars,
+  outputs,
   ...
 }:
 {
@@ -27,9 +27,12 @@
     };
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    allowUnfreePredicate = _: true;
+  nixpkgs = {
+    overlays = builtins.attrValues outputs.overlays;
+    config = {
+      allowUnfree = true;
+      allowUnfreePredicate = _: true;
+    };
   };
 
   environment = {

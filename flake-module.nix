@@ -15,10 +15,18 @@ let
 in
 {
   perSystem =
-    { pkgs, system, ... }:
+    {
+      pkgs,
+      system,
+      ...
+    }:
     {
       formatter = pkgs.nixfmt;
-      packages.sd = self.outputs.nixosConfigurations.modi.config.system.build.sdImage;
+      packages = autowire.discoverPackages {
+        dir = root + /packages;
+        inherit pkgs;
+        outputs = self;
+      };
     };
 
   flake = {

@@ -60,6 +60,7 @@ in
         };
         gco = "git checkout";
         ga = "git add -A";
+        gf = "git fetch";
         gl = "git pull";
         gd = "git diff";
         gb = "git branch";

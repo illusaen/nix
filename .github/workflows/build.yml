@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
-      - run: nix build .#sd
+      - run: nix build .#modi-sd
       - name: Archive sdImage
         uses: actions/upload-artifact@v6
         with:

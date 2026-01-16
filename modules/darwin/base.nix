@@ -27,6 +27,7 @@ in
       audacity
       yt-dlp
       jellyfin
+      zmk-studio
     ];
 
     programs._1password-gui.enable = true;
