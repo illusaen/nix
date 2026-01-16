@@ -45,19 +45,18 @@ in
       inherit inputs;
       outputs = self;
       darwinModules = self.darwinModules // self.sharedSystemModules;
-      homeModules = self.homeManagerModules;
       specialArgs = { inherit vars helpers; };
     };
 
-    # homeConfigurations = autowire.discoverHomeConfigurations {
-    #   dir = root + /users;
-    #   darwinDir = root + /configurations/darwin;
-    #   inherit inputs;
-    #   outputs = self;
-    #   homeModules = self.homeManagerModules;
-    #   extraSpecialArgs = {
-    #     inherit vars helpers;
-    #   };
-    # };
+    homeConfigurations = autowire.discoverHomeConfigurations {
+      dir = root + /users;
+      darwinDir = root + /configurations/darwin;
+      inherit inputs;
+      outputs = self;
+      homeModules = self.homeManagerModules;
+      extraSpecialArgs = {
+        inherit vars helpers;
+      };
+    };
   };
 }

@@ -104,14 +104,6 @@ in
               configPath
               # Import all discovered NixOS modules
               { imports = builtins.attrValues nixosModules; }
-
-              inputs.home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users.${vars.name} = ../modules/home/base.nix;
-                home-manager.extraSpecialArgs = specialArgs;
-              }
             ];
             specialArgs = specialArgs // {
               inherit inputs outputs;
@@ -129,7 +121,6 @@ in
       dir,
       inputs,
       outputs,
-      homeModules,
       darwinModules,
       specialArgs ? { },
     }:
@@ -149,25 +140,6 @@ in
               configPath
               # Import all discovered Darwin modules
               { imports = builtins.attrValues darwinModules; }
-
-              inputs.home-manager.darwinModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users.${vars.name} = {
-                  imports = builtins.attrValues homeModules ++ [ inputs.opnix.homeManagerModules.default ];
-                  home = {
-                    username = lib.mkDefault vars.name;
-                    homeDirectory = "/Users/${vars.name}";
-
-                    # Do NOT change this value. stateVersion determines compatibility for stateful data,
-                    # not which home-manager version you're running. Only change after reading release notes.
-                    # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-                    stateVersion = lib.mkDefault "25.11";
-                  };
-                };
-                home-manager.extraSpecialArgs = specialArgs;
-              }
             ];
             specialArgs = specialArgs // {
               inherit inputs outputs;
