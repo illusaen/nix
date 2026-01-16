@@ -9,14 +9,13 @@ let
     nameValuePair
     hasSuffix
     removeSuffix
-    attrNames
     pathExists
     concatMapAttrs
     elem
     replaceString
     splitString
     ;
-  inherit (builtins) readDir toString;
+  inherit (builtins) readDir;
 
   # Helper: Filter and map attributes in one pass
   mapFilterAttrs = f: attrs: filterAttrs (_: v: v != null) (mapAttrs' f attrs);
@@ -38,7 +37,7 @@ let
 
   processDir =
     dir: func:
-    lib.pipe dir [
+    pipe dir [
       (safeReadDir)
       (mapFilterAttrs (processDirFn dir func))
     ];
