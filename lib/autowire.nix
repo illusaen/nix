@@ -40,8 +40,7 @@ let
     dir: func:
     lib.pipe dir [
       (safeReadDir)
-      (mapAttrs' (processDirFn dir func))
-      (filterAttrs (_: v: v != null))
+      (mapFilterAttrs (processDirFn dir func))
     ];
 
   hostToSystem =
@@ -88,31 +87,20 @@ in
       nixosModules,
       specialArgs ? { },
     }:
-    mapFilterAttrs (
-      name: type:
-      let
-        isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
-        isValidDir = type == "directory" && pathExists (dir + "/${name}/default.nix");
-        configName = removeSuffix ".nix" name;
-        configPath = if isValidNixFile then dir + "/${name}" else dir + "/${name}";
-      in
-      if isValidNixFile || isValidDir then
-        nameValuePair configName (
-          inputs.nixpkgs.lib.nixosSystem {
-            # System is determined by nixpkgs.hostPlatform in each host's config
-            modules = [
-              configPath
-              # Import all discovered NixOS modules
-              { imports = builtins.attrValues nixosModules; }
-            ];
-            specialArgs = specialArgs // {
-              inherit inputs outputs;
-            };
-          }
-        )
-      else
-        nameValuePair "" null
-    ) (safeReadDir dir);
+    processDir dir (
+      name:
+      (inputs.nixpkgs.lib.nixosSystem {
+        # System is determined by nixpkgs.hostPlatform in each host's config
+        modules = [
+          (dir + "/${name}")
+          # Import all discovered NixOS modules
+          { imports = builtins.attrValues nixosModules; }
+        ];
+        specialArgs = specialArgs // {
+          inherit inputs outputs;
+        };
+      })
+    );
 
   # Discover Darwin configurations
   # configurations/darwin/hostname.nix -> darwinConfigurations.hostname
@@ -124,31 +112,20 @@ in
       darwinModules,
       specialArgs ? { },
     }:
-    mapFilterAttrs (
-      name: type:
-      let
-        isValidNixFile = type == "regular" && hasSuffix ".nix" name && name != "default.nix";
-        isValidDir = type == "directory" && pathExists (dir + "/${name}/default.nix");
-        configName = removeSuffix ".nix" name;
-        configPath = dir + "/${name}";
-      in
-      if isValidNixFile || isValidDir then
-        nameValuePair configName (
-          inputs.nix-darwin.lib.darwinSystem {
-            system = "aarch64-darwin";
-            modules = [
-              configPath
-              # Import all discovered Darwin modules
-              { imports = builtins.attrValues darwinModules; }
-            ];
-            specialArgs = specialArgs // {
-              inherit inputs outputs;
-            };
-          }
-        )
-      else
-        nameValuePair "" null
-    ) (safeReadDir dir);
+    processDir dir (
+      name:
+      inputs.nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          (dir + "/${name}")
+          # Import all discovered Darwin modules
+          { imports = builtins.attrValues darwinModules; }
+        ];
+        specialArgs = specialArgs // {
+          inherit inputs outputs;
+        };
+      }
+    );
 
   # Discover Home Manager configurations
   # users/<user>/hosts/<host>.nix -> homeConfigurations."user@host"
@@ -166,33 +143,30 @@ in
       getSystem = hostToSystem { inherit darwinDir; };
       mapHostFiles =
         userName: hostsDir: hostFiles:
-        lib.pipe hostFiles [
-          (mapAttrs' (
-            hostName: type:
-            if type == "regular" && hasSuffix ".nix" hostName then
-              let
-                cleanHostName = removeSuffix ".nix" hostName;
-                configName = "${userName}@${cleanHostName}";
-                configPath = hostsDir + "/${hostName}";
-              in
-              nameValuePair configName (
-                inputs.home-manager.lib.homeManagerConfiguration {
-                  pkgs = nixpkgs.legacyPackages.${getSystem cleanHostName};
-                  modules = [
-                    configPath
-                    # Import all discovered home modules
-                    { imports = builtins.attrValues homeModules; }
-                  ];
-                  extraSpecialArgs = extraSpecialArgs // {
-                    inherit inputs outputs;
-                  };
-                }
-              )
-            else
-              nameValuePair "" null
-          ))
-          (filterAttrs (_: v: v != null))
-        ];
+        mapFilterAttrs (
+          hostName: type:
+          if type == "regular" && hasSuffix ".nix" hostName then
+            let
+              cleanHostName = removeSuffix ".nix" hostName;
+              configName = "${userName}@${cleanHostName}";
+              configPath = hostsDir + "/${hostName}";
+            in
+            nameValuePair configName (
+              inputs.home-manager.lib.homeManagerConfiguration {
+                pkgs = nixpkgs.legacyPackages.${getSystem cleanHostName};
+                modules = [
+                  configPath
+                  # Import all discovered home modules
+                  { imports = builtins.attrValues homeModules; }
+                ];
+                extraSpecialArgs = extraSpecialArgs // {
+                  inherit inputs outputs;
+                };
+              }
+            )
+          else
+            nameValuePair "" null
+        ) hostFiles;
     in
     lib.pipe dir [
       (safeReadDir)
