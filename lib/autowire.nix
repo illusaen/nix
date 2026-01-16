@@ -164,45 +164,45 @@ in
     let
       nixpkgs = inputs.nixpkgs;
       getSystem = hostToSystem { inherit darwinDir; };
-
-      # Get all user directories
-      userDirs = filterAttrs (_: type: type == "directory") (safeReadDir dir);
-
-      # For each user, get their host configurations
-      userHostConfigs = concatMapAttrs (
+      mapHostFiles =
+        userName: hostsDir: hostFiles:
+        lib.pipe hostFiles [
+          (mapAttrs' (
+            hostName: type:
+            if type == "regular" && hasSuffix ".nix" hostName then
+              let
+                cleanHostName = removeSuffix ".nix" hostName;
+                configName = "${userName}@${cleanHostName}";
+                configPath = hostsDir + "/${hostName}";
+              in
+              nameValuePair configName (
+                inputs.home-manager.lib.homeManagerConfiguration {
+                  pkgs = nixpkgs.legacyPackages.${getSystem cleanHostName};
+                  modules = [
+                    configPath
+                    # Import all discovered home modules
+                    { imports = builtins.attrValues homeModules; }
+                  ];
+                  extraSpecialArgs = extraSpecialArgs // {
+                    inherit inputs outputs;
+                  };
+                }
+              )
+            else
+              nameValuePair "" null
+          ))
+          (filterAttrs (_: v: v != null))
+        ];
+    in
+    lib.pipe dir [
+      (safeReadDir)
+      (filterAttrs (_: type: type == "directory"))
+      (concatMapAttrs (
         userName: _:
         let
           hostsDir = dir + "/${userName}/hosts";
-          hostFiles = safeReadDir hostsDir;
         in
-        mapFilterAttrs (_: v: v != null) (
-          hostName: type:
-          if type == "regular" && hasSuffix ".nix" hostName then
-            let
-              cleanHostName = removeSuffix ".nix" hostName;
-              configName = "${userName}@${cleanHostName}";
-              configPath = hostsDir + "/${hostName}";
-              system = getSystem cleanHostName;
-            in
-            nameValuePair configName (
-              inputs.home-manager.lib.homeManagerConfiguration {
-                pkgs = nixpkgs.legacyPackages.${system};
-                modules = [
-                  configPath
-                  # Import all discovered home modules
-                  { imports = builtins.attrValues homeModules; }
-                ];
-                extraSpecialArgs = extraSpecialArgs // {
-                  inherit inputs outputs;
-                };
-              }
-            )
-          else
-            nameValuePair "" null
-        ) hostFiles
-      ) userDirs;
-    in
-    userHostConfigs;
-
-  inherit hostToSystem;
+        mapHostFiles userName hostsDir (safeReadDir hostsDir)
+      ))
+    ];
 }

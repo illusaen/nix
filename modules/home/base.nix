@@ -13,6 +13,10 @@ let
   cfg = config.modules.base;
 in
 {
+  imports = [
+    inputs.opnix.homeManagerModules.default
+  ];
+
   options.modules.base = {
     enable = helpers.mkTrueOption "base home-manager configuration";
   };
