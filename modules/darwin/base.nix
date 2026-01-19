@@ -36,6 +36,10 @@ in
       masApps = {
         "Microsoft Word" = 462054704;
         "NepTunes for iTunes Spotify" = 1006739057;
+        "1Password for Safari" = 1569813296;
+        "AdBlock for Safari" = 1402042596;
+        "Save to Raindrop.io" = 1549370672;
+        "StopTheMadness Pro" = 6471380298;
       };
     };
 

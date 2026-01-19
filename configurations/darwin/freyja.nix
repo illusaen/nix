@@ -21,6 +21,7 @@ in
       "raspberry-pi-imager"
       "mac-mouse-fix"
       "autodesk-fusion"
+      "openscad"
     ];
     masApps = {
       "Cyberduck" = 409222199;
