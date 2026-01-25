@@ -22,6 +22,7 @@ in
       "mac-mouse-fix"
       "autodesk-fusion"
       "openscad"
+      "kicad"
     ];
     masApps = {
       "Cyberduck" = 409222199;
