@@ -5,7 +5,7 @@
 }: let
   inherit (lib) mkOption;
   inherit (lib.types) submodule nullOr path listOf int str bool;
-  mkOptionWithoutReflection = option: option // {identity = false;};
+  mkOptionWithoutReflection = option: mkOption option // {identity = false;};
 
   sshKeyType = submodule {
     options = {

@@ -1,14 +1,13 @@
 {
   lib,
   inputs,
-  rootPath,
   ...
 }: let
-  inherit (lib) mkOption mkEnableOption mkDefault;
+  inherit (lib) mkOption mkEnableOption;
   inherit (lib.types) enum submodule nullOr path attrsOf listOf str;
   genSchema = inputs.gen-schema.lib;
 
-  mkOptionWithoutReflection = option: option // {identity = false;};
+  mkOptionWithoutReflection = option: mkOption option // {identity = false;};
   mkStrListOption = description:
     mkOption {
       type = listOf str;
@@ -18,31 +17,20 @@
 in {
   schema.host.imports = [
     ({config, ...}: {
-      config = {
-        secretPath = mkDefault (rootPath + "/secrets/hosts/${config.name}");
-        facts = mkDefault (rootPath + "/hosts/${config.name}/facter.json");
-        publicKey = lib.mkDefault (
-          if config.secretPath != null
-          then config.secretPath + "/host_ed25519.pub"
-          else null
-        );
-      };
-      options = {
-        ipv4 = mkOption {
-          type = listOf str;
-          readOnly = true;
-          description = "Primary IPv4 addresses (derived from first interface with IPs, CIDR stripped)";
-          default = let
-            stripCidr = addr: builtins.head (lib.splitString "/" addr);
-          in
-            config.networkInterfaces or {}
-            |> lib.attrValues
-            |> lib.findFirst (i: i ? ipv4) null
-            |> (i:
-              if i != null
-              then map stripCidr i.ipv4
-              else []);
-        };
+      options.ipv4 = mkOption {
+        type = listOf str;
+        readOnly = true;
+        description = "Primary IPv4 addresses (derived from first interface with IPs, CIDR stripped)";
+        default = let
+          stripCidr = addr: builtins.head (lib.splitString "/" addr);
+        in
+          config.networkInterfaces or {}
+          |> lib.attrValues
+          |> lib.findFirst (i: i ? ipv4) null
+          |> (i:
+            if i != null
+            then map stripCidr i.ipv4
+            else []);
       };
     })
   ];
@@ -53,12 +41,12 @@ in {
     };
 
     networkInterfaces = mkOptionWithoutReflection {
-      type = attrsOf submodule {
+      type = attrsOf (submodule {
         options = {
           ipv4 = mkStrListOption "IPv4 addresses in CIDR notation";
           ipv6 = mkStrListOption "IPv6 addresses in CIDR notation";
         };
-      };
+      });
       default = {};
       description = "Network interfaces";
     };

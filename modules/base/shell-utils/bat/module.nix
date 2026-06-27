@@ -21,7 +21,7 @@ top: {
       relPath = "config";
     };
     constructFiles.themeConfig = let
-      scheme = top.config.base16.scheme pkgs;
+      scheme = top.config.fleet.base16.scheme pkgs;
       bat-theme = scheme {
         template = ./bat.tmTheme.mustache;
         extension = ".tmTheme";

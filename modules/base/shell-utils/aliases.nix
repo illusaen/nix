@@ -17,5 +17,11 @@
       gp = "git push";
       gpf = "git push --force-with-lease";
     };
+
+    environment.interactiveShellInit = ''
+      gcm() {
+        git commit -m \""$1"\"
+      }
+    '';
   };
 }

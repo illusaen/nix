@@ -152,7 +152,7 @@ in {
   config.constructFiles.generatedTheme = let
     theme = config.scheme {
       template = ./zed-base24.json.mustache;
-      extension = "json";
+      extension = ".json";
     };
   in {
     relPath = "themes/base24-theme.json";

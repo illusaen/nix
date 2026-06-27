@@ -3,12 +3,14 @@
     nix-settings
     shell-utils
     package-overlay
+    fonts
   ];
 in {
   flake.modules.nixos.base.imports = with config.flake.modules.nixos;
     [
       base-configuration
       state-version
+      fonts
     ]
     ++ shared;
 

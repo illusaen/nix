@@ -1,3 +1,3 @@
-{
-  systems = ["x86_64-linux" "aarch64-darwin" "aarch64-linux"];
+{config, ...}: {
+  systems = config.fleet.hosts |> builtins.attrValues |> map (h: h.system);
 }

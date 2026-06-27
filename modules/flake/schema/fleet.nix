@@ -1,28 +1,19 @@
-{
-  lib,
-  rootPath,
-  ...
-}: let
+{lib, ...}: let
   inherit (lib) mkOption;
-  inherit (lib.types) submodule path str;
+  inherit (lib.types) submodule str;
 in {
   options.fleet = mkOption {
     type = submodule {
       options = {
         domain = mkOption {
           type = str;
-          description = "Base domain for the environment";
+          description = "Base domain for the fleet";
         };
 
         timeZone = mkOption {
           type = str;
           default = "CST";
-          description = "Default timezone for the environment";
-        };
-
-        theme = mkOption {
-          type = path;
-          description = "Base16/Base24 theme used";
+          description = "Default timezone for the fleet";
         };
       };
     };
@@ -30,6 +21,5 @@ in {
   config.fleet = {
     domain = "lan";
     timeZone = "America/Chicago";
-    theme = rootPath + /resources/themes/tokyo-night-moon.yaml;
   };
 }

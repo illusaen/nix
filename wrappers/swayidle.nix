@@ -4,7 +4,9 @@
   pkgs,
   ...
 }: let
-  display = status: "${lib.getExe pkgs.local.niri} msg action power-${status}-monitors";
+  niri =
+    pkgs.local.niri or pkgs.niri;
+  display = status: "${lib.getExe niri} msg action power-${status}-monitors";
 in {
   imports = [
     wlib.wrapperModules.swayidle
