@@ -1,13 +1,14 @@
 {
-  config,
   inputs,
+  config,
   ...
 }: {
   flake.modules.nixos.boot = {
-    imports = [
+    imports = with config.flake.modules.nixos; [
       inputs.disko.nixosModules.disko
-      config.flake.modules.nixos.disko
-      config.flake.modules.nixos.boot-hardware
+      disko
+      boot-hardware
+      facter
     ];
   };
 }

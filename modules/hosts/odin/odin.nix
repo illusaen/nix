@@ -1,4 +1,7 @@
 {config, ...}: {
+  fleet.hosts.odin = {
+  };
+
   nixos.configurations.odin.module = {
     networking = {
       hostName = "odin";
@@ -7,12 +10,11 @@
     };
     nixpkgs.hostPlatform = "x86_64-linux";
 
-    imports = with config.flake.modules.nixos;
-      [
-        base
-        boot
-        desktop-shell
-      ]
-      ++ (with config.flake.modules.generic; [package-overlay]);
+    imports = with config.flake.modules.nixos; [
+      base
+      boot
+      nvidia
+      desktop-shell
+    ];
   };
 }

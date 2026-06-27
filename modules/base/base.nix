@@ -2,12 +2,12 @@
   shared = with config.flake.modules.generic; [
     nix-settings
     shell-utils
+    package-overlay
   ];
 in {
   flake.modules.nixos.base.imports = with config.flake.modules.nixos;
     [
       base-configuration
-      base16
       state-version
     ]
     ++ shared;
