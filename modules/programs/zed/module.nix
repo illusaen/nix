@@ -22,12 +22,16 @@ top: {
     package = pkgs.zed-editor;
     constructFiles.generatedConfig = {
       relPath = "settings.json";
-      content = builtins.toJSON (import ./_config.nix {
+      content = builtins.toJSON (import ./_config.nix (let
+        pxToPt = s: builtins.floor (s * 4 / 3 + 0.5);
+        inherit (topConfig.fleet.fonts.sizes) terminal desktop;
+      in {
         context7ApiKey = "FAKE_API_KEY";
         inherit lib scheme;
         inherit (topConfig.fleet.fonts) sans mono icon;
-        size = builtins.floor (topConfig.fleet.fonts.sizes.applications * 4 / 3 + 0.5);
-      });
+        sizeBuffer = pxToPt terminal;
+        sizeUi = pxToPt desktop;
+      }));
     };
     constructFiles.generatedTheme = let
       theme = scheme {

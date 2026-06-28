@@ -7,7 +7,6 @@
     imports = with config.flake.modules.nixos; [
       inputs.disko.nixosModules.disko
       disko
-      facter
     ];
 
     boot = {

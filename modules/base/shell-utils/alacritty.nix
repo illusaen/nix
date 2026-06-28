@@ -8,13 +8,13 @@
   }: {
     imports = [wlib.wrapperModules.alacritty];
     settings = {
-      padding = {
-        x = 32;
-        y = 32;
+      window = {
+        padding = {
+          x = 32;
+          y = 32;
+        };
+        dynamic_padding = true;
       };
-      dynamic_padding = true;
-      decorations = "None";
-      blur = true;
       font = let
         inherit (config.fleet) fonts;
       in {

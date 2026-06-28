@@ -1,4 +1,4 @@
-{lib, context7ApiKey, mono, icon, size, scheme, sans}: {
+{lib, context7ApiKey, mono, icon, sizeBuffer, sizeUi, scheme, sans}: {
     agent_servers.Codex.command = "codex-acp";
     context_server = {
       mcp-server-context7 = {
@@ -28,7 +28,7 @@
       // ((lib.range 1 10) |> map (n: {name = "ss${lib.fixedWidthNumber 2 n}";
       value = true;}) |> builtins.listToAttrs);
     buffer_font_fallbacks = [icon];
-    buffer_font_size = size;
+    buffer_font_size = sizeBuffer;
     code_lens = "on";
     diff_view_style = "unified";
     load_direnv = "shell_hook";
@@ -103,5 +103,5 @@
     ui_font_family = sans;
     ui_font_features.calt = true;
     ui_font_fallbacks = [icon];
-    ui_font_size = size;
+    ui_font_size = sizeUi;
 }

@@ -20,6 +20,7 @@
         nvidia
         desktop-shell
         programs
+        hardware
       ]
       ++ (with config.flake.modules.generic; [programs wendy]);
   };

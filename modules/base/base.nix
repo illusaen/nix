@@ -11,7 +11,6 @@ in {
       state-version
       fonts
       security
-      networking
       zsh
     ]
     ++ shared;

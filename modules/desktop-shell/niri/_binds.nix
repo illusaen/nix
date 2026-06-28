@@ -9,7 +9,7 @@
   ## Programs
   "Alt+Shift+T" = _: {
     props.hotkey-overlay-title = "Toggle Terminal";
-    content.spawn-sh = "ndrop --app-id '^ndrop-alacritty$' --name alacritty -- alacritty --app-id ndrop-alacritty";
+    content.spawn-sh = "ndrop --app-id '^ndrop-alacritty$' --name alacritty -- alacritty --class ndrop-alacritty";
   };
   "Mod+T" = _: {
     props.hotkey-overlay-title = "Terminal";

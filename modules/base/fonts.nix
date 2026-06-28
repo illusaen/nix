@@ -44,7 +44,7 @@ in {
           default = {
             terminal = 12;
             applications = 12;
-            desktop = 12;
+            desktop = 13;
           };
         };
       };
