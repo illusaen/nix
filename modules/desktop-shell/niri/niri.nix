@@ -2,8 +2,8 @@
   flake.modules.nixos.niri = {pkgs, ...}: {
     programs.niri = {
       enable = true;
-      package =
-        pkgs.local.niri or pkgs.niri;
+      package = pkgs.local.niri or pkgs.niri;
+      useNautilus = true;
     };
 
     services.displayManager.sddm = {
@@ -11,7 +11,7 @@
       wayland.enable = true;
     };
 
-    xdg.portal.extraPortals = with pkgs; [xdg-desktop-portal-gtk];
+    # xdg.portal.extraPortals = with pkgs; [xdg-desktop-portal-gtk];
 
     nix.settings = {
       extra-substituters = ["https://niri.cachix.org"];
