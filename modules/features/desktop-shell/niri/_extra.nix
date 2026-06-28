@@ -1,7 +1,7 @@
 {
   debug = {
     wait-for-frame-completion-before-queueing = _: {};
-    force-disable-connectors-on-resume = _: {};
+    # force-disable-connectors-on-resume = _: {};
   };
 
   prefer-no-csd = _: {};

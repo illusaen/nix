@@ -4,6 +4,7 @@
     display-manager
     wallpaper
     nautilus
+    waybar
   ];
 
   flake.modules.darwin.desktop-shell.imports = with config.flake.modules.darwin; [

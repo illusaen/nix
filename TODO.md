@@ -1,12 +1,9 @@
 1. fix zsh ctrl+left/right to move word backword/forward
 2. add features:
-  - preservation
   - nvf
-  - opnix
   - agenix/agenix-rekey/sops
   - tailscale
   - networking
-  - waybar
   - steam
   - bambu studio
   - llama-cpp

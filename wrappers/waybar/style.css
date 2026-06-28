@@ -1,0 +1,73 @@
+@define-color bg alpha(@base00@, 0.85);
+@define-color fg @base05@;
+@define-color border alpha(@base03@, 0.5);
+@define-color accent @base0E@;
+@define-color muted alpha(@fg, 0.75);
+
+* {
+    border: none;
+    border-radius: 12px;
+    min-height: 0;
+    font-family: "@sans@", sans-serif, "@icon@";
+    font-size: calc(@fontSize@px * 1.25);
+    font-weight: 500;
+    color: @fg;
+}
+window#waybar, tooltip { background: transparent;  }
+button {
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+tooltip label {
+    margin-top: -10px;
+    margin-right: 72px;
+    padding: 16px;
+    border: 1px solid @border;
+    background: @bg;
+}
+
+#workspaces, #date-time, #tray, #custom-notification, #custom-switcher {
+    padding: 16px 0;
+    border: 1px solid @border;
+    background: @bg;
+}
+#workspaces button label {
+  padding: 2px 0;
+}
+#workspaces button#niri-workspace-__ndrop_foot,
+#workspaces button#niri-workspace-__ndrop_foot label {
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    font-size: 0;
+}
+#workspaces button,
+#workspaces button label {
+    color: @muted;
+}
+#workspaces button.active,
+#workspaces button.active label {
+    color: @accent;
+}
+#workspaces button:hover,
+#workspaces button:hover label {
+    color: @fg;
+}
+
+#clock {
+    font-feature-settings: "'tnum' 1";
+    font-weight: 600;
+}
+#clock.period { margin-bottom: 16px; }
+#clock.hour, #clock.minute, #clock.weekday, #clock.day { color: @accent; }
+
+#custom-notification, #custom-switcher {
+    font-family: "@icon@";
+    font-size: 24px;
+}
