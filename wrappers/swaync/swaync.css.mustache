@@ -1,20 +1,20 @@
-@define-color theme_fg #{{base07-hex}}; /* Primary Text */
-@define-color muted #{{base04-hex}}; /* Secondary Text */
-@define-color theme_bg alpha(#{{base00-hex}}, 0.25); /* Panel/Background */
-@define-color module_bg alpha(#{{base00-hex}}, 0.6); /* Default Module Background */
-@define-color module_hover_bg alpha(#{{base05-hex}}, 0.4); /* Module Hover */
-@define-color button_bg alpha(#{{base03-hex}}, 0.3); /* Button Default */
-@define-color button_hover_bg alpha(#{{base04-hex}}, 0.4); /* Button Hover */
-@define-color accent alpha(#{{base0E-hex}}, 0.8); /* Accent Active */
-@define-color accent_hover #{{base0E-hex}}; /* Accent Hover */
-@define-color border_light alpha(#{{base07-hex}}, 0.18);
-@define-color border_dark alpha(#{{base00-hex}}, 0.06);
+@define-color theme_fg @base07@; /* Primary Text */
+@define-color muted @base04@; /* Secondary Text */
+@define-color theme_bg alpha(@base00@, 0.25); /* Panel/Background */
+@define-color module_bg alpha(@base00@, 0.6); /* Default Module Background */
+@define-color module_hover_bg alpha(@base05@, 0.4); /* Module Hover */
+@define-color button_bg alpha(@base03@, 0.3); /* Button Default */
+@define-color button_hover_bg alpha(@base04@, 0.4); /* Button Hover */
+@define-color accent alpha(@base0E@, 0.8); /* Accent Active */
+@define-color accent_hover @base0E@; /* Accent Hover */
+@define-color border_light alpha(@base07@, 0.18);
+@define-color border_dark alpha(@base00@, 0.06);
 @define-color border_medium alpha(@border_light, 0.5);
-@define-color shadow alpha(#{{base00-hex}}, 0.5);
+@define-color shadow alpha(@base00@, 0.5);
 
 /* ── Base Reset ───────────────────────────────────────────────────── */
 * {
-  font-family: "{{scheme-font}}", sans-serif;
+  font-family: "@font@", sans-serif;
   font-size: 16px;
   color: @theme_fg;
   border: none;

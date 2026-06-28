@@ -11,7 +11,7 @@
   ];
   options = {
     font = lib.mkOption {type = lib.types.str;};
-    colors = lib.mkOption {type = lib.types.raw;};
+    scheme = lib.mkOption {type = lib.types.raw;};
     settings = lib.mkOption {
       type = wlib.types.structuredValueWith {typeName = "JSON";};
       default = {};
@@ -110,9 +110,9 @@
       ];
     };
   };
-  config."style.css".path = pkgs.replaceVars ./style.css {
+  config."style.css".path = pkgs.replaceVars ./swaync.css.mustache {
     inherit
-      (config.colors)
+      (config.scheme)
       base00
       base03
       base04

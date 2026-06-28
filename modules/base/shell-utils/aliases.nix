@@ -16,11 +16,26 @@
       glg = "git log";
       gp = "git push";
       gpf = "git push --force-with-lease";
+      gcm = "git_commit_with_message";
+      gcma = "git commit -m";
+      e = "open_editor";
     };
 
     environment.interactiveShellInit = ''
-      gcm() {
+      git_commit_with_message() {
         git commit -m \""$1"\"
+      }
+
+      open_editor() {
+        for editor in zed nvim vim; do
+          if command -v "$editor" >/dev/null 2>&1; then
+            "$editor" .
+            return
+          fi
+        done
+
+        echo "Error: no supported editor found (zed, nvim, or vim)." >&2
+        return 1
       }
     '';
   };

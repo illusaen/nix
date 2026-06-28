@@ -13,12 +13,12 @@ in {
     ./service.nix
   ];
 
-  config.service = {
+  service = {
     enable = true;
     description = "swayidle for monitor power on and off";
   };
-  config.events.after-resume = display "on";
-  config.timeouts = [
+  events.after-resume = display "on";
+  timeouts = [
     {
       timeout = 300; # in seconds
       command = "${pkgs.libnotify}/bin/notify-send 'Turning off monitors in 5 seconds' -t 5000";

@@ -1,8 +1,12 @@
-{
+{self, ...}: {
   flake.modules.generic.shell-utils = {pkgs, ...}: {environment.systemPackages = [(pkgs.local.zsh or pkgs.zsh)];};
 
-  flake.modules.nixos.zsh = {pkgs, ...}: {
-    users.defaultUserShell = pkgs.local.zsh or pkgs.zsh;
+  flake.modules.nixos.zsh = {
+    imports = [self.nixosModules.zsh];
+    wrappers.zsh = {
+      enable = true;
+      asSystemDefault = true;
+    };
   };
 
   flake.modules.darwin.zsh = {
@@ -12,5 +16,9 @@
     ...
   }: {
     users.users = lib.mapAttrs (_user: {shell = pkgs.local.zsh or pkgs.zsh;}) config.users.users;
+  };
+
+  flake.wrappers.zsh = {wlib, ...}: {
+    imports = [wlib.wrapperModules.zsh];
   };
 }

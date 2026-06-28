@@ -3,6 +3,17 @@ top: {
     environment.systemPackages = [pkgs.local.bat];
   };
 
+  flake.modules.nixos.bat = {
+    lib,
+    pkgs,
+    ...
+  }: {
+    system.userActivationScripts.rebuildBatCache = ''
+      echo "Rebuilding bat cache."
+      ${lib.getExe pkgs.local.bat} cache --build
+    '';
+  };
+
   flake.wrappers.bat = {
     wlib,
     lib,
