@@ -54,6 +54,7 @@
               mountpoint = "/home";
               # Used by services.zfs.autoSnapshot options.
               options."com.sun:auto-snapshot" = "true";
+              postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^zroot/local/home@blank$' || zfs snapshot zroot/local/home@blank";
             };
             "local/nix" = {
               type = "zfs_fs";

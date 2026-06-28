@@ -50,12 +50,8 @@ in {
       auto_install_extensions = {
         html = true;
         lua = true;
-        fish = true;
-        deno = true;
-        svelte = true;
         toml = true;
         sql = true;
-        scss = true;
         nix = true;
         ini = true;
         mustache = true;
@@ -91,16 +87,25 @@ in {
       session.trust_all_worktrees = true;
       extend_comment_on_newline = false;
       lsp = {};
-      formatter.external.command = "treefmt";
+      languages.Nix.language_servers = ["nixd" "!nil"];
+      formatter.external = {
+        command = "treefmt";
+        arguments = [
+          "--stdin"
+          "{buffer_path}"
+        ];
+      };
       diagnostics.inline.enabled = true;
       git.inline_blame.enabled = false;
       indent_guides.coloring = "indent_aware";
       profiles = {
         Web.settings = {
-          buffer_font_size = 20;
+          auto_install_extensions = {
+            deno = true;
+            svelte = true;
+            scss = true;
+          };
         };
-        Rust.settings = {};
-        Nix.settings = {};
       };
       preview_tabs.enabled = false;
       preferred_line_length = 120;

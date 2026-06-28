@@ -28,6 +28,10 @@
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    firefox-addons = {
+      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     flake-file.url = "github:denful/flake-file/main";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";

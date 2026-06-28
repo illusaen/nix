@@ -1,6 +1,7 @@
 {config, ...}: {
   fleet.hosts.odin = {
     system = "x86_64-linux";
+    owner = "wendy";
   };
 
   debug = true;
@@ -18,7 +19,8 @@
         boot
         nvidia
         desktop-shell
+        programs
       ]
-      ++ (with config.flake.modules.generic; [programs]);
+      ++ (with config.flake.modules.generic; [programs wendy]);
   };
 }

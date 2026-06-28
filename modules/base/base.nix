@@ -8,15 +8,18 @@
 in {
   flake.modules.nixos.base.imports = with config.flake.modules.nixos;
     [
-      base-configuration
       state-version
       fonts
+      security
+      networking
+      zsh
     ]
     ++ shared;
 
   flake.modules.darwin.base.imports = with config.flake.modules.darwin;
     [
       state-version
+      zsh
     ]
     ++ shared;
 }

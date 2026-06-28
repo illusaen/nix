@@ -6,7 +6,14 @@
   ...
 }: {
   config.flake-file.inputs.base16.url = "github:SenchoPens/base16.nix";
-  config.fleet.base16.theme = rootPath + /resources/themes/tokyo-night-moon.yaml;
+  config.fleet.base16.theme =
+    rootPath
+    + /resources/themes
+    + (
+      if config.fleet.base16.colorScheme == "dark"
+      then /tokyo-night-moon.yaml
+      else /catppuccin-latte.yaml
+    );
 
   options.fleet.base16 = lib.mkOption {
     type = lib.types.submodule {

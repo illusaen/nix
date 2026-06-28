@@ -1,12 +1,12 @@
 {
+  inputs,
   lib,
-  rootPath,
   ...
 }: let
   inherit (lib) mkOption;
   inherit (lib.types) submodule nullOr path listOf int str bool;
   mkOptionWithoutReflection = option: mkOption option // {identity = false;};
-
+  genSchema = inputs.gen-schema.lib;
   sshKeyType = submodule {
     options = {
       tag = mkOption {
@@ -23,15 +23,18 @@
 in {
   schema.user.imports = [
     ({config, ...}: {
-      options.secretPath = mkOption {
-        type = path;
-        default = rootPath + "/secrets/users/${config.name}";
-        description = "Per-user secret directory";
+      options.system.gid = mkOption {
+        type = nullOr int;
+        default = config.system.uid;
+        description = "Group ID for the Unix account";
       };
-      config.system.gid = with config.system;
-        if gid == null
-        then uid
-        else gid;
+
+      options.resolvedGroups = mkOption {
+        type = genSchema.setOf (genSchema.ref "group");
+        readOnly = true;
+        description = "Computed set of group instances using group registry";
+        default = config.groups;
+      };
     })
   ];
   schema.user.options = {
@@ -40,8 +43,11 @@ in {
         options = {
           displayName = mkOption {
             type = str;
-            default = "";
             description = "Display name for the user";
+          };
+          accountName = mkOption {
+            type = str;
+            description = "Account name for the user";
           };
           email = mkOption {
             type = nullOr str;
@@ -58,6 +64,19 @@ in {
       default = {};
       description = "User identity information";
     };
+
+    secretPath = mkOption {
+      type = nullOr path;
+      description = "Per-user secret directory";
+    };
+
+    groups = mkOption {
+      type = listOf str;
+      description = "List of groups the user belongs to, with names from the group registry";
+      default = [];
+      apply = lib.unique;
+    };
+
     system = mkOptionWithoutReflection {
       type = submodule {
         options = {
@@ -65,11 +84,6 @@ in {
             type = nullOr int;
             default = null;
             description = "User ID for the Unix account";
-          };
-          gid = mkOption {
-            type = nullOr int;
-            default = null;
-            description = "Group ID for the Unix account";
           };
           isAdmin = mkOption {
             type = bool;

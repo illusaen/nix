@@ -52,7 +52,7 @@ in {
     };
 
     owner = mkOption {
-      type = genSchema.ref "host";
+      type = genSchema.ref "user";
       description = "Primary user for this host";
     };
 
