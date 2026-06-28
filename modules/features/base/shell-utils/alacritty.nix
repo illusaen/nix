@@ -16,10 +16,10 @@
         dynamic_padding = true;
       };
       font = let
-        inherit (config.fleet) fonts;
+        inherit (config.fleet.fonts) mono sizes;
       in {
-        normal.family = fonts.mono;
-        size = fonts.sizes.terminal;
+        normal.family = mono.name;
+        size = sizes.terminal;
       };
       colors = let
         scheme = config.fleet.base16.scheme pkgs;

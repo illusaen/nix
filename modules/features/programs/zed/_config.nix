@@ -19,7 +19,7 @@
     autosave.after_delay.milliseconds = 5000;
     auto_signature_help = true;
     auto_update = false;
-    buffer_font_family = mono;
+    buffer_font_family = mono.name;
     buffer_font_features =
       {
         calt = true;
@@ -100,8 +100,8 @@
     collaboration_panel.button = false;
     debugger.dock = "right";
     outline_panel.button = false;
-    ui_font_family = sans;
+    ui_font_family = sans.name;
     ui_font_features.calt = true;
-    ui_font_fallbacks = [icon];
+    ui_font_fallbacks = [icon.name];
     ui_font_size = sizeUi;
 }
