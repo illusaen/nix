@@ -7,6 +7,7 @@
   flake.modules.nixos.codex = {pkgs, ...}: {
     imports = [inputs.codex-desktop-linux.nixosModules.default];
     environment.systemPackages = with pkgs; [codex codex-acp];
+    persistUser.directories = [".codex"];
   };
 
   flake.modules.nixos.codex-desktop = {

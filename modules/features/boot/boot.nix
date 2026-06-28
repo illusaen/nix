@@ -2,6 +2,7 @@
   flake.modules.nixos.boot = {
     imports = with config.flake.modules.nixos; [
       disko
+      preservation
     ];
 
     boot = {

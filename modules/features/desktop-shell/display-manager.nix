@@ -98,21 +98,28 @@
     };
     services.displayManager.enable = true;
     services.greetd = let
+      niri = pkgs.local.niri or pkgs.niri;
+      regreet-session = pkgs.writeShellScript "regreet-niri-session" ''
+        ${lib.getExe niri} msg action focus-monitor ${lib.escapeShellArg desc.main} || true
+        ${lib.getExe pkgs.regreet}
+        status=$?
+        ${lib.getExe niri} msg action quit --skip-confirmation || true
+        exit "$status"
+      '';
       niri-config = pkgs.writeText "niri-config-regreet" ''
         // Mitigate potential GTK portal slowdowns during login
         environment {
           GTK_USE_PORTAL "0"
           GDK_DEBUG "no-portals"
         }
-        // Start ReGreet and immediately kill Niri upon successful login
-        spawn-at-startup "sh" "-c" "${pkgs.local.niri}/bin/niri msg action focus-monitor ${lib.escapeShellArg desc.main}; ${pkgs.regreet}/bin/regreet; pkill -f niri"
+        spawn-at-startup "${regreet-session}"
       '';
     in {
       enable = true;
       settings = {
         default_session = {
           # Launch Niri using the minimal config for the login screen
-          command = "${pkgs.local.niri}/bin/niri -c ${niri-config}";
+          command = "${pkgs.dbus}/bin/dbus-run-session ${lib.getExe niri} -c ${niri-config}";
           user = "greeter";
         };
       };

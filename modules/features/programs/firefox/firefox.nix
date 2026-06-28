@@ -46,6 +46,9 @@ in {
       ];
     in
       lib.genAttrs mimeTypes (_: application);
+
+    config.persistUser.directories = [".config/mozilla/firefox"];
+    
     config.programs.firefox = {
       enable = true;
       languagePacks = [

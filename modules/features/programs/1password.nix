@@ -19,5 +19,6 @@ top: {
       top.config.fleet.users;
 
     systemdAutostart = [config.programs._1password-gui.package];
+    persistUser.directories = [".config/1Password"];
   };
 }
