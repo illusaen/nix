@@ -6,11 +6,6 @@
       useNautilus = true;
     };
 
-    services.displayManager.sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-
     nix.settings = {
       extra-substituters = ["https://niri.cachix.org"];
       extra-trusted-public-keys = [
@@ -26,21 +21,20 @@
     pkgs,
     ...
   }: let
-    scheme = config.fleet.base16.scheme pkgs;
+    scheme = (config.fleet.base16.scheme pkgs).withHashtag;
+    inherit (config.fleet.theming) cursor;
+    monitors = config.fleet.monitors.conn;
     animations = import ./_animations.nix;
     extra = import ./_extra.nix;
     mouse = import ./_mouse.nix {
-      cursor = {
-        name = "";
-        size = 28;
-      };
+      cursor = removeAttrs cursor ["packageName"];
     };
-    recent-windows = import ./_window-switcher.nix {highlightColor = scheme.withHashtag.base0D;};
-    layout = import ./_layout.nix {scheme = scheme.withHashtag;};
+    recent-windows = import ./_window-switcher.nix {highlightColor = scheme.base0D;};
+    layout = import ./_layout.nix {inherit scheme;};
     rules = import ./_rules.nix;
     binds = import ./_binds.nix;
-    outputs = import ./_outputs.nix {monitors = config.fleet.monitors.conn;};
-    workspaces = import ./_workspaces.nix {monitors = config.fleet.monitors.conn;};
+    outputs = import ./_outputs.nix {inherit monitors;};
+    workspaces = import ./_workspaces.nix {inherit monitors;};
   in {
     imports = [wlib.wrapperModules.niri];
     settings =

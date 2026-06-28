@@ -241,7 +241,7 @@ def main():
         parser.error("missing command to launch after --")
 
     name = args.name or re.sub(r"[^A-Za-z0-9_.-]+", "-", args.app_id).strip("-")
-    hide_workspace = args.hide_workspace or f"__ndrop_{name}"
+    hide_workspace = args.hide_workspace or "__ndrop"
 
     current_workspace = focused_workspace()
     current_ref = workspace_reference(current_workspace)

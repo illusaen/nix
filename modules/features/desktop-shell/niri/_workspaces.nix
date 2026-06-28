@@ -19,7 +19,7 @@
             open-on-output = monitors.main;
             layout.always-center-single-column = _: {};
           };
-          "__ndrop_foot" = {
+          "__ndrop" = {
             open-on-output = monitors.main;
           };
 }

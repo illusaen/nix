@@ -11,7 +11,7 @@
   flake.wrappers.swaync = {pkgs, ...}: {
     imports = [(rootPath + /wrappers/swaync/module.nix)];
 
-    font = config.fleet.fonts.sans;
+    font = config.fleet.fonts.sans.name;
     scheme = config.fleet.base16.scheme pkgs;
   };
 }

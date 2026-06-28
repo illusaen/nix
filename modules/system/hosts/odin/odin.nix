@@ -21,6 +21,7 @@
         desktop-shell
         programs
         hardware
+        theming
       ]
       ++ (with config.flake.modules.generic; [programs wendy]);
   };

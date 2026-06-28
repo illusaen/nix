@@ -13,7 +13,7 @@
         font = let
           inherit (config.fleet.fonts) mono icon sizes;
           fontSize = toString sizes.applications;
-        in "${mono}:size=${fontSize},${icon}:size=${fontSize}";
+        in "${mono.name}:size=${fontSize},${icon.name}:size=${fontSize}";
         use-bold = true;
         anchor = "top";
         y-margin = 48;

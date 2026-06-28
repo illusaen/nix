@@ -24,7 +24,7 @@
       indicator-radius = 128;
       indicator-thickness = 8;
       scaling = "center";
-      font = sans;
+      font = sans.name;
       font-size = 24;
       image = wallpaper;
 

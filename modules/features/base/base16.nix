@@ -34,6 +34,11 @@
           default = "dark";
           description = "Dark or light theme";
         };
+        isDark = lib.mkOption {
+          type = lib.types.bool;
+          readOnly = true;
+          default = config.fleet.base16.colorScheme == "dark";
+        };
       };
     };
   };

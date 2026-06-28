@@ -153,7 +153,7 @@ def main():
     )
     parser.add_argument(
         "--skip",
-        default=r"^__ndrop_",
+        default=r"^__ndrop",
         help="Regular expression for workspace names to skip.",
     )
     args = parser.parse_args()
