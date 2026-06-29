@@ -13,20 +13,17 @@ Settings have two parts:
 - `fleet.settings`, `fleet.hosts.<name>.settings`, and
   `fleet.users.<name>.settings` declare raw values.
 
-Only settings for named flake modules in a configuration's recursive
+Only settings for named flake modules in a host's recursive
 `moduleNames` closure are considered. Arbitrary ad-hoc modules imported through
 `extraModule` may read resolved settings, but their own settings declarations do
 not affect the schema unless they are represented in `flake.moduleSettings`.
 
-For a NixOS configuration, each module name activates matching generic and
-NixOS modules. For a Darwin configuration, each module name activates matching
-generic and Darwin modules.
+For a NixOS host, each module name activates matching generic and NixOS
+modules. For a Darwin host, each module name activates matching generic and
+Darwin modules.
 
 ```nix
-nixos.configurations.odin.moduleNames = [
-  "base"
-  "programs"
-];
+fleet.hosts.odin.moduleNames = [ "base" "programs" ];
 ```
 
 The recursive closure is driven by:
@@ -103,8 +100,8 @@ options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
 ```
 
 That value remains a raw host-layer setting. It is validated and merged only
-when a concrete `nixos.configurations.<name>` or
-`darwin.configurations.<name>` is evaluated.
+when a concrete host-derived `nixosConfigurations.<name>` or
+`darwinConfigurations.<name>` is evaluated.
 
 ## Architecture Plan
 
@@ -115,9 +112,9 @@ The architecture should keep four stages separate.
    `fleet.groups`. Entity schemas and registry `extraModules` add computed
    fields and raw defaults.
 
-2. **Configuration selection**
-   `nixos.configurations.<name>` or `darwin.configurations.<name>` selects a
-   fleet host via `host` and selects reusable modules via `moduleNames`.
+2. **Host selection**
+   `fleet.hosts.<name>` selects its system class, reusable modules, settings,
+   owner, and host-specific extra module.
 
 3. **Context preparation**
    The system configuration layer resolves the recursive named module closure,
@@ -145,20 +142,6 @@ schema.host.options.extraModule = lib.mkOption {
   type = lib.types.deferredModule;
   default = {};
 };
-```
-
-`system-configurations.nix` combines:
-
-```text
-host.moduleNames
-+ configuration.moduleNames
-```
-
-and:
-
-```text
-host.extraModule
-+ configuration.extraModule
 ```
 
 This lets entity schemas and registry `extraModules` attach batteries or

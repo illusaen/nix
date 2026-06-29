@@ -17,6 +17,12 @@
 in {
   schema.host.imports = [
     ({config, ...}: {
+      config.class = lib.mkDefault (
+        if lib.hasSuffix "-darwin" config.system
+        then "darwin"
+        else "nixos"
+      );
+
       options.ipv4 = mkOption {
         type = listOf str;
         readOnly = true;
@@ -38,6 +44,11 @@ in {
     system = lib.mkOption {
       type = enum ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
       description = "System platform";
+    };
+
+    class = lib.mkOption {
+      type = enum ["nixos" "darwin"];
+      description = "System configuration class used to build this host.";
     };
 
     networkInterfaces = mkOptionWithoutReflection {

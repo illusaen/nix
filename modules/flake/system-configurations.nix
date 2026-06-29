@@ -2,17 +2,9 @@
   config,
   inputs,
   lib,
-  evalModulesModule,
   ...
 }: let
-  nixosCfg = config.nixos;
-  darwinCfg = config.darwin;
   moduleClasses = ["generic" "nixos" "darwin"];
-
-  mkDeferredModuleOption = lib.mkOption {
-    type = lib.types.lazyAttrsOf lib.types.deferredModule;
-    default = {};
-  };
   mkClassAttrsOption = type:
     lib.mkOption {
       type = lib.types.submodule {
@@ -141,17 +133,11 @@
 
   mkHostContext = {
     class,
-    configurationName,
-    hostName ? configurationName,
+    name,
+    host,
     activeNames ? [],
   }: let
     inherit (config) fleet;
-    expectedHost =
-      if lib.hasAttr hostName fleet.hosts
-      then fleet.hosts.${hostName}
-      else throw "${class}.configurations.${configurationName} has no matching fleet.hosts.${hostName}";
-
-    host = expectedHost;
     user = host.owner;
     fleetSettings = resolveSettings {
       inherit class activeNames;
@@ -200,21 +186,21 @@
     module = {
       assertions = [
         {
-          assertion = host.id_hash == expectedHost.id_hash;
+          assertion = host.id_hash == fleet.hosts.${name}.id_hash;
           message = ''
-            ${class}.configurations.${configurationName} injected host ${host.name},
-            but expected fleet.hosts.${expectedHost.name}
-            (id_hash ${host.id_hash} vs ${expectedHost.id_hash}).
+            ${class} host ${name} injected host ${host.name},
+            but expected fleet.hosts.${name}
+            (id_hash ${host.id_hash} vs ${fleet.hosts.${name}.id_hash}).
           '';
         }
         {
           assertion = host.owner != null;
-          message = "fleet.hosts.${hostName}.owner must be set";
+          message = "fleet.hosts.${name}.owner must be set";
         }
         {
           assertion = user.id_hash == host.owner.id_hash;
           message = ''
-            ${class}.configurations.${configurationName} injected user ${user.name},
+            ${class} host ${name} injected user ${user.name},
             but host ${host.name} has owner ${host.owner.name}
             (id_hash ${user.id_hash} vs ${host.owner.id_hash}).
           '';
@@ -226,97 +212,58 @@
   mkConfigurationsOption = {
     class,
     fn,
+    hosts,
   }:
-    lib.mkOption {
-      type = lib.types.lazyAttrsOf (
-        lib.types.submodule (
-          args @ {name, ...}: let
-            configuration = args.config;
-            selectedHost =
-              if lib.hasAttr configuration.host config.fleet.hosts
-              then config.fleet.hosts.${configuration.host}
-              else throw "${class}.configurations.${name} has no matching fleet.hosts.${configuration.host}";
-            activeNames = moduleNameClosure class (selectedHost.moduleNames ++ configuration.moduleNames);
-            ctx = mkHostContext {
-              inherit class;
-              configurationName = name;
-              hostName = configuration.host;
-              inherit activeNames;
-            };
-          in {
-            options.host = lib.mkOption {
-              type = lib.types.str;
-              default = name;
-              description = "Fleet host to use for this ${class} configuration.";
-            };
-            options.moduleNames = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [];
-              apply = lib.unique;
-              description = "Named flake modules to import for this ${class} configuration.";
-            };
-            options.extraModule = lib.mkOption {
-              type = lib.types.deferredModule;
-              default = {};
-              description = "Ad-hoc ${class} module imported after named modules.";
-            };
-
-            imports = [
-              evalModulesModule
-              {
-                inherit fn;
-                args.specialArgs = ctx.specialArgs;
-                module = {
-                  imports = [ctx.module] ++ modulesForNames class activeNames ++ [selectedHost.extraModule configuration.extraModule];
-                  networking.hostName = lib.mkDefault ctx.specialArgs.host.name;
-                  nixpkgs.hostPlatform = lib.mkDefault ctx.specialArgs.host.system;
-                };
-              }
-            ];
-          }
-        )
-      );
-      default = {};
-    };
+    hosts
+    |> lib.filterAttrs (_name: host: host.class == class)
+    |> lib.mapAttrs (
+      name: host: let
+        activeNames = moduleNameClosure class host.moduleNames;
+        ctx = mkHostContext {
+          inherit class name host activeNames;
+        };
+        evaluationModule = {
+          imports = [ctx.module] ++ modulesForNames class activeNames ++ [host.extraModule];
+          networking.hostName = lib.mkDefault ctx.specialArgs.host.name;
+          nixpkgs.hostPlatform = lib.mkDefault ctx.specialArgs.host.system;
+        };
+      in
+        fn {
+          inherit (ctx) specialArgs;
+          modules = [evaluationModule];
+        }
+    );
 
   mkChecks = class: configurations:
     configurations
     |> lib.mapAttrsToList (
-      name: {evaluation, ...}: {
+      name: evaluation: {
         ${evaluation.config.nixpkgs.hostPlatform.system} = {
           "configurations:${class}:${name}" = evaluation.config.system.build.toplevel;
         };
       }
     );
 
-  processConfigurations = configurations: configurations |> lib.mapAttrs (_name: {evaluation, ...}: evaluation);
+  nixosConfigurations = mkConfigurationsOption {
+    class = "nixos";
+    fn = lib.nixosSystem;
+    hosts = config.fleet.hosts;
+  };
+  darwinConfigurations = mkConfigurationsOption {
+    class = "darwin";
+    fn = inputs.darwin.lib.darwinSystem;
+    hosts = config.fleet.hosts;
+  };
 in {
   options.flake.moduleImports = mkClassAttrsOption (lib.types.listOf lib.types.str);
   options.flake.moduleSettings = mkClassAttrsOption lib.types.raw;
 
-  options.nixos = {
-    modules = mkDeferredModuleOption;
-    configurations = mkConfigurationsOption {
-      class = "nixos";
-      fn = lib.nixosSystem;
-    };
-  };
-
-  options.darwin = {
-    modules = mkDeferredModuleOption;
-    configurations = mkConfigurationsOption {
-      class = "darwin";
-      fn = inputs.darwin.lib.darwinSystem;
-    };
-  };
-
   config.flake = {
-    nixosConfigurations = processConfigurations nixosCfg.configurations;
-    darwinConfigurations = processConfigurations darwinCfg.configurations;
+    inherit nixosConfigurations darwinConfigurations;
 
     checks =
-      (mkChecks "nixos" nixosCfg.configurations)
-      ++ (mkChecks "darwin" darwinCfg.configurations)
+      (mkChecks "nixos" nixosConfigurations)
+      ++ (mkChecks "darwin" darwinConfigurations)
       |> lib.mkMerge;
   };
 }

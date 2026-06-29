@@ -36,30 +36,31 @@ flake.modules.generic.<name>
 flake.modules.darwin.<name>
 ```
 
-## Configuration-Level Module Names
+## Derived Configurations
 
-Use `nixos.configurations.<name>.moduleNames` or
-`darwin.configurations.<name>.moduleNames` for deployment-specific additions.
+Normal `nixosConfigurations` and `darwinConfigurations` are derived from
+`fleet.hosts`. There is no separate normal configuration registry.
 
 ```nix
 {
-  nixos.configurations.odin = {
-    moduleNames = [
-      "desktop-shell"
-      "programs"
-      "theming"
-    ];
+  fleet.hosts.odin = {
+    system = "x86_64-linux";
+    owner = "wendy";
+    moduleNames = [ "base" "programs" ];
   };
 }
 ```
 
-The final named module list is:
+The host's `class` determines which output set receives the host. It defaults
+from `system`:
 
 ```text
-host.moduleNames ++ configuration.moduleNames
+x86_64-linux    -> nixosConfigurations
+aarch64-linux   -> nixosConfigurations
+aarch64-darwin  -> darwinConfigurations
 ```
 
-The combined list is deduplicated through the recursive closure logic.
+Set `fleet.hosts.<name>.class` explicitly only when the default is not enough.
 
 ## Recursive Module Imports
 
@@ -100,27 +101,8 @@ Use `fleet.hosts.<name>.extraModule` for host-owned ad-hoc system config.
 }
 ```
 
-Use `nixos.configurations.<name>.extraModule` or
-`darwin.configurations.<name>.extraModule` for configuration-owned ad-hoc
-system config.
-
-```nix
-{
-  nixos.configurations.odin.extraModule = { pkgs, ... }: {
-    environment.systemPackages = [ pkgs.local.misc-scripts ];
-  };
-}
-```
-
-The final ad-hoc module order is:
-
-```text
-host.extraModule
-configuration.extraModule
-```
-
-That means configuration-level ad-hoc values can override host-level defaults
-with normal Nix module priority.
+Keep reusable behavior in named modules when possible. Use host `extraModule`
+for host facts and small one-off configuration.
 
 ## Schema and extraModules
 
@@ -164,17 +146,24 @@ into final NixOS/Darwin imports.
   fleet.hosts.odin = {
     system = "x86_64-linux";
     owner = "wendy";
-    moduleNames = [ "base" ];
+    moduleNames = [ "base" "programs" ];
     settings.nix-settings.warnDirty = true;
-  };
-
-  nixos.configurations.odin = {
-    moduleNames = [ "programs" ];
     extraModule.networking.domain = "lan";
   };
 }
 ```
 
-The evaluated NixOS system for `odin` imports the host module names plus the
-configuration module names, resolves settings for that active closure, and
-injects the final host settings into system modules.
+The evaluated NixOS system for `odin` imports the host module names, resolves
+settings for that active closure, and injects the final host settings into
+system modules.
+
+## Variants and Outputs
+
+Installers, ISOs, or other variants should build from a host registry instance
+plus small output-specific changes. A future `fleet.outputs` layer can model
+those variants without making normal host configurations split across two
+sources of truth.
+
+For example, a future ISO output could point at `fleet.hosts.odin` and add an
+`iso` module name or tag-driven module, while the canonical host identity,
+owner, system, settings, and default module stack stay in the host registry.
