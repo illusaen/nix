@@ -15,24 +15,21 @@
     };
   };
 
-  config.fleet.theming = let
-    inherit (config.fleet.base16) isDark colorScheme;
-  in {
+  config.fleet.theming = {
     icon = {
-      name = "MacTahoe-${colorScheme}";
+      name = "MacTahoe";
       packageName = "mactahoe-icon-theme";
     };
-    cursor = let
-      suffix =
-        if isDark
-        then "-dark"
-        else "";
-    in {
-      name = "MacTahoe${suffix} Cursors";
+    cursor = {
+      name = "MacTahoe Cursors";
       packageName = "mactahoe-cursors";
       size = 28;
     };
   };
 
-  config.flake.modules.nixos.theming = {pkgs, ...}: let inherit (config.fleet.theming) icon cursor; in {environment.systemPackages = [pkgs.local.${icon.packageName} pkgs.local.${cursor.packageName}];};
+  config.flake.modules.nixos.theming = {pkgs, ...}: let
+    inherit (config.fleet.theming) icon cursor;
+  in {
+    environment.systemPackages = [pkgs.local.${icon.packageName} pkgs.local.${cursor.packageName}];
+  };
 }
