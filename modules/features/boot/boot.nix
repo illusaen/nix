@@ -1,10 +1,5 @@
-{config, ...}: {
+{
   flake.modules.nixos.boot = {
-    imports = with config.flake.modules.nixos; [
-      disko
-      preservation
-    ];
-
     boot = {
       loader.systemd-boot.enable = true;
       loader.efi.canTouchEfiVariables = true;
@@ -12,4 +7,9 @@
       initrd.availableKernelModules = ["usb_storage"];
     };
   };
+
+  flake.moduleImports.nixos.boot = [
+    "disko"
+    "preservation"
+  ];
 }

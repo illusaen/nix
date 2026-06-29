@@ -1,8 +1,10 @@
-{config, ...}: {
-  flake.modules.nixos.hardware.imports = with config.flake.modules.nixos; [
-    audio
-    bluetooth
-    networking
-    facter
+{
+  flake.moduleImports.nixos.hardware = [
+    "audio"
+    "bluetooth"
+    "networking"
+    "facter"
   ];
+
+  flake.modules.nixos.hardware = {};
 }

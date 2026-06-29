@@ -1,6 +1,6 @@
 {lib, ...}: let
   inherit (lib) mkOption;
-  inherit (lib.types) submodule str;
+  inherit (lib.types) attrsOf anything submodule str;
 in {
   options.fleet = mkOption {
     type = submodule {
@@ -14,6 +14,12 @@ in {
           type = str;
           default = "CST";
           description = "Default timezone for the fleet";
+        };
+
+        settings = mkOption {
+          type = attrsOf anything;
+          default = {};
+          description = "Fleet-level raw module settings defaults.";
         };
       };
     };

@@ -1,5 +1,9 @@
-{config, ...}: {
-  flake.modules.generic.programs.imports = with config.flake.modules.generic; [one-password zed];
-  flake.modules.nixos.programs.imports = with config.flake.modules.nixos; [firefox one-password autostart codex images];
-  flake.modules.darwin.programs.imports = with config.flake.modules.darwin; [firefox codex images];
+{
+  flake.moduleImports.generic.programs = ["one-password" "zed"];
+  flake.moduleImports.nixos.programs = ["firefox" "one-password" "autostart" "codex" "images"];
+  flake.moduleImports.darwin.programs = ["firefox" "codex" "images"];
+
+  flake.modules.generic.programs = {};
+  flake.modules.nixos.programs = {};
+  flake.modules.darwin.programs = {};
 }

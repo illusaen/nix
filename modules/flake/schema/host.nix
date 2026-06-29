@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
-  inherit (lib.types) enum submodule nullOr path attrsOf listOf str;
+  inherit (lib.types) enum submodule nullOr path attrsOf listOf str anything;
   genSchema = inputs.gen-schema.lib;
 
   mkOptionWithoutReflection = option: mkOption option // {identity = false;};
@@ -75,6 +75,12 @@ in {
       type = attrsOf str;
       default = {};
       description = "Host tags for organization and feature gates";
+    };
+
+    settings = mkOption {
+      type = attrsOf anything;
+      default = {};
+      description = "Host-level raw module settings overrides.";
     };
 
     preservation = mkOptionWithoutReflection {

@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption;
-  inherit (lib.types) submodule nullOr path listOf int str bool;
+  inherit (lib.types) submodule nullOr path listOf int str bool attrsOf anything;
   mkOptionWithoutReflection = option: mkOption option // {identity = false;};
   genSchema = inputs.gen-schema.lib;
   sshKeyType = submodule {
@@ -75,6 +75,12 @@ in {
       description = "List of groups the user belongs to, with names from the group registry";
       default = [];
       apply = lib.unique;
+    };
+
+    settings = mkOption {
+      type = attrsOf anything;
+      default = {};
+      description = "User-level raw module settings overrides.";
     };
 
     system = mkOptionWithoutReflection {

@@ -1,11 +1,22 @@
-{config, ...}: {
+_: {
   fleet.hosts.odin = {
     system = "x86_64-linux";
     owner = "wendy";
   };
 
   debug = true;
-  nixos.configurations.odin.module = {pkgs, ...}: {
+  nixos.configurations.odin.moduleNames = [
+    "base"
+    "boot"
+    "nvidia"
+    "desktop-shell"
+    "programs"
+    "hardware"
+    "theming"
+    "wendy"
+  ];
+
+  nixos.configurations.odin.extraModule = {pkgs, ...}: {
     networking = {
       hostName = "odin";
       hostId = "abf835ae";
@@ -13,17 +24,5 @@
     };
     nixpkgs.hostPlatform = "x86_64-linux";
     environment.systemPackages = [pkgs.local.misc-scripts];
-
-    imports = with config.flake.modules.nixos;
-      [
-        base
-        boot
-        nvidia
-        desktop-shell
-        programs
-        hardware
-        theming
-      ]
-      ++ (with config.flake.modules.generic; [programs wendy]);
   };
 }
