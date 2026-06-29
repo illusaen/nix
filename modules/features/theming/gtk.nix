@@ -16,15 +16,6 @@
     inherit (config.fleet.fonts) sans sizes;
     inherit (config.fleet.base16) isDark;
 
-    toIni = lib.generators.toINI {
-      mkKeyValue = key: value: let
-        value' =
-          if lib.isBool value
-          then lib.boolToString value
-          else toString value;
-      in "${lib.escape ["="] key}=${value'}";
-    };
-
     gtkIni =
       {
         gtk-font-name = "${sans.name} ${toString sizes.applications}";
@@ -39,7 +30,7 @@
       }
       |> lib.filterAttrs (_: v: v != null)
       |> (attr: {Settings = attr;})
-      |> toIni;
+      |> helpers.toIniWithEqualSep;
 
     dconfSettings =
       {

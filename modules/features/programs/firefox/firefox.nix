@@ -173,6 +173,11 @@ in {
         "sidebar.revamp" = true;
         "sidebar.verticalTabs" = true;
         "sidebar.position_start" = false;
+
+        "shimmer.remove-winctr-buttons" = true;
+        "shimmer.remove-firefox-view-button" = true;
+        "shimmer.native-vertical-tabs" = true;
+        "shimmer.sidebar-right-side" = true;
       };
     };
   };

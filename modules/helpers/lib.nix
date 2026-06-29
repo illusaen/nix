@@ -31,5 +31,14 @@
       };
 
     removeAttrs' = lib.flip removeAttrs;
+
+    toIniWithEqualSep = lib.generators.toINI {
+      mkKeyValue = key: value: let
+        value' =
+          if lib.isBool value
+          then lib.boolToString value
+          else toString value;
+      in "${lib.escape ["="] key}=${value'}";
+    };
   };
 }

@@ -16,11 +16,11 @@ stdenvNoCC.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -dm 755 dist/ $out/share/icons/MacTahoe-Cursors
-    # cp -r dist/* $out/share/icons/MacTahoe-Cursors
+    mkdir -p $out/share/icons/MacTahoe-Cursors
+    cp -r cursors/dist/. $out/share/icons/MacTahoe-Cursors/
 
-    install -dm 755 dist-dark/ $out/share/icons/MacTahoe-dark-Cursors
-    # cp -r dist-dark/* $out/share/icons/MacTahoe-dark-Cursors
+    mkdir -p $out/share/icons/MacTahoe-dark-Cursors
+    cp -r cursors/dist-dark/. $out/share/icons/MacTahoe-dark-Cursors/
 
     runHook postInstall
   '';
