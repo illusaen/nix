@@ -1,7 +1,7 @@
-@define-color bg alpha(@base00@, 0.85);
-@define-color fg @base05@;
-@define-color border alpha(@base03@, 0.5);
-@define-color accent @base0E@;
+@define-color bg alpha(@theme_bg_color, 0.85);
+@define-color fg @theme_fg_color;
+@define-color border alpha(@theme_base_bg_color, 0.5);
+@define-color accent @theme_selected_bg_color;
 @define-color muted alpha(@fg, 0.75);
 
 * {

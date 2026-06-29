@@ -139,13 +139,6 @@
     )
   ];
   config."style.css".path = pkgs.replaceVars ./style.css {
-    inherit
-      (config.scheme)
-      base00
-      base03
-      base05
-      base0E
-      ;
     inherit (config.font) icon sans;
     fontSize = config.font.size;
   };
