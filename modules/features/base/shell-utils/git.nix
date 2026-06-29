@@ -25,7 +25,7 @@
       };
       credential = {
         inherit accountName;
-        helper = "gh auth git-credential";
+        helper = "!gh auth git-credential";
       };
     };
   };

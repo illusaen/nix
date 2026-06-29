@@ -56,13 +56,17 @@ in {
     zshrc.content = ''
       eval "$(${lib.getExe pkgs.zoxide} init zsh --cmd n)"
       eval "$(${lib.getExe pkgs.local.starship} init zsh)"
+      source <(fzf --zsh)
 
       HISTFILE=$HOME/${historyFile}
+
+      WORDCHARS=''${WORDCHARS:s#/#}
 
       bindkey '^[b' backward-word
       bindkey '^[f' forward-word
       bindkey '^[[1;5D' backward-word
       bindkey '^[[1;5C' forward-word
+      bindkey '^W' backward-kill-word
 
       git_commit_with_message() {
         git commit -m \""$1"\"
