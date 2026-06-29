@@ -37,8 +37,8 @@ tooltip label {
 #workspaces button label {
   padding: 2px 0;
 }
-#workspaces button#niri-workspace-__ndrop_foot,
-#workspaces button#niri-workspace-__ndrop_foot label {
+#workspaces button#niri-workspace-__ndrop,
+#workspaces button#niri-workspace-__ndrop label {
     min-height: 0;
     min-width: 0;
     margin: 0;
