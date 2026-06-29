@@ -1,7 +1,6 @@
 {
   rootPath,
   helpers,
-  config,
   ...
 }: {
   flake.modules.nixos.waybar = {pkgs, ...}: {
@@ -13,12 +12,16 @@
     };
   };
 
-  flake.wrappers.waybar = {pkgs, ...}: let
+  flake.fleetWrappers.waybar = {
+    fleet,
+    pkgs,
+    ...
+  }: let
     inherit (helpers) removeAttrs';
-    fonts = config.fleet.fonts |> removeAttrs' ["sizes" "emoji"] |> builtins.mapAttrs (_name: value: value.name);
-    size = config.fleet.fonts.sizes.applications;
-    monitors = config.fleet.monitors.conn;
-    scheme = (config.fleet.base16.scheme pkgs).withHashtag;
+    fonts = fleet.fonts |> removeAttrs' ["sizes" "emoji"] |> builtins.mapAttrs (_name: value: value.name);
+    size = fleet.fonts.sizes.applications;
+    monitors = fleet.monitors.conn;
+    scheme = (fleet.base16.scheme pkgs).withHashtag;
   in {
     imports = [(rootPath + /wrappers/waybar/module.nix)];
     font = fonts // {inherit size;};

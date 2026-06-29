@@ -88,7 +88,7 @@ in {
       description = "Host tags for organization and feature gates";
     };
 
-    settings = mkOption {
+    moduleSettings = mkOption {
       type = attrsOf anything;
       default = {};
       description = "Host-level raw module settings overrides.";

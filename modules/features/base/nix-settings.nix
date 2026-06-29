@@ -1,5 +1,5 @@
 {lib, ...}: {
-  flake.moduleSettings.generic.nix-settings = {
+  flake.moduleOptions.generic.nix-settings = {
     abortOnWarn = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -17,18 +17,18 @@
     };
   };
 
-  flake.modules.generic.nix-settings = {settings, ...}: {
+  flake.modules.generic.nix-settings = {moduleSettings, ...}: {
     nix.settings = {
       experimental-features = [
         "nix-command"
         "flakes"
         "pipe-operators"
       ];
-      abort-on-warn = settings.nix-settings.abortOnWarn;
+      abort-on-warn = moduleSettings.nix-settings.abortOnWarn;
       accept-flake-config = true;
       auto-optimise-store = true;
-      warn-dirty = settings.nix-settings.warnDirty;
-      use-xdg-base-directories = settings.nix-settings.useXdgBaseDirectories;
+      warn-dirty = moduleSettings.nix-settings.warnDirty;
+      use-xdg-base-directories = moduleSettings.nix-settings.useXdgBaseDirectories;
       trusted-users = [
         "root"
         "@wheel"

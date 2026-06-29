@@ -57,8 +57,8 @@
         classes = classModuleNames class name;
         declarations =
           classes
-          |> builtins.filter (moduleClass: config.flake.moduleSettings.${moduleClass} ? ${name})
-          |> map (moduleClass: normalizeSettingsModule config.flake.moduleSettings.${moduleClass}.${name});
+          |> builtins.filter (moduleClass: config.flake.moduleOptions.${moduleClass} ? ${name})
+          |> map (moduleClass: normalizeSettingsModule config.flake.moduleOptions.${moduleClass}.${name});
       in
         lib.optional (declarations != []) {
           options.${name} = lib.mkOption {
@@ -70,30 +70,30 @@
     )
     names;
 
-  resolveSettings = {
+  resolveModuleSettings = {
     class,
     activeNames,
-    fleetSettings ? {},
-    hostSettings ? {},
-    userSettings ? {},
+    fleetModuleSettings ? {},
+    hostModuleSettings ? {},
+    userModuleSettings ? {},
   }: let
     evaluated = lib.evalModules {
       modules =
         settingDeclarationModules class activeNames
         ++ [
-          {config = lib.mkOverride 800 fleetSettings;}
-          {config = lib.mkOverride 700 hostSettings;}
-          {config = lib.mkOverride 600 userSettings;}
+          {config = lib.mkOverride 800 fleetModuleSettings;}
+          {config = lib.mkOverride 700 hostModuleSettings;}
+          {config = lib.mkOverride 600 userModuleSettings;}
         ];
     };
   in
     evaluated.config;
 
-  flattenSettings = prefix: value:
+  flattenModuleSettings = prefix: value:
     if builtins.isAttrs value && !(value ? _type)
     then
       value
-      |> lib.mapAttrsToList (name: flattenSettings (prefix ++ [name]))
+      |> lib.mapAttrsToList (name: flattenModuleSettings (prefix ++ [name]))
       |> lib.concatLists
     else [prefix];
 
@@ -111,19 +111,19 @@
 
   recursiveMerge = lib.foldl' lib.recursiveUpdate {};
 
-  settingsProvenance = {
+  moduleSettingsProvenance = {
     resolved,
-    fleetSettings ? {},
-    hostSettings ? {},
-    userSettings ? {},
+    fleetModuleSettings ? {},
+    hostModuleSettings ? {},
+    userModuleSettings ? {},
   }: let
-    paths = flattenSettings [] resolved;
+    paths = flattenModuleSettings [] resolved;
     sourceFor = path:
-      if hasPath path userSettings
+      if hasPath path userModuleSettings
       then "user"
-      else if hasPath path hostSettings
+      else if hasPath path hostModuleSettings
       then "host"
-      else if hasPath path fleetSettings
+      else if hasPath path fleetModuleSettings
       then "fleet"
       else "default";
   in
@@ -139,39 +139,39 @@
   }: let
     inherit (config) fleet;
     user = host.owner;
-    fleetSettings = resolveSettings {
+    fleetModuleSettings = resolveModuleSettings {
       inherit class activeNames;
-      fleetSettings = fleet.settings or {};
+      fleetModuleSettings = fleet.moduleSettings or {};
     };
-    hostSettings = resolveSettings {
+    hostModuleSettings = resolveModuleSettings {
       inherit class activeNames;
-      fleetSettings = fleet.settings or {};
-      hostSettings = host.settings or {};
+      fleetModuleSettings = fleet.moduleSettings or {};
+      hostModuleSettings = host.moduleSettings or {};
     };
-    userSettings = resolveSettings {
+    userModuleSettings = resolveModuleSettings {
       inherit class activeNames;
-      fleetSettings = fleet.settings or {};
-      hostSettings = host.settings or {};
-      userSettings = user.settings or {};
+      fleetModuleSettings = fleet.moduleSettings or {};
+      hostModuleSettings = host.moduleSettings or {};
+      userModuleSettings = user.moduleSettings or {};
     };
-    resolvedFleet = fleet // {settings = fleetSettings;};
-    resolvedHost = host // {settings = hostSettings;};
-    resolvedUser = user // {settings = userSettings;};
+    resolvedFleet = fleet // {moduleSettings = fleetModuleSettings;};
+    resolvedHost = host // {moduleSettings = hostModuleSettings;};
+    resolvedUser = user // {moduleSettings = userModuleSettings;};
     provenance = {
-      fleet = settingsProvenance {
-        resolved = fleetSettings;
-        fleetSettings = fleet.settings or {};
+      fleet = moduleSettingsProvenance {
+        resolved = fleetModuleSettings;
+        fleetModuleSettings = fleet.moduleSettings or {};
       };
-      host = settingsProvenance {
-        resolved = hostSettings;
-        fleetSettings = fleet.settings or {};
-        hostSettings = host.settings or {};
+      host = moduleSettingsProvenance {
+        resolved = hostModuleSettings;
+        fleetModuleSettings = fleet.moduleSettings or {};
+        hostModuleSettings = host.moduleSettings or {};
       };
-      user = settingsProvenance {
-        resolved = userSettings;
-        fleetSettings = fleet.settings or {};
-        hostSettings = host.settings or {};
-        userSettings = user.settings or {};
+      user = moduleSettingsProvenance {
+        resolved = userModuleSettings;
+        fleetModuleSettings = fleet.moduleSettings or {};
+        hostModuleSettings = host.moduleSettings or {};
+        userModuleSettings = user.moduleSettings or {};
       };
     };
   in {
@@ -179,8 +179,8 @@
       fleet = resolvedFleet;
       host = resolvedHost;
       user = resolvedUser;
-      settings = hostSettings;
-      settingsProvenance = provenance;
+      moduleSettings = hostModuleSettings;
+      moduleSettingsProvenance = provenance;
     };
 
     module = {
@@ -256,7 +256,7 @@
   };
 in {
   options.flake.moduleImports = mkClassAttrsOption (lib.types.listOf lib.types.str);
-  options.flake.moduleSettings = mkClassAttrsOption lib.types.raw;
+  options.flake.moduleOptions = mkClassAttrsOption lib.types.raw;
 
   config.flake = {
     inherit nixosConfigurations darwinConfigurations;

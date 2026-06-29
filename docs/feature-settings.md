@@ -8,15 +8,15 @@ fits this repo's `flake.modules.{generic,nixos,darwin}` model.
 
 Settings have two parts:
 
-- `flake.moduleSettings.<class>.<name>` declares typed settings for a named
+- `flake.moduleOptions.<class>.<name>` declares typed settings options for a named
   flake module.
-- `fleet.settings`, `fleet.hosts.<name>.settings`, and
-  `fleet.users.<name>.settings` declare raw values.
+- `fleet.moduleSettings`, `fleet.hosts.<name>.moduleSettings`, and
+  `fleet.users.<name>.moduleSettings` declare raw values.
 
 Only settings for named flake modules in a host's recursive
 `moduleNames` closure are considered. Arbitrary ad-hoc modules imported through
 `extraModule` may read resolved settings, but their own settings declarations do
-not affect the schema unless they are represented in `flake.moduleSettings`.
+not affect the schema unless they are represented in `flake.moduleOptions`.
 
 For a NixOS host, each module name activates matching generic and NixOS
 modules. For a Darwin host, each module name activates matching generic and
@@ -39,7 +39,7 @@ Declare settings under the module's name:
 
 ```nix
 { lib, ... }: {
-  flake.moduleSettings.generic.nix-settings = {
+  flake.moduleOptions.generic.nix-settings = {
     warnDirty = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -49,17 +49,18 @@ Declare settings under the module's name:
 ```
 
 Consumers read resolved settings from the injected entity or from the
-`settings` special arg:
+`moduleSettings` special arg:
 
 ```nix
-{ settings, ... }: {
-  nix.settings.warn-dirty = settings.nix-settings.warnDirty;
+{ moduleSettings, ... }: {
+  nix.settings.warn-dirty = moduleSettings.nix-settings.warnDirty;
 }
 ```
 
-System configuration evaluation sets `settings` to the host-effective settings.
-The injected `user.settings` field still contains user-effective settings for
-modules that explicitly need user scope.
+System configuration evaluation sets the `moduleSettings` special arg to the
+host-effective module settings. The injected `user.moduleSettings` field still
+contains user-effective module settings for modules that explicitly need user
+scope.
 
 ## Entity Schemas
 
@@ -68,9 +69,9 @@ Entity schemas define the raw data model. They do not directly build
 
 Current schema responsibilities:
 
-- `schema.host.options.settings` accepts host-authored raw setting values.
-- `schema.user.options.settings` accepts user-authored raw setting values.
-- `fleet.settings` accepts fleet-authored raw setting values.
+- `schema.host.options.moduleSettings` accepts host-authored raw setting values.
+- `schema.user.options.moduleSettings` accepts user-authored raw setting values.
+- `fleet.moduleSettings` accepts fleet-authored raw setting values.
 - `schema.host.imports` and `schema.user.imports` define computed entity
   fields, such as `host.ipv4`, `host.secretPath`, `host.publicKey`,
   `user.secretPath`, and `user.resolvedGroups`.
@@ -93,7 +94,7 @@ Example schema-level contribution:
 options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
   extraModules = [
     ({ config, lib, ... }: {
-      settings.nix-settings.warnDirty = lib.mkDefault false;
+      moduleSettings.nix-settings.warnDirty = lib.mkDefault false;
     })
   ];
 };
@@ -102,6 +103,67 @@ options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
 That value remains a raw host-layer setting. It is validated and merged only
 when a concrete host-derived `nixosConfigurations.<name>` or
 `darwinConfigurations.<name>` is evaluated.
+
+## Schema vs Settings
+
+Use schema options for stable entity facts and shared fleet vocabulary. Use
+module settings for module-owned behavior knobs.
+
+Put a value in schema when:
+
+- It describes an entity itself, such as `host.system`, `host.owner`,
+  `user.identity`, or `fleet.domain`.
+- It is shared vocabulary used by multiple modules.
+- It should exist regardless of whether a particular named module is active.
+- Other schemas, policies, or modules should be able to rely on it.
+- It participates in identity, topology, policy, naming, theming, hardware
+  facts, or fleet-wide design language.
+
+Put a value in module settings when:
+
+- The option belongs to a named module.
+- It should only exist when that module is active through `moduleNames`.
+- It is a behavior knob for one feature or module.
+- It should use the module settings precedence pipeline:
+  defaults < fleet < host < user < `lib.mkForce`.
+- Inactive module settings should be rejected by the active settings schema.
+
+Fonts are a schema-level concern in this repo. They are fleet-wide design
+vocabulary and are consumed by many modules: GTK, Firefox, Waybar, Niri,
+Alacritty, Zed, and others. Keep them under `fleet.fonts`:
+
+```nix
+{
+  fleet.fonts = {
+    mono = {
+      name = "JetBrainsMono Nerd Font";
+      packageName = "jetbrains-mono";
+    };
+    sans = {
+      name = "Inter";
+      packageName = "inter";
+    };
+  };
+}
+```
+
+Module-specific font behavior belongs in module settings:
+
+```nix
+{
+  flake.moduleOptions.generic.zed = {
+    useFleetFonts = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
+  };
+
+  fleet.hosts.odin.moduleSettings.zed.useFleetFonts = false;
+}
+```
+
+In short: schema is the vocabulary of the fleet; module settings are the knobs
+on imported modules.
 
 ## Architecture Plan
 
@@ -113,15 +175,15 @@ The architecture should keep four stages separate.
    fields and raw defaults.
 
 2. **Host selection**
-   `fleet.hosts.<name>` selects its system class, reusable modules, settings,
-   owner, and host-specific extra module.
+   `fleet.hosts.<name>` selects its system class, reusable modules,
+   moduleSettings, owner, and host-specific extra module.
 
 3. **Context preparation**
    The system configuration layer resolves the recursive named module closure,
    imports matching generic plus platform modules, builds the active settings
-   schema from `flake.moduleSettings`, resolves fleet/host/user settings, and
-   injects resolved `fleet`, `host`, `user`, `settings`, and
-   `settingsProvenance`.
+   schema from `flake.moduleOptions`, resolves fleet/host/user moduleSettings,
+   and injects resolved `fleet`, `host`, `user`, `moduleSettings`, and
+   `moduleSettingsProvenance`.
 
 4. **System evaluation**
    `lib.nixosSystem` or `inputs.darwin.lib.darwinSystem` evaluates the final
@@ -169,24 +231,24 @@ override semantics apply.
 Precedence is:
 
 1. Module option defaults.
-2. `fleet.settings`.
-3. `fleet.hosts.<name>.settings`.
-4. `fleet.users.<name>.settings`.
+2. `fleet.moduleSettings`.
+3. `fleet.hosts.<name>.moduleSettings`.
+4. `fleet.users.<name>.moduleSettings`.
 5. Any `lib.mkForce` value wins over normal values at any entity level.
 
 The resolved injected entities are:
 
-- `fleet.settings`: defaults plus fleet values.
-- `host.settings`: defaults plus fleet and host values.
-- `user.settings`: defaults plus fleet, host, and user values.
+- `fleet.moduleSettings`: defaults plus fleet values.
+- `host.moduleSettings`: defaults plus fleet and host values.
+- `user.moduleSettings`: defaults plus fleet, host, and user values.
 
 ## Provenance
 
-`settingsProvenance` is injected as a best-effort source map with the same
+`moduleSettingsProvenance` is injected as a best-effort source map with the same
 shape as resolved settings:
 
 ```nix
-settingsProvenance.host.nix-settings.warnDirty
+moduleSettingsProvenance.host.nix-settings.warnDirty
 ```
 
 Source values are `default`, `fleet`, `host`, or `user`. This is useful for
@@ -213,7 +275,7 @@ values.
 
 This repo differs from denix because there is no aspect tree. The closest
 stable identity is the named flake module registry. That is why settings are
-attached to `flake.moduleSettings.<class>.<name>` and filtered by the recursive
+attached to `flake.moduleOptions.<class>.<name>` and filtered by the recursive
 `moduleNames` closure.
 
 ## Possible Issues
@@ -231,5 +293,5 @@ settings mention an inactive module namespace, evaluation should fail because no
 option declaration exists for that namespace in the active schema.
 
 Dynamic settings schemas can recurse if they force full configuration values too
-early. The implementation builds schemas only from `flake.moduleSettings` and
+early. The implementation builds schemas only from `flake.moduleOptions` and
 the active name closure, not from evaluated system configuration.

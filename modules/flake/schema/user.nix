@@ -77,7 +77,7 @@ in {
       apply = lib.unique;
     };
 
-    settings = mkOption {
+    moduleSettings = mkOption {
       type = attrsOf anything;
       default = {};
       description = "User-level raw module settings overrides.";

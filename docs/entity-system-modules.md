@@ -87,7 +87,7 @@ If a NixOS host imports `"base"`, the system configuration imports generic
 exist.
 
 The same recursive closure drives settings schema selection. Only named modules
-in this active closure can contribute `flake.moduleSettings`.
+in this active closure can contribute `flake.moduleOptions`.
 
 ## Host Extra Modules
 
@@ -132,22 +132,22 @@ into final NixOS/Darwin imports.
 
 ```nix
 {
-  flake.moduleSettings.generic.nix-settings.warnDirty = lib.mkOption {
+  flake.moduleOptions.generic.nix-settings.warnDirty = lib.mkOption {
     type = lib.types.bool;
     default = false;
   };
 
-  flake.modules.generic.nix-settings = { settings, ... }: {
-    nix.settings.warn-dirty = settings.nix-settings.warnDirty;
+  flake.modules.generic.nix-settings = { moduleSettings, ... }: {
+    nix.settings.warn-dirty = moduleSettings.nix-settings.warnDirty;
   };
 
-  fleet.settings.nix-settings.warnDirty = false;
+  fleet.moduleSettings.nix-settings.warnDirty = false;
 
   fleet.hosts.odin = {
     system = "x86_64-linux";
     owner = "wendy";
     moduleNames = [ "base" "programs" ];
-    settings.nix-settings.warnDirty = true;
+    moduleSettings.nix-settings.warnDirty = true;
     extraModule.networking.domain = "lan";
   };
 }
@@ -166,4 +166,4 @@ sources of truth.
 
 For example, a future ISO output could point at `fleet.hosts.odin` and add an
 `iso` module name or tag-driven module, while the canonical host identity,
-owner, system, settings, and default module stack stay in the host registry.
+owner, system, moduleSettings, and default module stack stay in the host registry.

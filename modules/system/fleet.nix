@@ -16,7 +16,7 @@ in {
           description = "Default timezone for the fleet";
         };
 
-        settings = mkOption {
+        moduleSettings = mkOption {
           type = attrsOf anything;
           default = {};
           description = "Fleet-level raw module settings defaults.";
