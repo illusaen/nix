@@ -59,6 +59,11 @@ in {
 
       HISTFILE=$HOME/${historyFile}
 
+      bindkey '^[b' backward-word
+      bindkey '^[f' forward-word
+      bindkey '^[[1;5D' backward-word
+      bindkey '^[[1;5C' forward-word
+
       git_commit_with_message() {
         git commit -m \""$1"\"
       }

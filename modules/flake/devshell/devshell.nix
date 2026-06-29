@@ -31,6 +31,12 @@
         ++ (with pkgs; [
           nixd
         ]);
+      env = [
+        {
+          name = "TREEFMT_NO_CACHE";
+          value = "1";
+        }
+      ];
       # devshell.startup.load-opnix.text = "load-opnix";
       devshell.motd = "$(type -p menu &>/dev/null && menu)";
     };

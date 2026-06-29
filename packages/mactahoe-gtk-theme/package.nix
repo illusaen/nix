@@ -10,11 +10,11 @@
   libxml2,
   sassc,
   util-linux,
-  altVariants ? [ ], # default: normal
-  colorVariants ? [ ], # default: all
-  opacityVariants ? [ ], # default: all
-  themeVariants ? [ ], # default: default (BigSur-like theme)
-  schemeVariants ? [ ], # default: standard
+  altVariants ? [], # default: normal
+  colorVariants ? [], # default: all
+  opacityVariants ? [], # default: all
+  themeVariants ? [], # default: default (BigSur-like theme)
+  schemeVariants ? [], # default: standard
   iconVariant ? null, # default: standard (Apple logo)
   nautilusStyle ? null, # default: stable (BigSur-like style)
   panelOpacity ? null, # default: 15%
@@ -22,76 +22,9 @@
   roundedMaxWindow ? true, # default: false
   darkerColor ? false, # default = false
   highDefinition ? true, # default = false
-}:
-
-let
+}: let
   pname = "mactahoe-gtk-theme";
-  single = x: lib.optional (x != null) x;
-
 in
-lib.checkListOfEnum "${pname}: window control buttons variants" [ "normal" "alt" "all" ] altVariants
-  lib.checkListOfEnum
-  "${pname}: color variants"
-  [ "light" "dark" ]
-  colorVariants
-  lib.checkListOfEnum
-  "${pname}: opacity variants"
-  [ "normal" "solid" ]
-  opacityVariants
-  lib.checkListOfEnum
-  "${pname}: accent color variants"
-  [
-    "default"
-    "blue"
-    "purple"
-    "pink"
-    "red"
-    "orange"
-    "yellow"
-    "green"
-    "grey"
-    "all"
-  ]
-  themeVariants
-  lib.checkListOfEnum
-  "${pname}: colorscheme style variants"
-  [ "standard" "nord" ]
-  schemeVariants
-  lib.checkListOfEnum
-  "${pname}: activities icon variants"
-  [
-    "standard"
-    "apple"
-    "simple"
-    "gnome"
-    "ubuntu"
-    "tux"
-    "arch"
-    "manjaro"
-    "fedora"
-    "debian"
-    "void"
-    "opensuse"
-    "popos"
-    "mxlinux"
-    "zorin"
-    "budgie"
-    "gentoo"
-  ]
-  (single iconVariant)
-  lib.checkListOfEnum
-  "${pname}: nautilus style"
-  [ "stable" "normal" "mojave" "glassy" "right" ]
-  (single nautilusStyle)
-  lib.checkListOfEnum
-  "${pname}: panel opacity"
-  [ "default" "30" "45" "60" "75" ]
-  (single panelOpacity)
-  lib.checkListOfEnum
-  "${pname}: panel size"
-  [ "default" "smaller" "bigger" ]
-  (single panelSize)
-
   stdenv.mkDerivation {
     inherit pname;
     version = "2026-06-28";
@@ -155,5 +88,5 @@ lib.checkListOfEnum "${pname}: window control buttons variants" [ "normal" "alt"
       runHook postInstall
     '';
 
-    passthru.updateScript = gitUpdater { };
+    passthru.updateScript = gitUpdater {};
   }
