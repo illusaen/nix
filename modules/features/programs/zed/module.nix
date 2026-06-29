@@ -17,8 +17,7 @@ top: {
       data = dataDir;
       esc-fn = wlib.escapeShellArgWithEnv;
     };
-    binName = "zed";
-    aliases = ["zeditor"];
+    binName = "zeditor";
     package = pkgs.zed-editor;
     constructFiles.generatedConfig = {
       relPath = "settings.json";
@@ -26,7 +25,6 @@ top: {
         pxToPt = s: builtins.floor (s * 4 / 3 + 0.5);
         inherit (topConfig.fleet.fonts.sizes) terminal desktop;
       in {
-        context7ApiKey = "FAKE_API_KEY";
         inherit lib scheme;
         inherit (topConfig.fleet.fonts) sans mono icon;
         sizeBuffer = pxToPt terminal;

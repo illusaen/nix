@@ -63,6 +63,18 @@
         };
       };
       selection.save_to_clipboard = true;
+      "keyboard.bindings" = [
+        {
+          key = "Left";
+          mods = "Control";
+          chars = "\u001Bb";
+        }
+        {
+          key = "Right";
+          mods = "Control";
+          chars = "\u001Bf";
+        }
+      ];
     };
   };
 }

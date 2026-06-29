@@ -8,12 +8,10 @@
   flake.wrappers.swayosd = {
     wlib,
     pkgs,
-    config,
     ...
   }: {
     imports = [wlib.modules.default];
     package = pkgs.swayosd;
-    env.XDG_CONFIG_HOME = dirOf config.constructFiles.generatedTheme.path;
     filesToPatch = ["lib/systemd/system/swayosd-libinput-backend.service"];
   };
 }

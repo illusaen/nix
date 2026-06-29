@@ -1,10 +1,10 @@
-{lib, context7ApiKey, mono, icon, sizeBuffer, sizeUi, scheme, sans}: {
-    agent_servers.Codex.command = "codex-acp";
-    context_server = {
+{lib, mono, icon, sizeBuffer, sizeUi, scheme, sans}: {
+    agent_servers.Codex = {
+      command = "codex-acp";
+      type = "custom";
+    };
+    context_servers = {
       mcp-server-context7 = {
-        source = "extension";
-        enabled = true;
-        settings.context7_api_key = context7ApiKey;
       };
     };
     auto_install_extensions = {
@@ -15,6 +15,7 @@
       nix = true;
       ini = true;
       mustache = true;
+      mcp-server-context7 = true;
     };
     autosave.after_delay.milliseconds = 5000;
     auto_signature_help = true;
@@ -27,12 +28,12 @@
       }
       // ((lib.range 1 10) |> map (n: {name = "ss${lib.fixedWidthNumber 2 n}";
       value = true;}) |> builtins.listToAttrs);
-    buffer_font_fallbacks = [icon];
+    buffer_font_fallbacks = [icon.name];
     buffer_font_size = sizeBuffer;
     code_lens = "on";
     diff_view_style = "unified";
     load_direnv = "shell_hook";
-    show_tab_bar_buttons = false;
+    tab_bar.show_tab_bar_buttons = false;
     tabs = {
       git_status = true;
       show_diagnostics = "all";
@@ -61,7 +62,6 @@
     };
     preview_tabs.enabled = false;
     preferred_line_length = 120;
-    projects_online_by_default = false;
     resize_all_panels_in_dock = ["left" "right" "bottom"];
     search.center_on_match = true;
     semantic_tokens = "combined";
