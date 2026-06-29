@@ -52,6 +52,7 @@ in {
       gcm = "git_commit_with_message";
       gcma = "git commit -m";
       e = "open_editor";
+      whichstore = "nix_store_for_command";
     };
     zshrc.content = ''
       eval "$(${lib.getExe pkgs.zoxide} init zsh --cmd n)"
@@ -70,6 +71,32 @@ in {
 
       git_commit_with_message() {
         git commit -m \""$1"\"
+      }
+
+      nix_store_for_command() {
+        if [[ $# -ne 1 ]]; then
+          echo "Usage: nix_store_for_command <command>" >&2
+          return 2
+        fi
+
+        local command_path resolved_path store_name store_dir
+        if ! command_path="$(which -- "$1" 2>/dev/null)"; then
+          echo "Command not found: $1" >&2
+          return 1
+        fi
+
+        resolved_path="$(readlink -f -- "$command_path")" || return
+
+        if [[ "$resolved_path" != /nix/store/* ]]; then
+          echo "$1 resolves outside /nix/store: $resolved_path" >&2
+          return 1
+        fi
+
+        store_name="''${resolved_path#/nix/store/}"
+        store_name="''${store_name%%/*}"
+        store_dir="/nix/store/$store_name"
+
+        command eza --icons=auto --git "$store_dir"
       }
 
       open_editor() {
