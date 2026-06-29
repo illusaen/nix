@@ -55,13 +55,14 @@
       }
       |> lib.filterAttrs (_: v: v != null);
   in {
+    environment.systemPackages = [pkgs.local.${gtk.packageName}];
     environment.sessionVariables = {
       GTK_THEME = gtk.name;
       XDG_DATA_DIRS = lib.mkBefore ["/run/current-system/sw/share"];
     };
     environment.etc = {
-      "xdg/gtk-3.0/settings.ini" = gtkIni;
-      "xdg/gtk-4.0/settings.ini" = gtkIni;
+      "xdg/gtk-3.0/settings.ini".text = gtkIni;
+      "xdg/gtk-4.0/settings.ini".text = gtkIni;
     };
     programs.dconf = {
       enable = true;

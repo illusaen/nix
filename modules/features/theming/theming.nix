@@ -30,6 +30,7 @@
   config.flake.modules.nixos.theming = {pkgs, ...}: let
     inherit (config.fleet.theming) icon cursor;
   in {
+    imports = with config.flake.modules.nixos; [gtk];
     environment.systemPackages = [pkgs.local.${icon.packageName} pkgs.local.${cursor.packageName}];
   };
 }
