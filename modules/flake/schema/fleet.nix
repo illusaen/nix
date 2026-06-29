@@ -31,8 +31,6 @@ in {
     schema.fleet.validators = [
       (genSchema.mkValidator "domain-not-empty" ({domain, ...}:
           domain != "") "fleet domain must not be empty")
-      (genSchema.mkValidator "timezone-not-empty" ({timeZone, ...}:
-          timeZone != "") "fleet timezone must not be empty")
     ];
 
     schema.fleet.options = {
@@ -50,6 +48,7 @@ in {
       moduleSettings = mkOption {
         type = attrsOf anything;
         default = {};
+        defaultText = {text = "{}";};
         description = "Fleet-level raw module settings defaults.";
       };
     };

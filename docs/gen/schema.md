@@ -1,0 +1,49 @@
+## fleet
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| domain | str | — | Base domain for the fleet |
+| groups | attrsOf | {} | group instances |
+| hosts | attrsOf | {} | host instances |
+| moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
+| timeZone | str | CST | Default timezone for the fleet |
+| users | attrsOf | {} | user instances |
+
+## group
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| gid | nullOr |  | Group ID for the Unix account |
+| isPosix | bool | false | If the group is a system created group |
+| members | setOf(ref(user)) | \[ ... \] | Users who are in the group. Can also be assigned group names; members of the named group will also be members of this group |
+
+## host
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| class | enum | — | System configuration class used to build this host. |
+| extraModule | deferredModule | {} | Ad-hoc module that this host contributes to its system configuration. |
+| facter | path | — | Derived path to host facter.json |
+| hostId | str | — | Used in networking.hostId for ZFS identification |
+| ipv4 | str |  | Primary IPv4 address (derived from first interface with IPs, CIDR stripped) |
+| ipv6 | str |  | Primary IPv6 address (derived from first interface with IPs, CIDR stripped) |
+| moduleNames | listOf | \[ ... \] | Named flake modules that this host contributes to its system configuration. |
+| moduleSettings | attrsOf | {} | Host-level raw module settings overrides. |
+| networkInterfaces | attrsOf | {} | Network interfaces |
+| owner | ref(user) | — | Primary user for this host |
+| preservation | submodule | — |  |
+| publicKey | path | — | Derived path to public key used by host for agenix |
+| secretPath | path | — | Derived path to host secrets directory |
+| system | enum | — | System platform |
+| tags | attrsOf | {} | Host tags for organization and feature gates |
+
+## user
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| groups | listOf | \[ ... \] | List of groups the user belongs to, with names from the group registry |
+| identity | submodule | {} | User identity information |
+| moduleSettings | attrsOf | {} | User-level raw module settings overrides. |
+| resolvedGroups | setOf(ref(group)) | \[ ... \] | Computed set of group instances using group registry |
+| secretPath | path | — | Per-user secret directory |
+| system | submodule | — |  |

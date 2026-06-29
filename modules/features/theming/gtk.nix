@@ -30,7 +30,7 @@
       }
       |> lib.filterAttrs (_: v: v != null)
       |> (attr: {Settings = attr;})
-      |> helpers.toIniWithEqualSep;
+      |> helpers.toGtkIni;
 
     dconfSettings =
       {

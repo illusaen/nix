@@ -88,6 +88,7 @@ in {
         };
       });
       default = {};
+      defaultText = {text = "{}";};
       description = "Network interfaces";
     };
 
@@ -126,12 +127,14 @@ in {
       type = attrsOf str;
       description = "Host tags for organization and feature gates";
       default = {};
+      defaultText = {text = "{}";};
     };
 
     moduleSettings = mkOption {
       type = attrsOf anything;
       description = "Host-level raw module settings overrides.";
       default = {};
+      defaultText = {text = "{}";};
     };
 
     moduleNames = mkOption {
@@ -144,6 +147,7 @@ in {
     extraModule = mkOption {
       type = lib.types.deferredModule;
       default = {};
+      defaultText = {text = "{}";};
       description = "Ad-hoc module that this host contributes to its system configuration.";
     };
 

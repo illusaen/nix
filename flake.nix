@@ -2,11 +2,8 @@
 # Use `nix run .#write-flake` to regenerate it.
 {
   outputs = inputs: let
-    inherit (inputs.nixpkgs) lib;
-
     evaluation = inputs.flake-parts.lib.evalFlakeModule {inherit inputs;} {
-      imports = [((import inputs.import-tree).filterNot (lib.hasSuffix ".pkg.nix") ./modules)];
-
+      imports = [((import inputs.import-tree) ./modules)];
       _module.args.rootPath = ./.;
     };
   in
@@ -32,6 +29,17 @@
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    files = {
+      url = "github:mightyiam/files";
+      flake = false;
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        git-hooks.follows = "git-hooks-nix";
+        import-tree.follows = "import-tree";
+        nixpkgs.follows = "nixpkgs-unstable";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+    };
     firefox-addons = {
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -52,10 +60,6 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     pkgs-by-name-for-flake-parts.url = "github:drupol/pkgs-by-name-for-flake-parts";
     preservation.url = "github:nix-community/preservation";
-    shimmer = {
-      url = "github:nuclearcodecat/shimmer";
-      flake = false;
-    };
     treefmt-nix.url = "github:numtide/treefmt-nix";
     wrappers = {
       url = "github:BirdeeHub/nix-wrapper-modules";

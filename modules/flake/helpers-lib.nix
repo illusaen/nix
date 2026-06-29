@@ -2,14 +2,7 @@
   _module.args.helpers = let
     inherit (lib) mkOption optionalAttrs;
     inherit (lib.types) submodule str int package;
-    mkStrOption = description:
-      mkOption {
-        type = str;
-        inherit description;
-      };
   in {
-    inherit mkStrOption;
-
     mkThemeOption = {
       withSize ? false,
       withPkgs ? false,
@@ -18,21 +11,33 @@
         type = submodule {
           options =
             {
-              name = mkStrOption "Font family, found with fc-list";
-              packageName = mkStrOption "Package name as attr key in pkgs";
+              name = mkOption {
+                type = str;
+                description = "Name of theme/cursor/icon/font, i.e. package inter has font name Inter and package whitesur-gtk-theme has name WhiteSur";
+              };
+              packageName = mkOption {
+                type = str;
+                description = "Package name as attr key in pkgs";
+              };
             }
             // optionalAttrs withSize {
-              size = mkOption {type = int;};
+              size = mkOption {
+                type = int;
+                description = "size of theme option";
+              };
             }
             // optionalAttrs withPkgs {
-              package = mkOption {type = package;};
+              package = mkOption {
+                type = package;
+                description = "package in store";
+              };
             };
         };
       };
 
     removeAttrs' = lib.flip removeAttrs;
 
-    toIniWithEqualSep = lib.generators.toINI {
+    toGtkIni = lib.generators.toINI {
       mkKeyValue = key: value: let
         value' =
           if lib.isBool value

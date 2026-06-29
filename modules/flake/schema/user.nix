@@ -59,6 +59,7 @@ in {
         };
       };
       default = {};
+      defaultText = {text = "{}";};
       description = "User identity information";
     };
 
@@ -79,6 +80,7 @@ in {
     moduleSettings = mkOption {
       type = attrsOf anything;
       default = {};
+      defaultText = {text = "{}";};
       description = "User-level raw module settings overrides.";
     };
 

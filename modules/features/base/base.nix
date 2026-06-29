@@ -18,7 +18,4 @@
     "state-version"
     "zsh"
   ];
-
-  flake.modules.nixos.base = {};
-  flake.modules.darwin.base = {};
 }
