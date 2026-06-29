@@ -1,4 +1,5 @@
-{screenshot-ui-open = {
+{
+  screenshot-ui-open = {
     duration-ms = 200;
     curve = "ease-out-quad";
   };

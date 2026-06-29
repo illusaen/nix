@@ -177,11 +177,17 @@
   };
 
   "Mod+WheelScrollUp" = _: {
-    props = { hotkey-overlay-title = "Focus Window/Workspace ↑"; cooldown-ms = 150; };
+    props = {
+      hotkey-overlay-title = "Focus Window/Workspace ↑";
+      cooldown-ms = 150;
+    };
     content.spawn-sh = "niri-workspace up";
   };
   "Mod+WheelScrollDown" = _: {
-    props = { hotkey-overlay-title = "Focus Window/Workspace ↓"; cooldown-ms = 150; };
+    props = {
+      hotkey-overlay-title = "Focus Window/Workspace ↓";
+      cooldown-ms = 150;
+    };
     content.spawn-sh = "niri-workspace down";
   };
   "Mod+Ctrl+WheelScrollUp" = _: {
@@ -210,35 +216,35 @@
     content.move-column-right = _: {};
   };
 
-  "Mod+BracketLeft" = _: { content.consume-or-expel-window-left = _: {}; };
-    "Mod+BracketRight" = _: { content.consume-or-expel-window-right = _: {}; };
-    "Mod+Comma" = _: {
-      content.consume-window-into-column = _: {};
-    };
-    "Mod+Period" = _: {
-      content.expel-window-from-column = _: {};
-    };
+  "Mod+BracketLeft" = _: {content.consume-or-expel-window-left = _: {};};
+  "Mod+BracketRight" = _: {content.consume-or-expel-window-right = _: {};};
+  "Mod+Comma" = _: {
+    content.consume-window-into-column = _: {};
+  };
+  "Mod+Period" = _: {
+    content.expel-window-from-column = _: {};
+  };
 
-    "Mod+R" = _: {
-      content.switch-preset-column-width = _: {};
-    };
-    "Mod+Shift+R" = _: {
-      content.switch-preset-column-width-back = _: {};
-    };
+  "Mod+R" = _: {
+    content.switch-preset-column-width = _: {};
+  };
+  "Mod+Shift+R" = _: {
+    content.switch-preset-column-width-back = _: {};
+  };
 
-    "Mod+Ctrl+Shift+R" = _: {
-      content.switch-preset-window-height = _: {};
-    };
-    "Mod+Ctrl+R" = _: {
-      content.reset-window-height = _: {};
-    };
+  "Mod+Ctrl+Shift+R" = _: {
+    content.switch-preset-window-height = _: {};
+  };
+  "Mod+Ctrl+R" = _: {
+    content.reset-window-height = _: {};
+  };
 
-    "Mod+F" = _: {
-      content.maximize-column = _: {};
-    };
-    "Mod+Shift+F" = _: {
-      content.fullscreen-window = _: {};
-    };
+  "Mod+F" = _: {
+    content.maximize-column = _: {};
+  };
+  "Mod+Shift+F" = _: {
+    content.fullscreen-window = _: {};
+  };
 
   "Mod+C" = _: {
     content.center-column = _: {};

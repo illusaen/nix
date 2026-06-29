@@ -82,6 +82,7 @@
     {
       matches = [
         {app-id = "code";}
+        {app-id = "dev.zed.Zed";}
         {app-id = "google-chrome";}
         {app-id = "firefox";}
       ];
@@ -89,7 +90,10 @@
     }
     {
       matches = [
-        {app-id = "firefox"; title="Picture-in-Picture"; }
+        {
+          app-id = "firefox";
+          title = "Picture-in-Picture";
+        }
       ];
       open-floating = true;
     }

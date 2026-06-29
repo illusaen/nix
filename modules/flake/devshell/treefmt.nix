@@ -46,9 +46,6 @@
         "*.dds"
         "*.diff"
         "*.bin"
-        # Underscore-prefixed files/dirs are ignored by the module auto-import system
-        "**/_*/**"
-        "**/_*"
       ];
     };
     settings.formatter.shellcheck.options = [
