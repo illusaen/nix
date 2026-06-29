@@ -5,6 +5,7 @@
     "wallpaper"
     "nautilus"
     "waybar"
+    "misc-scripts"
   ];
 
   flake.moduleImports.darwin.desktop-shell = [

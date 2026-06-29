@@ -71,7 +71,10 @@ Current schema responsibilities:
 
 - `schema.host.options.moduleSettings` accepts host-authored raw setting values.
 - `schema.user.options.moduleSettings` accepts user-authored raw setting values.
-- `fleet.moduleSettings` accepts fleet-authored raw setting values.
+- `schema.fleet.options.moduleSettings` accepts fleet-authored raw setting
+  values.
+- `schema.fleet.options.hosts`, `schema.fleet.options.users`, and
+  `schema.fleet.options.groups` declare the fleet-owned entity registries.
 - `schema.host.imports` and `schema.user.imports` define computed entity
   fields, such as `host.ipv4`, `host.secretPath`, `host.publicKey`,
   `user.secretPath`, and `user.resolvedGroups`.
@@ -91,7 +94,7 @@ the final system is NixOS or Darwin and which named modules are active.
 Example schema-level contribution:
 
 ```nix
-options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
+schema.fleet.options.hosts = genSchema.mkInstanceRegistry config.schema.host {
   extraModules = [
     ({ config, lib, ... }: {
       moduleSettings.nix-settings.warnDirty = lib.mkDefault false;
@@ -103,6 +106,47 @@ options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
 That value remains a raw host-layer setting. It is validated and merged only
 when a concrete host-derived `nixosConfigurations.<name>` or
 `darwinConfigurations.<name>` is evaluated.
+
+## Fleet Schema
+
+`fleet` is a singleton gen-schema instance. It is not a registry because there
+is only one fleet, but it still uses the same instance machinery as other
+entities:
+
+- `schema.fleet.options` declares the fleet data model.
+- `options.fleet` evaluates one `schema.fleet` instance named `fleet`.
+- `fleet.id_hash` exists for cheap identity comparison.
+- `schema.fleet.validators` run against the singleton instance.
+- Nested registries such as `hosts`, `users`, and `groups` are declared under
+  `schema.fleet.options` for introspection.
+
+The public data shape is unchanged:
+
+```nix
+{
+  fleet.domain = "lan";
+  fleet.hosts.odin.owner = "wendy";
+  fleet.users.wendy.groups = [ "kvm" ];
+}
+```
+
+The schema shape is now:
+
+```nix
+{
+  schema.fleet.options.hosts = genSchema.mkInstanceRegistry config.schema.host {
+    refs.owner = config.fleet.users;
+  };
+
+  schema.fleet.options.users = genSchema.mkInstanceRegistry config.schema.user {
+    refs.resolvedGroups = config.fleet.groups;
+  };
+}
+```
+
+This is useful because generated docs, tooling, and introspection can start at
+`schema.fleet` and discover the whole fleet surface, including nested entity
+registries.
 
 ## Schema vs Settings
 
@@ -117,7 +161,7 @@ Put a value in schema when:
 - It should exist regardless of whether a particular named module is active.
 - Other schemas, policies, or modules should be able to rely on it.
 - It participates in identity, topology, policy, naming, theming, hardware
-  facts, or fleet-wide design language.
+  facter settings, or fleet-wide design language.
 
 Put a value in module settings when:
 
@@ -171,8 +215,9 @@ The architecture should keep four stages separate.
 
 1. **Entity declaration**
    Data modules populate `fleet`, `fleet.hosts`, `fleet.users`, and
-   `fleet.groups`. Entity schemas and registry `extraModules` add computed
-   fields and raw defaults.
+   `fleet.groups`. `schema.fleet` declares the singleton fleet shape, while
+   `schema.host`, `schema.user`, and `schema.group` declare reusable entity
+   kinds. Registry `extraModules` add computed fields and raw defaults.
 
 2. **Host selection**
    `fleet.hosts.<name>` selects its system class, reusable modules,

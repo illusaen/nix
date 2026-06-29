@@ -4,17 +4,38 @@
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
-  inherit (lib.types) enum submodule nullOr path attrsOf listOf str anything;
+  inherit (lib.types) enum submodule path attrsOf listOf str anything;
   genSchema = inputs.gen-schema.lib;
 
-  mkOptionWithoutReflection = option: mkOption option // {identity = false;};
-  mkStrListOption = description:
-    mkOption {
-      type = listOf str;
-      default = [];
-      inherit description;
-    };
+  getIpFromInterface = isIpv4: interfaces: let
+    version =
+      if isIpv4
+      then "ipv4"
+      else "ipv6";
+  in
+    interfaces
+    |> lib.attrValues
+    |> builtins.filter (lib.hasAttr version)
+    |> builtins.catAttrs version
+    |> map (addr: builtins.head (lib.splitString "/" addr))
+    |> (i:
+      if i == []
+      then null
+      else builtins.head i);
 in {
+  schema.host.validators = [
+    (genSchema.mkValidator "has-owner" ({owner, ...}: owner != null) "owner must not be null")
+    (genSchema.mkValidator "has-ip" ({
+      ipv4,
+      ipv6,
+      ...
+    }:
+      ipv4 != null || ipv6 != null) "host must have either a ipv4 or ipv6 address, or both")
+    (genSchema.mkValidator "has-public-key" ({publicKey, ...}:
+        publicKey != null && builtins.pathExists publicKey) "publicKey must exist and be a valid path")
+    (genSchema.mkValidator "has-disk-if-preservation" ({preservation, ...}: !preservation.enable || preservation.disk != null) "if preservation is enabled then disk must not be null")
+  ];
+
   schema.host.imports = [
     ({config, ...}: {
       config.class = lib.mkDefault (
@@ -24,19 +45,19 @@ in {
       );
 
       options.ipv4 = mkOption {
-        type = listOf str;
+        type = str;
         readOnly = true;
-        description = "Primary IPv4 addresses (derived from first interface with IPs, CIDR stripped)";
-        default = let
-          stripCidr = addr: builtins.head (lib.splitString "/" addr);
-        in
-          config.networkInterfaces or {}
-          |> lib.attrValues
-          |> lib.findFirst (i: i ? ipv4) null
-          |> (i:
-            if i != null
-            then map stripCidr i.ipv4
-            else []);
+        description = "Primary IPv4 address (derived from first interface with IPs, CIDR stripped)";
+        default =
+          getIpFromInterface true (config.networkInterfaces or {});
+      };
+
+      options.ipv6 = mkOption {
+        type = str;
+        readOnly = true;
+        description = "Primary IPv6 address (derived from first interface with IPs, CIDR stripped)";
+        default =
+          getIpFromInterface false (config.networkInterfaces or {});
       };
     })
   ];
@@ -48,14 +69,22 @@ in {
 
     class = lib.mkOption {
       type = enum ["nixos" "darwin"];
+      readOnly = true;
+      internal = true;
       description = "System configuration class used to build this host.";
     };
 
-    networkInterfaces = mkOptionWithoutReflection {
+    networkInterfaces = mkOption {
       type = attrsOf (submodule {
         options = {
-          ipv4 = mkStrListOption "IPv4 addresses in CIDR notation";
-          ipv6 = mkStrListOption "IPv6 addresses in CIDR notation";
+          ipv4 = mkOption {
+            type = str;
+            description = "IPv4 address in CIDR notation";
+          };
+          ipv6 = mkOption {
+            type = str;
+            description = "IPv6 address in CIDR notation";
+          };
         };
       });
       default = {};
@@ -67,31 +96,42 @@ in {
       description = "Primary user for this host";
     };
 
-    facts = mkOptionWithoutReflection {
-      type = nullOr path;
-      default = null;
+    hostId = mkOption {
+      type = str;
+      internal = true;
+      description = "Used in networking.hostId for ZFS identification";
     };
 
-    secretPath = mkOptionWithoutReflection {
-      type = nullOr path;
-      default = null;
+    facter = mkOption {
+      type = path;
+      readOnly = true;
+      internal = true;
+      description = "Derived path to host facter.json";
     };
 
-    publicKey = mkOptionWithoutReflection {
-      type = nullOr path;
-      default = null;
+    secretPath = mkOption {
+      type = path;
+      description = "Derived path to host secrets directory";
+      internal = true;
+      readOnly = true;
+    };
+
+    publicKey = mkOption {
+      type = path;
+      description = "Derived path to public key used by host for agenix";
+      readOnly = true;
     };
 
     tags = mkOption {
       type = attrsOf str;
-      default = {};
       description = "Host tags for organization and feature gates";
+      default = {};
     };
 
     moduleSettings = mkOption {
       type = attrsOf anything;
-      default = {};
       description = "Host-level raw module settings overrides.";
+      default = {};
     };
 
     moduleNames = mkOption {
@@ -101,22 +141,29 @@ in {
       description = "Named flake modules that this host contributes to its system configuration.";
     };
 
-    extraModule = mkOptionWithoutReflection {
+    extraModule = mkOption {
       type = lib.types.deferredModule;
       default = {};
       description = "Ad-hoc module that this host contributes to its system configuration.";
     };
 
-    preservation = mkOptionWithoutReflection {
+    preservation = mkOption {
       type = submodule {
         options = {
           enable = mkEnableOption "Whether this host uses persistent state via preservation.";
           disk = mkOption {
             type = str;
+            description = "Disk used in disko, the last part of /dev/disk. Note, NOT the partition, so if a disk is nvme0n1 with partitions nvme0n1p1 and nvme0n1p2, use nvme0n1.";
           };
-          rollbackSnapshot = mkOption {
+          rootSnapshot = mkOption {
             type = str;
+            description = "ZFS ephemeral snapshot used to wipe root";
             default = "zroot/local/root@blank";
+          };
+          homeSnapshot = mkOption {
+            type = str;
+            description = "ZFS ephemeral snapshot used to wipe home";
+            default = "zroot/local/home@blank";
           };
           persistMount = mkOption {
             type = str;

@@ -1,6 +1,4 @@
-{config, ...}: let
-  esc = builtins.fromJSON ''"\u001b"'';
-in {
+{config, ...}: {
   flake.modules.generic.shell-utils = {pkgs, ...}: {environment.systemPackages = [pkgs.local.alacritty];};
 
   flake.wrappers.alacritty = {
@@ -65,18 +63,6 @@ in {
         };
       };
       selection.save_to_clipboard = true;
-      keyboard.bindings = [
-        {
-          key = "Left";
-          mods = "Control";
-          chars = "${esc}b";
-        }
-        {
-          key = "Right";
-          mods = "Control";
-          chars = "${esc}f";
-        }
-      ];
     };
   };
 }

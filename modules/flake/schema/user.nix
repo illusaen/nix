@@ -5,13 +5,11 @@
 }: let
   inherit (lib) mkOption;
   inherit (lib.types) submodule nullOr path listOf int str bool attrsOf anything;
-  mkOptionWithoutReflection = option: mkOption option // {identity = false;};
   genSchema = inputs.gen-schema.lib;
   sshKeyType = submodule {
     options = {
       tag = mkOption {
         type = nullOr str;
-        default = null;
         description = "Tag to categorize the SSH key (e.g., 'laptop', 'workstation', 'yubikey')";
       };
       key = mkOption {
@@ -50,11 +48,10 @@ in {
             description = "Account name for the user";
           };
           email = mkOption {
-            type = nullOr str;
-            default = null;
+            type = str;
             description = "Email address for the user";
           };
-          sshKeys = mkOptionWithoutReflection {
+          sshKeys = mkOption {
             type = listOf sshKeyType;
             default = [];
             description = "SSH public keys for the user, each with an optional tag";
@@ -66,7 +63,9 @@ in {
     };
 
     secretPath = mkOption {
-      type = nullOr path;
+      type = path;
+      readOnly = true;
+      internal = true;
       description = "Per-user secret directory";
     };
 
@@ -83,12 +82,11 @@ in {
       description = "User-level raw module settings overrides.";
     };
 
-    system = mkOptionWithoutReflection {
+    system = mkOption {
       type = submodule {
         options = {
           uid = mkOption {
             type = nullOr int;
-            default = null;
             description = "User ID for the Unix account";
           };
           isAdmin = mkOption {

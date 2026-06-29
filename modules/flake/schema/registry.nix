@@ -7,22 +7,31 @@
   genSchema = inputs.gen-schema.lib;
   topConfig = top.config;
 in {
-  options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
+  schema.fleet.options.hosts = genSchema.mkInstanceRegistry config.schema.host {
     refs.owner = config.fleet.users;
     extraModules = [
       (
-        {config, ...}: {
+        {
+          config,
+          lib,
+          ...
+        }: {
           secretPath = rootPath + "/secrets/hosts/${config.name}";
-          facts = rootPath + "/hosts/${config.name}/facter.json";
+          facter = rootPath + "/modules/system/hosts/${config.name}/facter.json";
           publicKey =
             if config.secretPath != null
             then config.secretPath + "/host_ed25519.pub"
             else null;
+
+          moduleNames = lib.flatten (["base" "boot" "hardware" config.owner.name]
+            ++ lib.optional (config.tags.role or null == "desktop") ["desktop-shell" "programs" "theming"]
+            ++ lib.optional (config.tags.role or null == "server") "services"
+            ++ lib.optional config.preservation.enable "preservation");
         }
       )
     ];
   };
-  options.fleet.users = genSchema.mkInstanceRegistry config.schema.user {
+  schema.fleet.options.users = genSchema.mkInstanceRegistry config.schema.user {
     refs.resolvedGroups = config.fleet.groups;
     extraModules = [
       ({config, ...}: {
@@ -30,7 +39,7 @@ in {
       })
     ];
   };
-  options.fleet.groups = genSchema.mkInstanceRegistry config.schema.group {
+  schema.fleet.options.groups = genSchema.mkInstanceRegistry config.schema.group {
     refs.members = {
       instances = config.fleet.users;
       deferred = true;

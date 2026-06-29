@@ -10,6 +10,5 @@
 
   flake.moduleImports.nixos.boot = [
     "disko"
-    "preservation"
   ];
 }

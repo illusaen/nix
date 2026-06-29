@@ -1,7 +1,7 @@
 {
-  flake.modules.nixos.facter = {
+  flake.modules.nixos.facter = {host, ...}: {
     hardware.facter = {
-      reportPath = ./facter.json;
+      reportPath = host.facter;
       detected.dhcp.enable = false;
     };
   };

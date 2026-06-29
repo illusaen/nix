@@ -1,8 +1,6 @@
 {self, ...}: let
   historyFile = ".local/state/.zsh_history";
 in {
-  flake.modules.generic.shell-utils = {pkgs, ...}: {environment.systemPackages = [(pkgs.local.zsh or pkgs.zsh)];};
-
   flake.modules.nixos.zsh = {
     imports = [self.nixosModules.zsh];
     wrappers.zsh = {
@@ -17,13 +15,13 @@ in {
     ];
   };
 
-  flake.modules.darwin.zsh = {
+  flake.modules.generic.zsh = {
     pkgs,
-    lib,
-    config,
+    user,
     ...
   }: {
-    users.users = lib.mapAttrs (_user: {shell = pkgs.local.zsh or pkgs.zsh;}) config.users.users;
+    users.users.${user.name}.shell = pkgs.local.zsh or pkgs.zsh;
+    environment.systemPackages = [(pkgs.local.zsh or pkgs.zsh)];
   };
 
   flake.wrappers.zsh = {
@@ -34,7 +32,7 @@ in {
   }: {
     imports = [wlib.wrapperModules.zsh];
     zshAliases = {
-      eza = "eza --icons=auto --git";
+      eza = "eza --icons=auto --git --git-repos";
       fd = "fd --hidden --follow --exclude .git";
       l = "eza -alg";
       ll = "eza --tree --git-ignore --all";
@@ -60,7 +58,6 @@ in {
       source <(fzf --zsh)
 
       HISTFILE=$HOME/${historyFile}
-
       WORDCHARS=''${WORDCHARS:s#/#}
 
       bindkey '^[b' backward-word
@@ -110,6 +107,18 @@ in {
         echo "Error: no supported editor found (zed, nvim, or vim)." >&2
         return 1
       }
+
+      autoload -Uz add-zsh-hook
+      cd_ls_hook() {
+        emulate -L zsh
+        local file_count=( *(ND) )
+        if (( $#file_count <= 50 )); then
+          eza --icons=always --group-directories-first
+        else
+          echo "Large directory ($#file_count files). Skipped auto-ls."
+        fi
+      }
+      add-zsh-hook chpwd cd_ls_hook
     '';
   };
 }

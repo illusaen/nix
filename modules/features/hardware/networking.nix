@@ -1,8 +1,7 @@
 {
-  flake.modules.nixos.networking = {lib, ...}: {
-    # Configure network connections interactively with nmcli or nmtui.
+  flake.modules.nixos.networking = {host, ...}: {
     networking.networkmanager.enable = true;
-    networking.hostId = lib.mkDefault "b9443213";
+    networking.hostId = host.hostId;
 
     persist.directories = [
       "/etc/NetworkManager/system-connections"

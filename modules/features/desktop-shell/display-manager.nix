@@ -7,12 +7,12 @@ in {
     config,
     ...
   }: {
-    environment.systemPackages = with pkgs.qt6; [qt5compat];
     services.displayManager = {
       enable = true;
       defaultSession = "niri";
       sddm = {
         enable = true;
+        extraPackages = with pkgs; [qt6.qt5compat where-is-my-sddm-theme];
         wayland = {
           enable = true;
           compositor = "weston";

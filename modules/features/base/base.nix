@@ -11,6 +11,7 @@
     "fonts"
     "security"
     "zsh"
+    "defaults"
   ];
 
   flake.moduleImports.darwin.base = [

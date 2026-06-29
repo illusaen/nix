@@ -194,10 +194,6 @@
           '';
         }
         {
-          assertion = host.owner != null;
-          message = "fleet.hosts.${name}.owner must be set";
-        }
-        {
           assertion = user.id_hash == host.owner.id_hash;
           message = ''
             ${class} host ${name} injected user ${user.name},
@@ -224,8 +220,6 @@
         };
         evaluationModule = {
           imports = [ctx.module] ++ modulesForNames class activeNames ++ [host.extraModule];
-          networking.hostName = lib.mkDefault ctx.specialArgs.host.name;
-          nixpkgs.hostPlatform = lib.mkDefault ctx.specialArgs.host.system;
         };
       in
         fn {

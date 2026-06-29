@@ -112,7 +112,7 @@ for those options.
 For example, a registry-level rule can attach a module to every workstation:
 
 ```nix
-options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
+schema.fleet.options.hosts = genSchema.mkInstanceRegistry config.schema.host {
   extraModules = [
     ({ config, lib, ... }: {
       moduleNames = lib.mkIf (config.tags.role or null == "workstation") [
@@ -127,6 +127,34 @@ options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
 Those schema contributions remain entity data. The system configuration layer
 is still responsible for turning the host's `moduleNames` and `extraModule`
 into final NixOS/Darwin imports.
+
+## Fleet Singleton
+
+`fleet` is a singleton gen-schema instance rather than a plain submodule. It
+uses the `schema.fleet` kind and is evaluated as the single instance named
+`fleet`.
+
+The entity kinds stay separate:
+
+```text
+schema.host
+schema.user
+schema.group
+schema.fleet
+```
+
+The registries live inside the fleet schema:
+
+```nix
+schema.fleet.options.hosts = genSchema.mkInstanceRegistry config.schema.host { };
+schema.fleet.options.users = genSchema.mkInstanceRegistry config.schema.user { };
+schema.fleet.options.groups = genSchema.mkInstanceRegistry config.schema.group { };
+```
+
+This keeps `fleet.hosts`, `fleet.users`, and `fleet.groups` at the same call
+sites while making those registries visible through `schema.fleet.options`.
+Fleet also receives normal instance fields such as `name` and `id_hash`, and
+`schema.fleet.validators` run against the singleton fleet instance.
 
 ## Complete Example
 

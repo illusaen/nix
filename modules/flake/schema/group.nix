@@ -26,10 +26,12 @@ in {
     isPosix = mkOptionWithoutReflection {
       type = bool;
       default = false;
+      description = "If the group is a system created group";
     };
     members = mkOption {
       type = genSchema.setOf (genSchema.ref "user");
       default = [];
+      description = "Users who are in the group. Can also be assigned group names; members of the named group will also be members of this group";
     };
   };
 }
