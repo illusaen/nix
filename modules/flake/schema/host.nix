@@ -83,6 +83,19 @@ in {
       description = "Host-level raw module settings overrides.";
     };
 
+    moduleNames = mkOption {
+      type = listOf str;
+      default = [];
+      apply = lib.unique;
+      description = "Named flake modules that this host contributes to its system configuration.";
+    };
+
+    extraModule = mkOptionWithoutReflection {
+      type = lib.types.deferredModule;
+      default = {};
+      description = "Ad-hoc module that this host contributes to its system configuration.";
+    };
+
     preservation = mkOptionWithoutReflection {
       type = submodule {
         options = {

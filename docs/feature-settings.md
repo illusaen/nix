@@ -64,6 +64,120 @@ System configuration evaluation sets `settings` to the host-effective settings.
 The injected `user.settings` field still contains user-effective settings for
 modules that explicitly need user scope.
 
+## Entity Schemas
+
+Entity schemas define the raw data model. They do not directly build
+`nixosConfigurations` or `darwinConfigurations`.
+
+Current schema responsibilities:
+
+- `schema.host.options.settings` accepts host-authored raw setting values.
+- `schema.user.options.settings` accepts user-authored raw setting values.
+- `fleet.settings` accepts fleet-authored raw setting values.
+- `schema.host.imports` and `schema.user.imports` define computed entity
+  fields, such as `host.ipv4`, `host.secretPath`, `host.publicKey`,
+  `user.secretPath`, and `user.resolvedGroups`.
+- `genSchema.mkInstanceRegistry ... extraModules` wires registry-level computed
+  defaults into each entity instance.
+
+The important distinction is raw versus resolved:
+
+- Raw entity settings are stored in the evaluated fleet registry.
+- Resolved entity settings are created later by the system configuration layer
+  after it knows the active `moduleNames` closure for a host.
+
+This means schema `extraModules` may contribute raw settings defaults, but they
+should not try to resolve settings. Resolving settings requires knowing whether
+the final system is NixOS or Darwin and which named modules are active.
+
+Example schema-level contribution:
+
+```nix
+options.fleet.hosts = genSchema.mkInstanceRegistry config.schema.host {
+  extraModules = [
+    ({ config, lib, ... }: {
+      settings.nix-settings.warnDirty = lib.mkDefault false;
+    })
+  ];
+};
+```
+
+That value remains a raw host-layer setting. It is validated and merged only
+when a concrete `nixos.configurations.<name>` or
+`darwin.configurations.<name>` is evaluated.
+
+## Architecture Plan
+
+The architecture should keep four stages separate.
+
+1. **Entity declaration**
+   Data modules populate `fleet`, `fleet.hosts`, `fleet.users`, and
+   `fleet.groups`. Entity schemas and registry `extraModules` add computed
+   fields and raw defaults.
+
+2. **Configuration selection**
+   `nixos.configurations.<name>` or `darwin.configurations.<name>` selects a
+   fleet host via `host` and selects reusable modules via `moduleNames`.
+
+3. **Context preparation**
+   The system configuration layer resolves the recursive named module closure,
+   imports matching generic plus platform modules, builds the active settings
+   schema from `flake.moduleSettings`, resolves fleet/host/user settings, and
+   injects resolved `fleet`, `host`, `user`, `settings`, and
+   `settingsProvenance`.
+
+4. **System evaluation**
+   `lib.nixosSystem` or `inputs.darwin.lib.darwinSystem` evaluates the final
+   module list. Normal feature modules consume resolved entity fields and
+   settings through module arguments.
+
+Schema contributes to final system evaluation through explicit pipeline hooks
+rather than by directly mutating system modules from the schema layer. Hosts can
+contribute named modules and ad-hoc modules:
+
+```nix
+schema.host.options.moduleNames = lib.mkOption {
+  type = lib.types.listOf lib.types.str;
+  default = [];
+};
+
+schema.host.options.extraModule = lib.mkOption {
+  type = lib.types.deferredModule;
+  default = {};
+};
+```
+
+`system-configurations.nix` combines:
+
+```text
+host.moduleNames
++ configuration.moduleNames
+```
+
+and:
+
+```text
+host.extraModule
++ configuration.extraModule
+```
+
+This lets entity schemas and registry `extraModules` attach batteries or
+policy-driven modules to a host while keeping the final NixOS/Darwin assembly
+centralized in one place.
+
+Recommended direction:
+
+- Let schemas define entity shape and raw defaults.
+- Let registry `extraModules` compute entity-local defaults from root paths,
+  refs, groups, tags, or policy.
+- Let host/user entities expose desired named modules and optional extra
+  modules as data.
+- Let the system configuration layer remain the only place that converts
+  entity data into final evaluated NixOS/Darwin modules.
+- Keep settings schema selection tied to the final active named module closure,
+  not to all declared flake modules and not to arbitrary ad-hoc `extraModule`
+  imports.
+
 ## Precedence
 
 Values are resolved with the Nix module system, so normal option typing and

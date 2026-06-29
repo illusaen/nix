@@ -232,7 +232,11 @@
         lib.types.submodule (
           args @ {name, ...}: let
             configuration = args.config;
-            activeNames = moduleNameClosure class configuration.moduleNames;
+            selectedHost =
+              if lib.hasAttr configuration.host config.fleet.hosts
+              then config.fleet.hosts.${configuration.host}
+              else throw "${class}.configurations.${name} has no matching fleet.hosts.${configuration.host}";
+            activeNames = moduleNameClosure class (selectedHost.moduleNames ++ configuration.moduleNames);
             ctx = mkHostContext {
               inherit class;
               configurationName = name;
@@ -263,7 +267,7 @@
                 inherit fn;
                 args.specialArgs = ctx.specialArgs;
                 module = {
-                  imports = [ctx.module] ++ modulesForNames class activeNames ++ [configuration.extraModule];
+                  imports = [ctx.module] ++ modulesForNames class activeNames ++ [selectedHost.extraModule configuration.extraModule];
                   networking.hostName = lib.mkDefault ctx.specialArgs.host.name;
                   nixpkgs.hostPlatform = lib.mkDefault ctx.specialArgs.host.system;
                 };
