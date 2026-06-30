@@ -1,4 +1,4 @@
-@define-color bg alpha(@theme_bg_color, 0.85);
+@define-color bg alpha(@theme_bg_color, 0.75);
 @define-color fg @theme_fg_color;
 @define-color border alpha(@theme_base_bg_color, 0.5);
 @define-color accent @theme_selected_bg_color;
@@ -13,7 +13,7 @@
     font-weight: 500;
     color: @fg;
 }
-window#waybar, tooltip { background: transparent;  }
+window#waybar, tooltip { background: transparent; }
 button {
     background: transparent;
     border: none;
@@ -29,10 +29,16 @@ tooltip label {
     background: @bg;
 }
 
-#workspaces, #date-time, #tray, #custom-notification, #custom-switcher {
+#workspaces, #date-time, #tray, #custom-notification, #custom-switcher, window#waybar.top #clock, window#waybar.bottom #clock {
+  border: 1px solid @border;
+  background: @bg;
+}
+
+window#waybar.top #custom-switcher, window#waybar.top #workspaces, window#waybar.top #clock, window#waybar.bottom #custom-switcher, window#waybar.bottom #workspaces, window#waybar.bottom #clock {
+    padding: 4px 16px;
+}
+window#waybar.right #workspaces, window#waybar.right #date-time, window#waybar.right #tray, window#waybar.right #custom-notification, window#waybar.right #custom-switcher {
     padding: 16px 0;
-    border: 1px solid @border;
-    background: @bg;
 }
 #workspaces button label {
   padding: 2px 0;
