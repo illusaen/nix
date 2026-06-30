@@ -5,11 +5,8 @@
       place-within-backdrop = true;
     }
     {
-      matches = [{namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)";}];
-      background-effect = {
-        blur = true;
-        xray = false;
-      };
+      matches = [{namespace = "^noctalia-bar-";}];
+      background-effect.blur = false;
     }
   ];
 
