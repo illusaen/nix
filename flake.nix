@@ -9,7 +9,10 @@
   in
     {inherit evaluation;} // evaluation.config.processedFlake;
 
-  nixConfig = {lazy-trees = true;};
+  nixConfig = {
+    experimental-features = ["nix-command" "flakes" "pipe-operators" "pipe-operator"];
+    lazy-trees = true;
+  };
 
   inputs = {
     base16.url = "github:SenchoPens/base16.nix";

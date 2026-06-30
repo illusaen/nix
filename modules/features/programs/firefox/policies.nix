@@ -151,6 +151,8 @@
         "sidebar.verticalTabs" = true;
         "sidebar.position_start" = false;
 
+        "reader.parse-on-load.enabled" = false;
+
         "shimmer.remove-winctr-buttons" = true;
         "shimmer.remove-firefox-view-button" = true;
         "shimmer.native-vertical-tabs" = true;

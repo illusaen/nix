@@ -4,6 +4,7 @@
     "shell-utils"
     "package-overlay"
     "fonts"
+    "lix"
   ];
 
   flake.moduleImports.nixos.base = [

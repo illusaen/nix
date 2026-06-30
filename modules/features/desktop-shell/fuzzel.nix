@@ -1,5 +1,28 @@
 {
-  flake.modules.nixos.desktop-shell = {pkgs, ...}: {environment.systemPackages = [pkgs.local.fuzzel];};
+  flake.modules.nixos.fuzzel = {
+    pkgs,
+    lib,
+    ...
+  }: let
+    mkHiddenDesktopEntries = entries: (pkgs.stdenvNoCC.mkDerivation {
+      name = "hidden-desktop-entries";
+      meta.priority = 1;
+      phases = ["buildPhase" "installPhase"];
+      buildPhase =
+        entries
+        |> map (e: "echo -e \"[Desktop Entry]\nNoDisplay=true\n\" > ${e}.desktop")
+        |> (lib.concatStringsSep "\n");
+      installPhase = ''
+        mkdir -p $out/share/applications
+        mv *.desktop $out/share/applications
+      '';
+    });
+  in {
+    environment.systemPackages = [
+      pkgs.local.fuzzel
+      (mkHiddenDesktopEntries ["blueman-adapters" "nixos-manual" "Alacritty" "gvim" "vim"])
+    ];
+  };
 
   flake.fleetWrappers.fuzzel = {
     wlib,

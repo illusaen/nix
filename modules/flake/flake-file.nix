@@ -3,7 +3,15 @@
 
   flake-file = {
     prune-lock.enable = true;
-    nixConfig = {lazy-trees = true;};
+    nixConfig = {
+      lazy-trees = true;
+      experimental-features = [
+        "nix-command"
+        "flakes"
+        "pipe-operators"
+        "pipe-operator"
+      ];
+    };
 
     inputs = {
       flake-file.url = "github:denful/flake-file/main";

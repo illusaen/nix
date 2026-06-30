@@ -6,6 +6,7 @@
     "nautilus"
     "waybar"
     "misc-scripts"
+    "fuzzel"
   ];
 
   flake.moduleImports.darwin.desktop-shell = [

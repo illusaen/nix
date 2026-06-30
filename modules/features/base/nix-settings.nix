@@ -22,7 +22,7 @@
       experimental-features = [
         "nix-command"
         "flakes"
-        "pipe-operators"
+        "pipe-operator"
       ];
       abort-on-warn = moduleSettings.nix-settings.abortOnWarn;
       accept-flake-config = true;
