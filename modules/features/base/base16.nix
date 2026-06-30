@@ -5,8 +5,8 @@
   rootPath,
   ...
 }: {
-  config.flake-file.inputs.base16.url = "github:SenchoPens/base16.nix";
-  config.fleet.base16.theme =
+  flake-file.inputs.base16.url = "github:SenchoPens/base16.nix";
+  fleet.base16.theme =
     rootPath
     + /resources/themes
     + (
@@ -15,7 +15,7 @@
       else /catppuccin-latte.yaml
     );
 
-  options.fleet.base16 = lib.mkOption {
+  schema.fleet.options.base16 = lib.mkOption {
     type = lib.types.submodule {
       options = {
         scheme = lib.mkOption {

@@ -1,12 +1,13 @@
-{config, ...}: {
-  flake.wrappers.swaylock = {
+{
+  flake.fleetWrappers.swaylock = {
     wlib,
     pkgs,
+    fleet,
     ...
   }: let
-    scheme = config.fleet.base16.scheme pkgs;
-    inherit (config.fleet.fonts) sans;
-    wallpaper = config.fleet.wallpaper.image;
+    scheme = fleet.base16.scheme pkgs;
+    inherit (fleet.fonts) sans;
+    wallpaper = fleet.wallpaper.image;
   in {
     imports = [wlib.wrapperModules.swaylock];
     settings = with scheme; let

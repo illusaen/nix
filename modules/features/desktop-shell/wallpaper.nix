@@ -1,40 +1,41 @@
 {
   rootPath,
-  config,
   lib,
   ...
 }: {
-  options.fleet.wallpaper = lib.mkOption {
+  schema.fleet.options.wallpaper = lib.mkOption {
     type = lib.types.submodule {
       options = {
         image = lib.mkOption {
           type = lib.types.path;
           default = rootPath + /resources/wallpapers/dark-silk.jpeg;
+          description = "default wallpaper used";
         };
         directory = lib.mkOption {
           type = lib.types.path;
           default = rootPath + /resources/wallpapers;
+          description = "directory containing all wallpapers";
         };
       };
     };
   };
 
-  config.flake.modules.nixos.wallpaper = {pkgs, ...}: {
+  flake.modules.nixos.wallpaper = {pkgs, ...}: {
     environment.systemPackages = [pkgs.local.wpaperd];
     systemd.packages = [pkgs.local.wpaperd];
     systemd.user.services.wpaperd.wantedBy = ["graphical-session.target"];
   };
 
-  config.flake.modules.darwin.wallpaper = {
+  flake.modules.darwin.wallpaper = {fleet, ...}: {
     system.activationScripts.setDesktopBackground = ''
       echo "Setting desktop background."
-      osascript -e 'tell application "System Events" to tell every desktop to set picture to "${config.fleet.wallpaper.image}"'
+      osascript -e 'tell application "System Events" to tell every desktop to set picture to "${fleet.wallpaper.image}"'
     '';
   };
 
-  config.flake.wrappers.wpaperd = {
+  flake.fleetWrappers.wpaperd = {fleet, ...}: {
     imports = [(rootPath + /wrappers/wpaperd.nix)];
-    imageDirectory = config.fleet.wallpaper.directory;
-    monitors = config.fleet.monitors.conn;
+    imageDirectory = fleet.wallpaper.directory;
+    monitors = fleet.monitors.conn;
   };
 }

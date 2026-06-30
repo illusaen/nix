@@ -4,14 +4,14 @@
   lib,
   ...
 }: {
-  options.fleet.theming.gtk = helpers.mkThemeOption {};
+  schema.fleet.options.theming.gtk = helpers.mkThemeOption {};
 
-  config.fleet.theming.gtk = {
+  fleet.theming.gtk = {
     name = "MacTahoe";
     packageName = "mactahoe-gtk-theme";
   };
 
-  config.flake.modules.nixos.gtk = {pkgs, ...}: let
+  flake.modules.nixos.gtk = {pkgs, ...}: let
     inherit (config.fleet.theming) gtk icon cursor;
     inherit (config.fleet.fonts) sans sizes;
     inherit (config.fleet.base16) isDark;

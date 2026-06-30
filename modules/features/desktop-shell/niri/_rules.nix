@@ -89,6 +89,19 @@
       open-on-workspace = "code";
     }
     {
+      matches = [{at-startup = true;}];
+      open-focused = false;
+    }
+    {
+      matches = [
+        {
+          at-startup = true;
+          app-id = "1password";
+        }
+      ];
+      open-on-workspace = "code";
+    }
+    {
       matches = [
         {
           app-id = "firefox";

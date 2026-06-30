@@ -1,17 +1,18 @@
-{config, ...}: {
+{
   flake.modules.nixos.desktop-shell = {pkgs, ...}: {environment.systemPackages = [pkgs.local.fuzzel];};
 
-  flake.wrappers.fuzzel = {
+  flake.fleetWrappers.fuzzel = {
     wlib,
     pkgs,
+    fleet,
     ...
   }: {
     imports = [wlib.wrapperModules.fuzzel];
     settings = {
       main = {
-        output = config.fleet.monitors.conn.main;
+        output = fleet.monitors.conn.main;
         font = let
-          inherit (config.fleet.fonts) mono icon sizes;
+          inherit (fleet.fonts) mono icon sizes;
           fontSize = toString sizes.applications;
         in "${mono.name}:size=${fontSize},${icon.name}:size=${fontSize}";
         use-bold = true;
@@ -24,7 +25,7 @@
         inner-pad = 8;
       };
       colors = let
-        scheme = config.fleet.base16.scheme pkgs;
+        scheme = fleet.base16.scheme pkgs;
       in {
         background = "${scheme.base00-hex}cc";
         text = "${scheme.base05-hex}ff";

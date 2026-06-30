@@ -1,16 +1,15 @@
-top: let
-  topConfig = top.config;
-in {
+{
   flake.modules.nixos.display-manager = {
     pkgs,
     lib,
     config,
+    fleet,
     ...
   }: let
     sddmTheme = pkgs.where-is-my-sddm-theme.override {
       themeConfig.General = {
-        background = toString topConfig.fleet.wallpaper.image;
-        passwordCursorColor = (topConfig.fleet.base16.scheme pkgs).withHashtag.base0D;
+        background = toString fleet.wallpaper.image;
+        passwordCursorColor = (fleet.base16.scheme pkgs).withHashtag.base0D;
       };
     };
   in {
@@ -38,7 +37,7 @@ in {
                 keymap_options = xcfg.xkb.options;
               };
               output = {
-                name = topConfig.fleet.monitors.conn.secondary;
+                name = fleet.monitors.conn.secondary;
                 mode = "off";
               };
             };

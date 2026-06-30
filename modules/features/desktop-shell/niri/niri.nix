@@ -1,4 +1,4 @@
-{config, ...}: {
+{
   flake.modules.nixos.niri = {pkgs, ...}: {
     programs.niri = {
       enable = true;
@@ -16,14 +16,15 @@
     environment.systemPackages = [pkgs.local.niri-scripts];
   };
 
-  flake.wrappers.niri = {
+  flake.fleetWrappers.niri = {
     wlib,
     pkgs,
+    fleet,
     ...
   }: let
-    scheme = (config.fleet.base16.scheme pkgs).withHashtag;
-    inherit (config.fleet.theming) cursor;
-    monitors = config.fleet.monitors.conn;
+    scheme = (fleet.base16.scheme pkgs).withHashtag;
+    inherit (fleet.theming) cursor;
+    monitors = fleet.monitors.conn;
     animations = import ./_animations.nix;
     extra = import ./_extra.nix;
     mouse = import ./_mouse.nix {

@@ -1,17 +1,16 @@
-{
-  rootPath,
-  config,
-  ...
-}: {
+{rootPath, ...}: {
   flake.modules.nixos.desktop-shell = {pkgs, ...}: {
     environment.systemPackages = [pkgs.local.swaync];
     systemd.packages = [pkgs.local.swaync];
     systemd.user.services.swaync.wantedBy = ["graphical-session.target"];
   };
-  flake.wrappers.swaync = {pkgs, ...}: {
+  flake.fleetWrappers.swaync = {
+    pkgs,
+    fleet,
+    ...
+  }: {
     imports = [(rootPath + /wrappers/swaync/module.nix)];
-
-    font = config.fleet.fonts.sans.name;
-    scheme = config.fleet.base16.scheme pkgs;
+    font = fleet.fonts.sans.name;
+    scheme = fleet.base16.scheme pkgs;
   };
 }

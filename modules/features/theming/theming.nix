@@ -4,7 +4,7 @@
   config,
   ...
 }: {
-  options.fleet.theming = lib.mkOption {
+  schema.fleet.options.theming = lib.mkOption {
     type = lib.types.submodule {
       options = let
         inherit (helpers) mkThemeOption;
@@ -15,7 +15,7 @@
     };
   };
 
-  config.fleet.theming = {
+  fleet.theming = {
     icon = {
       name = "MacTahoe";
       packageName = "mactahoe-icon-theme";
@@ -27,9 +27,9 @@
     };
   };
 
-  config.flake.moduleImports.nixos.theming = ["gtk"];
+  flake.moduleImports.nixos.theming = ["gtk"];
 
-  config.flake.modules.nixos.theming = {pkgs, ...}: let
+  flake.modules.nixos.theming = {pkgs, ...}: let
     inherit (config.fleet.theming) icon cursor;
   in {
     environment.systemPackages = [pkgs.local.${icon.packageName} pkgs.local.${cursor.packageName}];

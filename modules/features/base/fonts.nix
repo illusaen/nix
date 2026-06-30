@@ -1,14 +1,13 @@
 {
   lib,
-  config,
   helpers,
   ...
 }: let
   inherit (lib) mkOption types nameValuePair;
   mapListToAttrsWith = attrs: value: attrs |> map (v: nameValuePair v value) |> builtins.listToAttrs;
 in {
-  config.flake.modules.nixos.fonts = let
-    inherit (config.fleet.fonts) mono sans;
+  flake.modules.nixos.fonts = {fleet, ...}: let
+    inherit (fleet.fonts) mono sans;
   in {
     fonts.fontconfig.defaultFonts = rec {
       monospace = [mono.name "Maple Mono NF CN"];
@@ -18,11 +17,11 @@ in {
     fonts.fontconfig.aliases = let
       inherit (helpers) removeAttrs';
     in
-      config.fleet.fonts |> removeAttrs' ["sizes"] |> lib.mapAttrs' (_name: value: lib.nameValuePair value.name {default = ["Font Awesome 7 Free"];});
+      fleet.fonts |> removeAttrs' ["sizes"] |> lib.mapAttrs' (_name: value: lib.nameValuePair value.name {default = ["Font Awesome 7 Free"];});
   };
 
-  config.flake.modules.generic.fonts = {pkgs, ...}: {
-    config.fonts.packages = with pkgs; [
+  flake.modules.generic.fonts = {pkgs, ...}: {
+    fonts.packages = with pkgs; [
       font-awesome
       maple-mono.NF-CN-unhinted
       inter
@@ -32,7 +31,7 @@ in {
     ];
   };
 
-  config.fleet.fonts = {
+  fleet.fonts = {
     sans = {
       name = "Inter";
       packageName = "inter";
@@ -56,7 +55,7 @@ in {
     };
   };
 
-  options.fleet.fonts = mkOption {
+  schema.fleet.options.fonts = mkOption {
     type = types.submodule {
       options = let
         inherit (helpers) mkThemeOption;

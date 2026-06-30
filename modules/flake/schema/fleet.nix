@@ -27,35 +27,33 @@ in {
     description = "Singleton fleet instance.";
   };
 
-  config = {
-    schema.fleet.validators = [
-      (genSchema.mkValidator "domain-not-empty" ({domain, ...}:
-          domain != "") "fleet domain must not be empty")
-    ];
+  config.schema.fleet.validators = [
+    (genSchema.mkValidator "domain-not-empty" ({domain, ...}:
+        domain != "") "fleet domain must not be empty")
+  ];
 
-    schema.fleet.options = {
-      domain = mkOption {
-        type = str;
-        description = "Base domain for the fleet";
-      };
-
-      timeZone = mkOption {
-        type = str;
-        default = "CST";
-        description = "Default timezone for the fleet";
-      };
-
-      moduleSettings = mkOption {
-        type = attrsOf anything;
-        default = {};
-        defaultText = {text = "{}";};
-        description = "Fleet-level raw module settings defaults.";
-      };
+  config.schema.fleet.options = {
+    domain = mkOption {
+      type = str;
+      description = "Base domain for the fleet";
     };
 
-    fleet = {
-      domain = "lan";
-      timeZone = "America/Chicago";
+    timeZone = mkOption {
+      type = str;
+      default = "CST";
+      description = "Default timezone for the fleet";
     };
+
+    moduleSettings = mkOption {
+      type = attrsOf anything;
+      default = {};
+      defaultText = {text = "{}";};
+      description = "Fleet-level raw module settings defaults.";
+    };
+  };
+
+  config.fleet = {
+    domain = "lan";
+    timeZone = "America/Chicago";
   };
 }

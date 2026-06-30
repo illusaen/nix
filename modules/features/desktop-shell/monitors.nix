@@ -10,7 +10,7 @@
     };
   };
 in {
-  options.fleet.monitors = lib.mkOption {
+  schema.fleet.options.monitors = lib.mkOption {
     type = lib.types.submodule {
       options = {
         data = lib.mkOption {type = lib.types.attrsOf monitorType;};
@@ -28,7 +28,7 @@ in {
     };
   };
 
-  config.fleet.monitors.data = {
+  fleet.monitors.data = {
     main = {
       desc = "BOE Display 000000001";
       connector = "DP-2";
@@ -39,7 +39,7 @@ in {
     };
   };
 
-  config.flake.modules.nixos.monitors = {
+  flake.modules.nixos.monitors = {
     hardware.i2c.enable = true;
   };
 }
