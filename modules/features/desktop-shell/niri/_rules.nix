@@ -59,7 +59,7 @@
         {app-id = "dev.noctalia.Noctalia.Settings";}
       ];
       open-floating = true;
-      default-column-width.proportion = 0.4;
+      default-column-width.proportion = 0.3;
       default-window-height.proportion = 0.4;
     }
     {

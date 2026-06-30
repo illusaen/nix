@@ -1,43 +1,55 @@
+[backdrop]
+blur_intensity = 0.39999999105930328
+enabled = true
+
 [bar.default]
-background_opacity = 0.0
-capsule = true
+background_opacity = 0.89999997988343239
+border = "primary"
+capsule = false
 capsule_border = "on_primary"
 capsule_fill = "surface"
-capsule_opacity = 0.8
+capsule_group = []
+capsule_opacity = 0.80000000000000004
 capsule_padding = 16.0
-capsule_radius = 8
+capsule_radius = 12
 capsule_thickness = 1.0
-center = ["group:g2"]
-end = ["media", "tray", "group:g1"]
+center = ["clock", "date"]
+end = ["tray", "clipboard", "control-center"]
 margin_edge = 8
-margin_ends = 440
+margin_ends = 720
 padding = 16
 position = "right"
-start = ["session", "workspaces"]
-thickness = 36
+reserve_space = false
+start = ["session", "workspaces", "audio_visualizer"]
+thickness = 48
 widget_spacing = 16
-
-[[bar.default.capsule_group]]
-fill = "surface"
-id = "g1"
-members = ["control-center", "clipboard", "notifications"]
-opacity = 1.0
-padding = 16.0
-
-[[bar.default.capsule_group]]
-border = "on_primary"
-fill = "surface"
-id = "g2"
-members = ["date", "clock"]
-opacity = 0.8
-padding = 16.0
-radius = 8.0
 
 [bar.default.monitor.@secondary@]
 enabled = false
 
 [calendar]
 enabled = true
+
+[control_center]
+hidden_tabs = ["monitor", "power", "screen-time"]
+
+[[control_center.shortcuts]]
+type = "wifi"
+
+[[control_center.shortcuts]]
+type = "bluetooth"
+
+[[control_center.shortcuts]]
+type = "notification"
+
+[[control_center.shortcuts]]
+type = "dark_mode"
+
+[[control_center.shortcuts]]
+type = "audio"
+
+[[control_center.shortcuts]]
+type = "mic_mute"
 
 [desktop_widgets]
 schema_version = 2
@@ -65,7 +77,7 @@ visible = true
 box_height = 160.0
 box_width = 288.0
 cx = 676.0
-cy = 1769.0
+cy = 1769.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "clock"
@@ -80,7 +92,7 @@ format = "{:%H:%M}"
 box_height = 48.0
 box_width = 104.0
 cx = 472.0
-cy = 1825.0
+cy = 1825.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -89,12 +101,13 @@ type = "sysmon"
 display = "gauge"
 gauge_layout = "horizontal"
 stat = "cpu_temp"
+stat2 = "gpu_temp"
 
 [desktop_widgets.widget.desktop-widget-0000000000000003]
 box_height = 160.0
 box_width = 240.0
 cx = 948.0
-cy = 1769.0
+cy = 1769.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "media_player"
@@ -102,7 +115,7 @@ type = "media_player"
 [desktop_widgets.widget.desktop-widget-0000000000000004]
 box_height = 48.0
 box_width = 72.0
-cx = 941.0
+cx = 940.79998779296875
 cy = 1880.0
 output = "@secondary@"
 rotation = 0.0
@@ -161,7 +174,7 @@ show_forecast = false
 box_height = 48.0
 box_width = 96.0
 cx = 364.0
-cy = 1769.0
+cy = 1769.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -176,7 +189,7 @@ stat2 = "gpu_temp"
 box_height = 48.0
 box_width = 104.0
 cx = 472.0
-cy = 1769.0
+cy = 1769.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -185,12 +198,13 @@ type = "sysmon"
 display = "gauge"
 gauge_layout = "horizontal"
 stat = "cpu_usage"
+stat2 = "gpu_temp"
 
 [desktop_widgets.widget.desktop-widget-000000000000000a]
 box_height = 48.0
 box_width = 96.0
 cx = 364.0
-cy = 1825.0
+cy = 1825.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -199,12 +213,13 @@ type = "sysmon"
 display = "gauge"
 gauge_layout = "horizontal"
 stat = "gpu_temp"
+stat2 = "gpu_temp"
 
 [desktop_widgets.widget.desktop-widget-000000000000000b]
 box_height = 48.0
 box_width = 104.0
 cx = 472.0
-cy = 1713.0
+cy = 1713.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -213,12 +228,13 @@ type = "sysmon"
 display = "gauge"
 gauge_layout = "horizontal"
 stat = "ram_pct"
+stat2 = "gpu_temp"
 
 [desktop_widgets.widget.desktop-widget-000000000000000c]
 box_height = 48.0
 box_width = 96.0
 cx = 364.0
-cy = 1713.0
+cy = 1713.300048828125
 output = "@secondary@"
 rotation = 0.0
 type = "sysmon"
@@ -310,7 +326,7 @@ color = "outline"
 format = "{:%a, %b %d}"
 
 [notification]
-background_opacity = 0.8
+background_opacity = 0.80000000000000004
 offset_y = 64
 position = "bottom_center"
 
@@ -319,10 +335,11 @@ offset_y = 64
 position = "bottom_center"
 
 [shell]
+app_icon_color = "surface"
 font_family = "@sans@"
-settings_show_advanced = false
+settings_show_advanced = true
 time_format = "{:%I:%M %p}"
-ui_scale = 1.1
+ui_scale = 1.1000000000000001
 
 [shell.launcher]
 app_grid = true
@@ -369,17 +386,21 @@ shortcut = "5"
 variant = "destructive"
 
 [theme]
-builtin = "Dracula"
-community_palette = "Oxocarbon"
+builtin = "Catppuccin"
+community_palette = "Catppuccin Lavender"
 mode = "dark"
-source = "builtin"
-wallpaper_scheme = "m3-content"
+source = "community"
+wallpaper_scheme = "m3-fruit-salad"
+
+[theme.templates]
+builtin_ids = ["alacritty", "gtk3", "gtk4", "qt", "starship"]
+community_ids = ["zed", "zathura"]
 
 [wallpaper]
 directory = "@imageDirectory@"
 directory_dark = "@imageDirectory@/dark"
 directory_light = "@imageDirectory@/light"
-fill_mode = "stretch"
+fill_mode = "center"
 
 [wallpaper.default]
 path = "@image@"
@@ -393,7 +414,17 @@ path = "@image@"
 [weather]
 unit = "imperial"
 
+[widget.audio_visualizer]
+bands = 24
+color_2 = "secondary"
+scale = 1.25
+width = 100
+
+[widget.clipboard]
+font_weight = 600
+
 [widget.clock]
+anchor = true
 color = "primary"
 font_family = "@mono@"
 format = "{:%I:%M %p}"
@@ -401,12 +432,35 @@ scale = 1.25
 vertical_format = "{:%I\\n%M %p}"
 
 [widget.control-center]
+font_weight = 600
 glyph = "settings-2"
 
 [widget.date]
-color = "tertiary"
+color = "secondary"
 format = "{:%a %b %d }"
-scale = 1.1
+scale = 1.1000000000000001
+
+[widget.media]
+art_size = 24
+hide_when_no_media = true
+min_length = 54
+title_scroll = "always"
+
+[widget.notifications]
+font_weight = 600
+
+[widget.session]
+font_weight = 600
+
+[widget.tray]
+drawer = true
+drawer_columns = 5
+font_weight = 600
+pinned = ["1password"]
 
 [widget.workspaces]
 display = "none"
+empty_color = "primary"
+focused_color = "secondary"
+occupied_color = "primary"
+pill_scale = 0.84999999999999998
