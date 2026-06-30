@@ -1,0 +1,40 @@
+name: Build Nix packages and push to Cachix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+            max-jobs = auto
+            cores = 0
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: illusaen
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      # Optional: build specific packages exposed by your flake.
+      - name: Build bambu-studio package
+        run: |
+          nix build .#bambu-studio
+
+      - name: Build llama-cpp package
+        run: |
+          nix build .#llama-cpp
+
+      - name: Build NixOS configuration
+        run: |
+          nix build .#nixosConfigurations.odin.config.system.build.toplevel

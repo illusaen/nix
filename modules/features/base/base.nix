@@ -10,6 +10,7 @@
     "state-version"
     "fonts"
     "security"
+    "bat"
     "zsh"
     "defaults"
     "tailscale"

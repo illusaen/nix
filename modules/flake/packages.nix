@@ -35,6 +35,12 @@
   in {
     _module.args.pkgs = pkgs;
     pkgsDirectory = rootPath + /packages;
+
+    # Placing long building packages into packages for gh workflow to build and cache
+    packages = {
+      inherit (pkgs) bambu-studio;
+      llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
+    };
   };
 
   flake.modules.generic.package-overlay = {

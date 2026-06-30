@@ -2,9 +2,7 @@
   - nvf
   - agenix/agenix-rekey/sops
   - networking
-  - steam
   - bambu studio
-  - llama-cpp
   - youtube music player
   - services for server
 * fix desktop filtering on fuzzel

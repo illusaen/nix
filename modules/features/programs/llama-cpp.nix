@@ -1,0 +1,28 @@
+{
+  flake.modules.nixos.llama-cpp = {pkgs, ...}: let
+    llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
+    iniFormat = pkgs.formats.ini {};
+  in {
+    environment.systemPackages = [llama-cpp];
+    services.llama-cpp = {
+      enable = true;
+      package = llama-cpp;
+      # Takes care of downloading if model not present
+      settings.models-preset = iniFormat.generate "llama-cpp-models.ini" {
+        "*" = {
+          context-shift = true;
+        };
+        "Qwen3.5-9B" = {
+          hf-repo = "unsloth/Qwen3.5-9B-GGUF";
+          hf-file = "Qwen3.5-9B-UD-Q4_K_XL.gguf";
+          alias = "unsloth/Qwen3.5-9B";
+          temp = "1.0";
+          top-p = "0.95";
+          top-k = "20";
+          presence-penalty = "1.5";
+          repeat-penalty = "1.0";
+        };
+      };
+    };
+  };
+}
