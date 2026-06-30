@@ -94,6 +94,52 @@ in {
         store_dir="/nix/store/$store_name"
 
         command eza --icons=auto --git "$store_dir"
+        echo "Store dir: $store_dir"
+      }
+
+      setopt autocd
+      function command_not_found_handler() {
+        local cmd="$1"
+
+        # Check if the command consists entirely of dots and has at least 2 dots
+        if [[ "$cmd" =~ ^\.{2,}$ ]]; then
+          local dots=''${#cmd}
+          local up_path=""
+
+          # Calculate how many levels to move up (dots minus 1)
+          local levels=$((dots - 1))
+
+          # Count how many directories deep we currently are
+          # Using a loop to find the exact slash count safely
+          local current_depth=0
+          local temp_pwd="$PWD"
+          while [[ "$temp_pwd" != "/" ]]; do
+            ((current_depth++))
+            temp_pwd="''${temp_pwd%/*}"
+          done
+
+          # If requested levels exceed depth, cap it to current depth
+          if [[ $levels -gt $current_depth ]]; then
+            levels=$current_depth
+          fi
+
+          # If we are already at root, or levels capped to 0, just stay at /
+          if [[ $levels -eq 0 ]]; then
+            return 0
+          fi
+
+          # Build the path based on the safe number of levels
+          for ((i=0; i<levels; i++)); do
+            up_path="../$up_path"
+          fi
+
+          cd "$up_path"
+          return 0
+        fi
+
+        # Fallback to standard command not found error
+        echo "zsh: command not found: $cmd" >&2
+        return 127
       }
 
       open_editor() {

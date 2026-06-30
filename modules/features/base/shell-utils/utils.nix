@@ -29,5 +29,7 @@
       wget
       zoxide
     ];
+
+    persistUser.files = [".local/share/zoxide/db.zo"];
   };
 }

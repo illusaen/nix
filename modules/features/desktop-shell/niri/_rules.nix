@@ -77,6 +77,7 @@
       ];
       open-on-workspace = "music";
       default-column-width.proportion = 1.0;
+      default-window-height.proportion = 0.5;
     }
     {
       matches = [
