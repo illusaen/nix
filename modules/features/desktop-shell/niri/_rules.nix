@@ -99,6 +99,7 @@
           app-id = "1password";
         }
       ];
+      open-focused = true;
       open-on-workspace = "code";
     }
     {

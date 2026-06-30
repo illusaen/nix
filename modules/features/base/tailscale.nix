@@ -1,10 +1,5 @@
 {
-  flake.modules.nixos.tailscale = {
-    config,
-    lib,
-    host,
-    ...
-  }: {
+  flake.modules.nixos.tailscale = {config, ...}: {
     services.tailscale.enable = true;
     # 2. Force tailscaled to use nftables (Critical for clean nftables-only systems)
     # This avoids the "iptables-compat" translation layer issues.
@@ -21,19 +16,15 @@
       allowedUDPPorts = [config.services.tailscale.port];
     };
 
-    systemd.user.services = lib.mkIf (host.tags.role == "desktop") {
-      tailscale-systray = {
-        wantedBy = ["graphical-session.target"];
-        partOf = ["graphical-session.target"];
-        requires = ["graphical-session-pre.target"];
-        after = [
-          "graphical-session.target"
-          "graphical-session-pre.target"
-        ];
-        description = "Official Tailscale systray application for Linux";
-        serviceConfig.ExecStart = "${lib.getExe config.services.tailscale.package} systray";
-      };
-    };
+    systemdAutostart = [
+      (let
+        inherit (config.services.tailscale) package;
+      in {
+        inherit package;
+        name = "tailscale-systray";
+        exec = "${package} systray";
+      })
+    ];
 
     persist.directories = ["/var/lib/tailscale"];
   };

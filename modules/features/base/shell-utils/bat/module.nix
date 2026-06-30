@@ -1,4 +1,4 @@
-top: {
+{
   flake.modules.generic.shell-utils = {pkgs, ...}: {
     environment.systemPackages = [pkgs.local.bat];
   };
@@ -14,10 +14,11 @@ top: {
     '';
   };
 
-  flake.wrappers.bat = {
+  flake.fleetWrappers.bat = {
     wlib,
     lib,
     pkgs,
+    fleet,
     config,
     ...
   }: {
@@ -32,7 +33,7 @@ top: {
       relPath = "config";
     };
     constructFiles.themeConfig = let
-      scheme = top.config.fleet.base16.scheme pkgs;
+      scheme = fleet.base16.scheme pkgs;
       bat-theme = scheme {
         template = ./bat.tmTheme.mustache;
         extension = ".tmTheme";

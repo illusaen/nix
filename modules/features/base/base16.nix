@@ -16,14 +16,14 @@
     );
 
   schema.fleet.options.base16 = lib.mkOption {
-    type = lib.types.submodule {
+    type = lib.types.submodule ({config, ...}: {
       options = {
         scheme = lib.mkOption {
           type = lib.types.functionTo lib.types.raw;
           readOnly = true;
           description = "Computed base16/base24 scheme attributes from the given theme";
           default = pkgs:
-            (pkgs.callPackage inputs.base16.lib {}).mkSchemeAttrs config.fleet.base16.theme;
+            (pkgs.callPackage inputs.base16.lib {}).mkSchemeAttrs config.theme;
         };
         theme = lib.mkOption {
           type = lib.types.path;
@@ -37,9 +37,9 @@
         isDark = lib.mkOption {
           type = lib.types.bool;
           readOnly = true;
-          default = config.fleet.base16.colorScheme == "dark";
+          default = config.colorScheme == "dark";
         };
       };
-    };
+    });
   };
 }

@@ -3,9 +3,8 @@
   config,
   rootPath,
   ...
-} @ top: let
+}: let
   genSchema = inputs.gen-schema.lib;
-  topConfig = top.config;
 in {
   schema.fleet.options.hosts =
     (genSchema.mkInstanceRegistry config.schema.host {
@@ -79,8 +78,9 @@ in {
         ({
           config,
           lib,
+          fleet,
           ...
-        }: {members = lib.mkAfter (topConfig.fleet.users |> builtins.attrValues |> builtins.filter (user: lib.elem config.name user.groups));})
+        }: {members = lib.mkAfter (fleet.users |> builtins.attrValues |> builtins.filter (user: lib.elem config.name user.groups));})
       ];
     })
     // {defaultText = {text = "{}";};};

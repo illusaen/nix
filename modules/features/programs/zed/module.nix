@@ -1,16 +1,16 @@
-top: {
+{
   flake.modules.generic.zed = {pkgs, ...}: {environment.systemPackages = [pkgs.local.zed];};
 
-  flake.wrappers.zed = {
+  flake.fleetWrappers.zed = {
     wlib,
     lib,
     pkgs,
     config,
+    fleet,
     ...
   }: let
-    topConfig = top.config;
     dataDir = "\${XDG_DATA_HOME:-$HOME/.local/share}/zed-wrapped";
-    scheme = topConfig.fleet.base16.scheme pkgs;
+    scheme = fleet.base16.scheme pkgs;
   in {
     imports = [wlib.modules.default];
     flags."--user-data-dir" = {
@@ -23,10 +23,10 @@ top: {
       relPath = "settings.json";
       content = builtins.toJSON (import ./_config.nix (let
         pxToPt = s: builtins.floor (s * 4 / 3 + 0.5);
-        inherit (topConfig.fleet.fonts.sizes) terminal desktop;
+        inherit (fleet.fonts.sizes) terminal desktop;
       in {
         inherit lib scheme;
-        inherit (topConfig.fleet.fonts) sans mono icon;
+        inherit (fleet.fonts) sans mono icon;
         sizeBuffer = pxToPt terminal;
         sizeUi = pxToPt desktop;
       }));

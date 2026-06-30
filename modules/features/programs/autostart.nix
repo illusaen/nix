@@ -4,24 +4,36 @@
     config,
     ...
   }: let
-    mkService = package: {
+    mkService = entry: {
       wantedBy = ["graphical-session.target"];
       partOf = ["graphical-session.target"];
       after = [
         "graphical-session.target"
       ];
-      description = "1Password";
+      description = "Autostarts ${entry.name} on login";
       serviceConfig = {
-        ExecStart = "${lib.getExe package}";
+        ExecStart = entry.exec;
         Restart = "on-failure";
       };
     };
-    name = package: package.pname or package.name or package.meta.mainProgram or (lib.getName package);
+    autostartEntryType = lib.types.submodule ({config, ...}: {
+      options = {
+        package = lib.mkOption {type = lib.types.package;};
+        name = lib.mkOption {
+          type = lib.types.str;
+          default = lib.getName config.package;
+        };
+        exec = lib.mkOption {
+          type = lib.types.str;
+          default = "${lib.getExe config.package}";
+        };
+      };
+    });
   in {
     options.systemdAutostart = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
+      type = lib.types.listOf autostartEntryType;
       default = [];
     };
-    config.systemd.user.services = config.systemdAutostart |> map (p: lib.nameValuePair (name p) (mkService p)) |> builtins.listToAttrs;
+    config.systemd.user.services = config.systemdAutostart |> map (entry: lib.nameValuePair entry.name (mkService entry)) |> builtins.listToAttrs;
   };
 }

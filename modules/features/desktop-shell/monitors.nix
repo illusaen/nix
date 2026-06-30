@@ -1,8 +1,4 @@
-{
-  lib,
-  config,
-  ...
-}: let
+{lib, ...}: let
   monitorType = lib.types.submodule {
     options = {
       desc = lib.mkOption {type = lib.types.str;};
@@ -11,21 +7,21 @@
   };
 in {
   schema.fleet.options.monitors = lib.mkOption {
-    type = lib.types.submodule {
+    type = lib.types.submodule ({config, ...}: {
       options = {
         data = lib.mkOption {type = lib.types.attrsOf monitorType;};
         desc = lib.mkOption {
           type = lib.types.attrsOf lib.types.str;
           readOnly = true;
-          default = lib.mapAttrs (_name: config: config.desc) config.fleet.monitors.data;
+          default = lib.mapAttrs (_name: config: config.desc) config.data;
         };
         conn = lib.mkOption {
           type = lib.types.attrsOf lib.types.str;
           readOnly = true;
-          default = lib.mapAttrs (_name: config: config.connector) config.fleet.monitors.data;
+          default = lib.mapAttrs (_name: config: config.connector) config.data;
         };
       };
-    };
+    });
   };
 
   fleet.monitors.data = {

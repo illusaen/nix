@@ -1,4 +1,4 @@
-top: {
+{
   flake.modules.generic.one-password = {pkgs, ...}: {
     programs._1password.enable = true;
     programs._1password-gui = {
@@ -8,17 +8,17 @@ top: {
   };
 
   flake.modules.nixos.one-password = {
-    lib,
     config,
+    user,
     ...
   }: {
-    programs._1password-gui.polkitPolicyOwners =
-      lib.mapAttrsToList (
-        _: value: value.userName
-      )
-      top.config.fleet.users;
-
-    systemdAutostart = [config.programs._1password-gui.package];
+    programs._1password-gui.polkitPolicyOwners = [user.name];
+    systemdAutostart = [
+      {
+        name = "one-password";
+        inherit (config.programs._1password-gui) package;
+      }
+    ];
     persistUser.directories = [".config/1Password"];
   };
 }
