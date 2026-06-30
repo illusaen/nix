@@ -11,6 +11,7 @@
   }: {
     imports = [(rootPath + /wrappers/swaync/module.nix)];
     font = fleet.fonts.sans.name;
+    fontSize = fleet.fonts.sizes.applications;
     scheme = fleet.base16.scheme pkgs;
   };
 }

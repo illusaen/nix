@@ -11,6 +11,7 @@
   ];
   options = {
     font = lib.mkOption {type = lib.types.str;};
+    fontSize = lib.mkOption {type = lib.types.int;};
     scheme = lib.mkOption {type = lib.types.raw;};
     settings = lib.mkOption {
       type = wlib.types.structuredValueWith {typeName = "JSON";};
@@ -110,18 +111,23 @@
       ];
     };
   };
-  config."style.css".path = pkgs.replaceVars ./swaync.css.mustache {
-    inherit
-      (config.scheme)
-      base00
-      base03
-      base04
-      base05
-      base07
-      base0E
-      ;
-    inherit (config) font;
-  };
+  config."style.css".content = with config.scheme.withHashtag;
+    ''
+      * {
+          font-family: "${config.font}";
+          font-size: ${toString config.fontSize}pt;
+      }
+      @define-color base00 ${base00}; @define-color base01 ${base01};
+      @define-color base02 ${base02}; @define-color base03 ${base03};
+      @define-color base04 ${base04}; @define-color base05 ${base05};
+      @define-color base06 ${base06}; @define-color base07 ${base07};
+
+      @define-color base08 ${base08}; @define-color base09 ${base09};
+      @define-color base0A ${base0A}; @define-color base0B ${base0B};
+      @define-color base0C ${base0C}; @define-color base0D ${base0D};
+      @define-color base0E ${base0E}; @define-color base0F ${base0F};
+    ''
+    + (builtins.readFile ./base.css);
   config.package = pkgs.swaynotificationcenter.overrideAttrs (old: {
     postPatch =
       (old.postPatch or "")
@@ -143,7 +149,7 @@
     "--style" = config."style.css".path;
   };
   config.constructFiles.generatedStyle = {
-    content = config.configFile.content or "";
+    content = config."style.css".content or "";
     relPath = "${config.binName}-style.css";
   };
   config.constructFiles.generatedConfig = {

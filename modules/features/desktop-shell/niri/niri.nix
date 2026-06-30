@@ -13,7 +13,7 @@
       ];
     };
 
-    environment.systemPackages = [pkgs.local.niri-scripts];
+    environment.systemPackages = [pkgs.local.niri-scripts pkgs.xwayland-satellite];
   };
 
   flake.fleetWrappers.niri = {

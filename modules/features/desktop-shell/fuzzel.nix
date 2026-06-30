@@ -17,8 +17,8 @@
         in "${mono.name}:size=${fontSize},${icon.name}:size=${fontSize}";
         use-bold = true;
         anchor = "top";
-        y-margin = 48;
-        lines = 8;
+        y-margin = 64;
+        lines = 12;
         minimal-lines = true;
         horizontal-pad = 24;
         vertical-pad = 16;
