@@ -20,22 +20,10 @@
     };
   };
 
-  flake.modules.nixos.wallpaper = {pkgs, ...}: {
-    environment.systemPackages = [pkgs.local.wpaperd];
-    systemd.packages = [pkgs.local.wpaperd];
-    systemd.user.services.wpaperd.wantedBy = ["graphical-session.target"];
-  };
-
   flake.modules.darwin.wallpaper = {fleet, ...}: {
     system.activationScripts.setDesktopBackground = ''
       echo "Setting desktop background."
       osascript -e 'tell application "System Events" to tell every desktop to set picture to "${fleet.wallpaper.image}"'
     '';
-  };
-
-  flake.fleetWrappers.wpaperd = {fleet, ...}: {
-    imports = [(rootPath + /wrappers/wpaperd.nix)];
-    imageDirectory = fleet.wallpaper.directory;
-    monitors = fleet.monitors.conn;
   };
 }

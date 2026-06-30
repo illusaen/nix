@@ -5,7 +5,8 @@
     hostId = "abf835ae";
 
     tags.role = "desktop";
-    moduleNames = ["nvidia"];
+    ## TODO: add service routing depending on services' host and replica fields
+    moduleNames = ["nvidia" "llama-cpp"];
 
     networkInterfaces.eno1 = {
       ipv4 = "192.168.1.162/24";

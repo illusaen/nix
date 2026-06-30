@@ -84,4 +84,9 @@ in {
       ];
     })
     // {defaultText = {text = "{}";};};
+  schema.fleet.options.services =
+    (genSchema.mkInstanceRegistry config.schema.service {
+      refs.host = config.fleet.hosts;
+    })
+    // {defaultText = {text = "{}";};};
 }
