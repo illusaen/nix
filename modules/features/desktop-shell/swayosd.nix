@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.desktop-shell = {pkgs, ...}: {
+  flake.modules.nixos.swayosd = {pkgs, ...}: {
     environment.systemPackages = [pkgs.local.swayosd];
     systemd.packages = [pkgs.local.swayosd];
     systemd.services.swayosd-libinput-backend.wantedBy = ["graphical.target"];

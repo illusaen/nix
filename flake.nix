@@ -10,7 +10,7 @@
     {inherit evaluation;} // evaluation.config.processedFlake;
 
   nixConfig = {
-    experimental-features = ["nix-command" "flakes" "pipe-operators" "pipe-operator"];
+    experimental-features = ["nix-command" "flakes" "pipe-operator"];
     lazy-trees = true;
   };
 
@@ -54,13 +54,13 @@
     };
     gen-schema.url = "github:sini/gen-schema";
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
-    hjem = {
-      url = "github:feel-co/hjem";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
     import-tree.url = "github:denful/import-tree";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    noctalia = {
+      url = "github:noctalia-dev/noctalia/main";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     pkgs-by-name-for-flake-parts.url = "github:drupol/pkgs-by-name-for-flake-parts";
     preservation.url = "github:nix-community/preservation";
     shimmer = {

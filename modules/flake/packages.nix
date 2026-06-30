@@ -30,7 +30,7 @@
     pkgs = import inputs.nixpkgs-unstable {
       inherit system;
       config.allowUnfree = true;
-      overlays = [(_final: _prev: {local = config.packages;})];
+      overlays = [(_final: _prev: {local = config.packages;}) inputs.noctalia.overlays.default];
     };
   in {
     _module.args.pkgs = pkgs;
@@ -40,6 +40,7 @@
     packages = {
       inherit (pkgs) bambu-studio;
       llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
+      inherit (pkgs) noctalia;
     };
   };
 

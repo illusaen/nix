@@ -17,7 +17,7 @@
   };
   "Ctrl+Space" = _: {
     props.hotkey-overlay-title = "Launcher";
-    content.spawn = "fuzzel";
+    content.spawn-sh = "noctalia msg panel-toggle launcher";
   };
   "Mod+Shift+L" = _: {
     props.hotkey-overlay-title = "Lock Screen";
@@ -25,7 +25,7 @@
   };
   "Mod+S" = _: {
     props.hotkey-overlay-title = "Notification Center";
-    content.spawn-sh = "swaync-client -t -sw";
+    content.spawn-sh = "noctalia msg panel-toggle control-center";
   };
 
   "Mod+Ctrl+Space" = _: {
@@ -61,14 +61,14 @@
       {hotkey-overlay-title = "Vol +";}
       {allow-when-locked = true;}
     ];
-    content.spawn-sh = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+";
+    content.spawn-sh = "noctalia msg volume-up";
   };
   "XF86AudioLowerVolume" = _: {
     props = [
       {hotkey-overlay-title = "Vol -";}
       {allow-when-locked = true;}
     ];
-    content.spawn-sh = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
+    content.spawn-sh = "noctalia msg volume-down";
   };
   "XF86AudioMute" = _: {
     props = [

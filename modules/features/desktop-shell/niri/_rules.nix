@@ -1,11 +1,11 @@
 {
   layer-rules = [
     {
-      matches = [{namespace = "^wpaperd.*$";}];
+      matches = [{namespace = "^noctalia-backdrop$";}];
       place-within-backdrop = true;
     }
     {
-      matches = [{namespace = "swaync-control-center";}];
+      matches = [{namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)";}];
       background-effect = {
         blur = true;
         xray = false;
@@ -58,16 +58,18 @@
         {app-id = "^(.*)blueman-manager(.*)$";}
         {app-id = "xdg-desktop-portal-gtk";}
         {app-id = "xdg-desktop-portal-gnome";}
-        {app-id = "nemo";}
         {app-id = "org.gnome.Nautilus";}
+        {app-id = "dev.noctalia.Noctalia.Settings";}
       ];
       open-floating = true;
-      max-width = 1800;
-      max-height = 1000;
+      default-column-width.proportion = 0.4;
+      default-window-height.proportion = 0.4;
     }
     {
       matches = [
         {app-id = "alacritty";}
+        {app-id = "google-chrome";}
+        {app-id = "firefox";}
       ];
       default-column-display = "tabbed";
     }

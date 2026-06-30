@@ -334,26 +334,6 @@
         "type": "github"
       }
     },
-    "hjem": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs-unstable"
-        ]
-      },
-      "locked": {
-        "lastModified": 1782267080,
-        "narHash": "sha256-so1hIImuLtTKTVUokJ/6C2D2b2D4znCx+/PAjMSAnpw=",
-        "owner": "feel-co",
-        "repo": "hjem",
-        "rev": "dd0ba9e22fb46581f843e6121de33ca7a4a80224",
-        "type": "github"
-      },
-      "original": {
-        "owner": "feel-co",
-        "repo": "hjem",
-        "type": "github"
-      }
-    },
     "import-tree": {
       "locked": {
         "lastModified": 1778781969,
@@ -467,6 +447,27 @@
         "type": "github"
       }
     },
+    "noctalia": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1782824730,
+        "narHash": "sha256-El5ysomJqc9Ot+WKGCj5C/Kn3uhEE/Gu8jNrsnzx0wk=",
+        "owner": "noctalia-dev",
+        "repo": "noctalia",
+        "rev": "54ee9a4d0ba724ba6851fb8ed048360858275309",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "ref": "main",
+        "repo": "noctalia",
+        "type": "github"
+      }
+    },
     "pkgs-by-name-for-flake-parts": {
       "locked": {
         "lastModified": 1769286518,
@@ -510,10 +511,10 @@
         "flake-parts": "flake-parts",
         "gen-schema": "gen-schema",
         "git-hooks-nix": "git-hooks-nix",
-        "hjem": "hjem",
         "import-tree": "import-tree",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "noctalia": "noctalia",
         "pkgs-by-name-for-flake-parts": "pkgs-by-name-for-flake-parts",
         "preservation": "preservation",
         "shimmer": "shimmer",

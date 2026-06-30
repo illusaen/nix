@@ -8,7 +8,6 @@
       experimental-features = [
         "nix-command"
         "flakes"
-        "pipe-operators"
         "pipe-operator"
       ];
     };
@@ -22,10 +21,6 @@
       };
       darwin = {
         url = "github:nix-darwin/nix-darwin/master";
-        inputs.nixpkgs.follows = "nixpkgs-unstable";
-      };
-      hjem = {
-        url = "github:feel-co/hjem";
         inputs.nixpkgs.follows = "nixpkgs-unstable";
       };
     };

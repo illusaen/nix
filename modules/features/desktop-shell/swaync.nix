@@ -1,5 +1,5 @@
 {rootPath, ...}: {
-  flake.modules.nixos.desktop-shell = {pkgs, ...}: {
+  flake.modules.nixos.swaync = {pkgs, ...}: {
     environment.systemPackages = [pkgs.local.swaync];
     systemd.packages = [pkgs.local.swaync];
     systemd.user.services.swaync.wantedBy = ["graphical-session.target"];
