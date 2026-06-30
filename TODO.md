@@ -9,3 +9,4 @@
   * ties into the host-specific wrapped package feature since each package that needs `monitor` should be host-specific
 * add theming engine that allows runtime switching of themes
 * moduleNames vs moduleImports - do you need both?
+* fix dot func in zsh

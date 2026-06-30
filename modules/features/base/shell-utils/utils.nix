@@ -30,6 +30,11 @@
       zoxide
     ];
 
-    persistUser.files = [".local/share/zoxide/db.zo"];
+    persistUser.files = [
+      {
+        file = ".local/share/zoxide/db.zo";
+        how = "symlink";
+      }
+    ];
   };
 }

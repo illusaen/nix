@@ -38,6 +38,7 @@
         onepassword-password-manager
         vimium
         translate-web-pages
+        sidebery
       ];
       autoConfig = let
         convertFontSize = size: toString (builtins.floor ((size * 4.0 / 3.0) + 0.5));
@@ -149,14 +150,11 @@
 
         "sidebar.revamp" = true;
         "sidebar.verticalTabs" = true;
-        "sidebar.position_start" = false;
 
         "reader.parse-on-load.enabled" = false;
 
         "shimmer.remove-winctr-buttons" = true;
         "shimmer.remove-firefox-view-button" = true;
-        "shimmer.native-vertical-tabs" = true;
-        "shimmer.sidebar-right-side" = true;
       };
     };
   };

@@ -129,9 +129,9 @@ in {
           fi
 
           # Build the path based on the safe number of levels
-          for ((i=0; i<levels; i++)); do
+          for i in {1..$levels}; do
             up_path="../$up_path"
-          fi
+          done
 
           cd "$up_path"
           return 0
