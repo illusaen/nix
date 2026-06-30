@@ -16,6 +16,7 @@
           fontSize = toString sizes.applications;
         in "${mono.name}:size=${fontSize},${icon.name}:size=${fontSize}";
         use-bold = true;
+        icon-theme = fleet.theming.icon.name;
         anchor = "top";
         y-margin = 64;
         lines = 12;
