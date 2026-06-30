@@ -5,6 +5,4 @@
     "networking"
     "facter"
   ];
-
-  flake.modules.nixos.hardware = {};
 }

@@ -5,18 +5,17 @@
     config,
     lib,
     pkgs,
+    host,
+    user,
     ...
   }: let
-    persistMount = "/persist";
-    userName = "wendy";
-    rollbackSnapshotRoot = "zroot/local/root@blank";
-    rollbackSnapshotHome = "zroot/local/home@blank";
+    inherit (host.preservation) persistMount rootSnapshot homeSnapshot;
   in {
     imports = [inputs.preservation.nixosModules.preservation];
 
     preservation = {
       enable = true;
-      preserveAt.${persistMount} = config.persist // {users.${userName} = config.persistUser;};
+      preserveAt.${persistMount} = config.persist // {users.${user.name} = config.persistUser;};
     };
 
     boot.initrd.systemd.services.zfs-rollback = {
@@ -37,8 +36,8 @@
       unitConfig.DefaultDependencies = "no";
       serviceConfig.Type = "oneshot";
       script = ''
-        zfs rollback -r ${rollbackSnapshotRoot} && echo "zfs root rollback complete"
-        zfs rollback -r ${rollbackSnapshotHome} && echo "zfs home rollback complete"
+        zfs rollback -r ${rootSnapshot} && echo "zfs root rollback complete"
+        zfs rollback -r ${homeSnapshot} && echo "zfs home rollback complete"
       '';
     };
 
@@ -56,5 +55,12 @@
     };
 
     fileSystems."${persistMount}".neededForBoot = true;
+    systemd.tmpfiles.settings.preservation = {
+      "/home/${user.name}".d = {
+        user = user.name;
+        group = "users";
+        mode = "0700";
+      };
+    };
   };
 }

@@ -516,8 +516,26 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "pkgs-by-name-for-flake-parts": "pkgs-by-name-for-flake-parts",
         "preservation": "preservation",
+        "shimmer": "shimmer",
         "treefmt-nix": "treefmt-nix",
         "wrappers": "wrappers"
+      }
+    },
+    "shimmer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781718586,
+        "narHash": "sha256-z3yEiKFkuQNOzdaAt7vGsB3V/7XgcaFN48uihjSFoz8=",
+        "owner": "nuclearcodecat",
+        "repo": "shimmer",
+        "rev": "c346a3744bcbe49cce33ec2b82754ed0621ebbb7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nuclearcodecat",
+        "ref": "main",
+        "repo": "shimmer",
+        "type": "github"
       }
     },
     "systems": {
