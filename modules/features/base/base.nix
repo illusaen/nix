@@ -12,10 +12,12 @@
     "security"
     "zsh"
     "defaults"
+    "tailscale"
   ];
 
   flake.moduleImports.darwin.base = [
     "state-version"
+    "tailscale"
     "zsh"
   ];
 }

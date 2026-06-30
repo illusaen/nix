@@ -2,12 +2,17 @@
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
+| base16 | submodule | — |  |
 | domain | str | — | Base domain for the fleet |
+| fonts | submodule | — |  |
 | groups | attrsOf | {} | group instances |
 | hosts | attrsOf | {} | host instances |
 | moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
+| monitors | submodule | — |  |
+| theming | submodule | — |  |
 | timeZone | str | CST | Default timezone for the fleet |
 | users | attrsOf | {} | user instances |
+| wallpaper | submodule | — |  |
 
 ## group
 

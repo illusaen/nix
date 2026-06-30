@@ -1,13 +1,11 @@
 * add features:
   - nvf
   - agenix/agenix-rekey/sops
-  - tailscale
   - networking
   - steam
   - bambu studio
   - llama-cpp
   - youtube music player
-  - zathura
   - services for server
 * fix desktop filtering on fuzzel
 * make monitors host specific in moduleSettings - fleet can contain the monitor data but the actual monitor each host uses should be monitor-specific.
