@@ -6,13 +6,20 @@ in {
     lib,
     config,
     ...
-  }: {
+  }: let
+    sddmTheme = pkgs.where-is-my-sddm-theme.override {
+      themeConfig.General = {
+        background = toString topConfig.fleet.wallpaper.image;
+        passwordCursorColor = (topConfig.fleet.base16.scheme pkgs).withHashtag.base0D;
+      };
+    };
+  in {
     services.displayManager = {
       enable = true;
       defaultSession = "niri";
       sddm = {
         enable = true;
-        extraPackages = with pkgs; [qt6.qt5compat where-is-my-sddm-theme];
+        extraPackages = with pkgs; [qt6.qt5compat sddmTheme];
         wayland = {
           enable = true;
           compositor = "weston";
@@ -38,7 +45,7 @@ in {
           in "${lib.getExe pkgs.weston} --shell=kiosk -c ${weston-ini}";
         };
         enableHidpi = true;
-        theme = "${pkgs.where-is-my-sddm-theme}/share/sddm/themes/where_is_my_sddm_theme";
+        theme = "${sddmTheme}/share/sddm/themes/where_is_my_sddm_theme";
       };
     };
   };

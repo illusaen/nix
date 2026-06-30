@@ -14,16 +14,25 @@
   colorVariants ? [], # default: all
   opacityVariants ? [], # default: all
   themeVariants ? [], # default: default (BigSur-like theme)
-  schemeVariants ? [], # default: standard
-  iconVariant ? null, # default: standard (Apple logo)
-  nautilusStyle ? null, # default: stable (BigSur-like style)
-  panelOpacity ? null, # default: 15%
-  panelSize ? null, # default: 32px
+  schemeVariants ? [], # default: standard # default: standard (Apple logo)
+  nautilusStyle ? null, # default: stable (BigSur-like style) # default: 15% # default: 32px
   roundedMaxWindow ? true, # default: false
   darkerColor ? false, # default = false
   highDefinition ? true, # default = false
+  installLibadwaita ? true,
 }: let
   pname = "mactahoe-gtk-theme";
+  installArgs =
+    lib.concatMap (x: ["--alt" x]) altVariants
+    ++ lib.concatMap (x: ["--color" x]) colorVariants
+    ++ lib.concatMap (x: ["--opacity" x]) opacityVariants
+    ++ lib.concatMap (x: ["--theme" x]) themeVariants
+    ++ lib.concatMap (x: ["--scheme" x]) schemeVariants
+    ++ lib.optionals (nautilusStyle != null) ["--nautilus" nautilusStyle]
+    ++ lib.optional darkerColor "--darkercolor"
+    ++ lib.optional highDefinition "--highdefinition"
+    ++ lib.optional installLibadwaita "--libadwaita"
+    ++ lib.optional roundedMaxWindow "--roundedmaxwindow";
 in
   stdenv.mkDerivation {
     inherit pname;
@@ -55,10 +64,16 @@ in
       done
 
       # Do not provide `sudo`, as it is not needed in our use case of the install script
-      substituteInPlace libs/lib-core.sh --replace-fail '$(which sudo)' false
-
       # Provides a dummy home directory
-      substituteInPlace libs/lib-core.sh --replace-fail 'MY_HOME=$(getent passwd "''${MY_USERNAME}" | cut -d: -f6)' 'MY_HOME=/tmp'
+      substituteInPlace libs/lib-core.sh \
+        --replace-fail '$(which sudo)' false \
+        --replace-fail 'MY_HOME=$(getent passwd "''${MY_USERNAME}" | cut -d: -f6)' 'MY_HOME=/tmp'
+
+      substituteInPlace libs/lib-install.sh \
+        --replace-fail 'local TARGET_DIR="''${HOME}/.config/gtk-4.0"' 'local TARGET_DIR="$out/share/libadwaita-themes"' \
+        --replace-fail '$'{HOME}'/.config/gtk-4.0' '$out/share/libadwaita-themes'
+
+      substituteInPlace install.sh --replace-fail '$'{HOME}'/.config/gtk-4.0' '$out/share/libadwaita-themes'
     '';
 
     dontBuild = true;
@@ -67,22 +82,7 @@ in
       runHook preInstall
 
       mkdir -p $out/share/themes
-
-      ./install.sh \
-        ${toString (map (x: "--alt " + x) altVariants)} \
-        ${toString (map (x: "--color " + x) colorVariants)} \
-        ${toString (map (x: "--opacity " + x) opacityVariants)} \
-        ${toString (map (x: "--theme " + x) themeVariants)} \
-        ${toString (map (x: "--scheme " + x) schemeVariants)} \
-        ${lib.optionalString (nautilusStyle != null) ("--nautilus " + nautilusStyle)} \
-        ${lib.optionalString roundedMaxWindow "--roundedmaxwindow"} \
-        ${lib.optionalString darkerColor "--darkercolor"} \
-        ${lib.optionalString highDefinition "--highdefinition"} \
-        ${lib.optionalString (iconVariant != null) ("--gnome-shell -i " + iconVariant)} \
-        ${lib.optionalString (panelSize != null) ("--gnome-shell -panelheight " + panelSize)} \
-        ${lib.optionalString (panelOpacity != null) ("--gnome-shell -panelopacity " + panelOpacity)} \
-        --dest $out/share/themes
-
+      ./install.sh ${lib.escapeShellArgs installArgs} --dest $out/share/themes
       jdupes --quiet --link-soft --recurse $out/share
 
       runHook postInstall
