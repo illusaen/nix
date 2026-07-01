@@ -1,9 +1,10 @@
-{config, ...}: {
+{
   flake.modules.generic.shell-utils = {pkgs, ...}: {environment.systemPackages = [pkgs.local.alacritty];};
 
-  flake.wrappers.alacritty = {
+  flake.fleetWrappers.alacritty = {
     wlib,
     pkgs,
+    fleet,
     ...
   }: {
     imports = [wlib.wrapperModules.alacritty];
@@ -16,13 +17,13 @@
         dynamic_padding = true;
       };
       font = let
-        inherit (config.fleet.fonts) mono sizes;
+        inherit (fleet.fonts) mono sizes;
       in {
         normal.family = mono.name;
         size = sizes.terminal;
       };
       colors = let
-        scheme = config.fleet.base16.scheme pkgs;
+        scheme = fleet.base16.scheme pkgs;
         inherit (scheme) withHashtag;
       in {
         primary = {

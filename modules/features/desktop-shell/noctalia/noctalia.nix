@@ -4,39 +4,47 @@
     inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
-  flake.modules.nixos.noctalia = {pkgs, ...}: {
+  flake.modules.nixos.noctalia = {
+    fleet,
+    moduleSettings,
+    pkgs,
+    ...
+  }: let
+    package = pkgs.local.noctalia-wrapped.passthru.wrap {
+      _module.args = {
+        inherit fleet moduleSettings;
+      };
+    };
+  in {
     imports = [inputs.noctalia.nixosModules.default];
     programs.noctalia = {
       enable = true;
-      package = pkgs.local.noctalia-wrapped;
+      inherit package;
       systemd.enable = true;
     };
   };
 
-  flake.fleetWrappers.noctalia-wrapped = {
-    wlib,
-    lib,
-    pkgs,
+  flake.wrappers.noctalia-wrapped = {
     config,
-    fleet,
+    lib,
+    wlib,
+    pkgs,
     ...
   }: let
-    desktopHosts =
-      fleet.hosts
-      |> builtins.attrValues
-      |> builtins.filter (host: host.tags.role or null == "desktop");
-    desktopHost = builtins.head desktopHosts;
+    fleet = config._module.args.fleet or null;
+    moduleSettings = config._module.args.moduleSettings or null;
+    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
   in {
     imports = [wlib.modules.default];
     package = pkgs.noctalia;
 
-    env.NOCTALIA_CONFIG_DIR = dirOf config.constructFiles.generatedConfig.path;
-    constructFiles.generatedConfig = {
+    env.NOCTALIA_CONFIG_DIR = lib.mkIf hasHostSettings (dirOf config.constructFiles.generatedConfig.path);
+    constructFiles.generatedConfig = lib.mkIf hasHostSettings {
       builder = let
         file = pkgs.replaceVars ./noctalia-config.toml.template {
           mono = fleet.fonts.mono.name;
           sans = fleet.fonts.sans.name;
-          inherit (desktopHost.moduleSettings.monitors) main secondary;
+          inherit (moduleSettings.monitors) main secondary;
           image = fleet.wallpaper.image;
           imageDirectory = fleet.wallpaper.directory;
           location = fleet.timeZone |> lib.splitString "/" |> lib.last;
