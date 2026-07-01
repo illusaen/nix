@@ -28,15 +28,14 @@ References:
 For each host, the system builder derives `host.services` from
 `fleet.services`:
 
-- `host.services.primary` contains services whose `host` is the current host.
-- `host.services.backups` contains services whose `backups` includes the current
-  host, excluding services where the current host is already primary.
-- `host.services.all` is the union, with each service extended by
-  `role = "primary"` or `role = "backup"`.
+- `host.services.<name>` exists when the current host is either the service's
+  primary `host` or one of its `backups`.
+- Each routed service is extended with `role = "primary"` or
+  `role = "backup"`.
 
-The keys of `host.services.all` are appended to `host.moduleNames` before the
+The keys of `host.services` are appended to `host.moduleNames` before the
 recursive module closure is computed. A service named `llama-cpp` therefore
-activates the named module `llama-cpp` on its routed hosts.
+activates the named module `llama-cpp` on its primary and backup hosts.
 
 ## Failure Policy
 
@@ -56,10 +55,10 @@ context:
 { host, ... }: {
   services.example = {
     enable = true;
-    port = host.services.all.example.port;
+    port = host.services.example.port;
   };
 }
 ```
 
 Modules that need primary/backup-specific behavior should branch on
-`host.services.all.<name>.role`.
+`host.services.<name>.role`.

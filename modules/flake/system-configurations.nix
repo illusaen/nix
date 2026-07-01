@@ -51,13 +51,11 @@
     primary = lib.filterAttrs isPrimary config.fleet.services;
     backups = lib.filterAttrs isBackup config.fleet.services;
     withRole = role: lib.mapAttrs (_name: service: service // {inherit role;});
-  in {
-    inherit primary backups;
-    all = (withRole "backup" backups) // (withRole "primary" primary);
-  };
+  in
+    (withRole "backup" backups) // (withRole "primary" primary);
 
   missingServiceModulesFor = class: routedServices:
-    routedServices.all
+    routedServices
     |> builtins.attrNames
     |> builtins.filter (name: classModuleNames class name == []);
 
@@ -110,11 +108,7 @@
     class,
     name,
     host,
-    routedServices ? {
-      primary = {};
-      backups = {};
-      all = {};
-    },
+    routedServices ? {},
     missingServiceModules ? [],
     activeNames ? [],
   }: let
@@ -180,7 +174,7 @@
     |> lib.mapAttrs (
       name: host: let
         routedServices = routedServicesFor host;
-        routedServiceNames = builtins.attrNames routedServices.all;
+        routedServiceNames = builtins.attrNames routedServices;
         missingServiceModules = missingServiceModulesFor class routedServices;
         activeNames = moduleNameClosure (host.moduleNames ++ routedServiceNames);
         ctx = mkHostContext {

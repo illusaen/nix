@@ -101,6 +101,43 @@ implicitly belong to every desktop host.
 
 ## Evaluation Cleanup
 
+### Use Unique Flake Systems
+
+Status: implemented.
+
+`systems` is now derived from the host platforms with `lib.unique`. Before this,
+the evaluated systems list contained `x86_64-linux` twice because both `odin`
+and `huginn` use that platform:
+
+```nix
+["x86_64-linux" "aarch64-linux" "x86_64-linux"]
+```
+
+This is mostly a flake output cleanup; concrete timing did not show a material
+change for `odin`'s NixOS toplevel eval.
+
+### Prefer Read-Only Eval For DrvPath Checks
+
+Status: recommended.
+
+For eval-only probes that read `config.system.build.toplevel.drvPath`, Lix/Nix
+spends a large part of the time instantiating derivations in the store. Passing
+`--read-only` avoids that work while still proving the expression evaluates.
+
+Measured on this repo:
+
+- `odin` drvPath: about `9.8s` normally, about `5.4s` with `--read-only`
+- `huginn` drvPath: about `6.2s` normally, about `3.7s` with `--read-only`
+
+Use this for quick evaluation checks:
+
+```sh
+nix eval --read-only --impure .#nixosConfigurations.odin.config.system.build.toplevel.drvPath
+```
+
+Do not use `--read-only` as a substitute for build or switch commands; it is
+only for eval timing and smoke checks.
+
 ### Remove Unused Module Settings Provenance
 
 Status: implemented.

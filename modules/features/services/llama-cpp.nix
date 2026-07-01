@@ -12,6 +12,7 @@
     services.llama-cpp = {
       enable = true;
       package = llama-cpp;
+      settings.port = host.services.llama-cpp.port;
       # Takes care of downloading if model not present
       settings.models-preset = iniFormat.generate "llama-cpp-models.ini" {
         "*" = {
