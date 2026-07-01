@@ -116,6 +116,13 @@ in {
       readOnly = true;
     };
 
+    privateKey = mkOption {
+      type = path;
+      description = "Path to this host's SSH private key.";
+      readOnly = true;
+      default = "/etc/ssh/host_ed25519";
+    };
+
     tags = mkOption {
       type = attrsOf str;
       description = "Host tags for organization and feature gates";

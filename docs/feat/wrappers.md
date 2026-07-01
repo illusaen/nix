@@ -98,50 +98,132 @@ that will consume the wrapper. Examples:
 - paths to host-specific secrets or generated files
 - per-host package variants
 
-Today, prefer system modules or `moduleSettings` for this behavior. For
-example, host-specific monitor policy can live in `fleet.hosts.<name>` or
-resolved host `moduleSettings`, and the NixOS or Darwin module can use that
-resolved host context when installing or configuring the service.
+Host-specific wrapper settings should still live with the wrapper definition
+when the wrapper owns the generated config. The host module should only inject
+the resolved host context when it selects the package for that host.
 
-## Host-Scoped Wrapper Layer Plan
+This keeps the wrapper as the single owner of wrapper settings while avoiding a
+global wrapper that guesses which host it belongs to.
 
-A future host-scoped wrapper layer should be separate from global
-`self.wrappers`.
+## Host-Specific Wrapper Pattern
 
-The shape could be:
+Declare the base wrapper under `flake.wrappers`. The base wrapper must evaluate
+without host arguments because `nix-wrapper-modules` also exports it as a global
+package:
+
+```text
+packages.<system>.<name>
+pkgs.local.<name>
+```
+
+Read host-specific context from `config._module.args`, and guard host-specific
+settings with `lib.mkIf`.
 
 ```nix
 {
-  fleet.hosts.odin.wrappers.waybar = { host, fleet, moduleSettings, pkgs, ... }: {
-    imports = [ ./wrappers/waybar/module.nix ];
-    monitors = moduleSettings.monitors;
-    font.size = moduleSettings.desktop-shell.waybar.fontSize;
+  flake.wrappers.niri = {
+    config,
+    lib,
+    pkgs,
+    wlib,
+    ...
+  }: let
+    fleet = config._module.args.fleet or null;
+    moduleSettings = config._module.args.moduleSettings or null;
+    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
+  in {
+    imports = [wlib.wrapperModules.niri];
+
+    settings = lib.mkIf hasHostSettings (
+      let
+        scheme = (fleet.base16.scheme pkgs).withHashtag;
+        inherit (moduleSettings) monitors;
+        outputs = import ./_outputs.nix {inherit monitors;};
+      in {
+        inherit outputs;
+        prefer-no-csd = true;
+        hotkey-overlay.skip-at-startup = true;
+      }
+    );
   };
 }
 ```
 
-The system configuration builder would then evaluate those host wrapper modules
-while building `nixosConfigurations.<host>` or `darwinConfigurations.<host>`.
-Its special args should include:
+Then, in the host system module, extend the global package with host arguments:
 
 ```nix
 {
-  inherit fleet host user moduleSettings;
+  flake.modules.nixos.niri = {
+    fleet,
+    moduleSettings,
+    pkgs,
+    ...
+  }: {
+    programs.niri = {
+      enable = true;
+      package = (pkgs.local.niri or pkgs.niri).passthru.wrap {
+        _module.args = {
+          inherit fleet moduleSettings;
+        };
+      };
+    };
+  };
 }
 ```
 
-The evaluated derivations should be exposed only inside the host configuration,
-for example by adding them to `environment.systemPackages` or by passing them to
-host system modules. They should not be merged into global `self.wrappers`,
-because global flake outputs cannot represent multiple host-specific variants
-under the same wrapper name.
+Use the same pattern for generated files:
 
-For monitor-aware wrappers like Waybar, the long-term split should be:
+```nix
+{
+  flake.wrappers.noctalia-wrapped = {
+    config,
+    lib,
+    pkgs,
+    wlib,
+    ...
+  }: let
+    fleet = config._module.args.fleet or null;
+    moduleSettings = config._module.args.moduleSettings or null;
+    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
+  in {
+    imports = [wlib.modules.default];
+    package = pkgs.noctalia;
 
-- Fleet wrapper layer: fonts, colors, and global defaults.
-- Host wrapper layer: monitor connectors, output placement, and per-host panel
-  behavior.
-- System module layer: installation, service wiring, and host-specific enablement.
+    env.NOCTALIA_CONFIG_DIR =
+      lib.mkIf hasHostSettings (dirOf config.constructFiles.generatedConfig.path);
 
-This keeps global wrapper derivations reusable while still allowing host-aware
-derivations when a wrapper truly needs host context.
+    constructFiles.generatedConfig = lib.mkIf hasHostSettings {
+      relPath = "noctalia-config.toml";
+      builder = let
+        file = pkgs.replaceVars ./noctalia-config.toml.template {
+          inherit (moduleSettings.monitors) main secondary;
+          mono = fleet.fonts.mono.name;
+          sans = fleet.fonts.sans.name;
+        };
+      in ''
+        ln -s ${lib.escapeShellArg file} "$2"
+      '';
+    };
+  };
+}
+```
+
+Do not declare optional host arguments directly in the wrapper function
+signature:
+
+```nix
+# Avoid this.
+flake.wrappers.niri = { fleet ? null, moduleSettings ? null, ... }: { };
+```
+
+The Nix module system still tries to resolve function parameters from module
+arguments. Reading from `config._module.args.<name> or null` keeps the base
+global wrapper evaluable and lets host modules inject context later with
+`.passthru.wrap`.
+
+The split is:
+
+- Wrapper layer: owns generated wrapper settings and generated files.
+- Host system module: injects `fleet`, `host`, `user`, or `moduleSettings` and
+  assigns the resulting derivation to a system option.
+- Module settings: owns host/user/fleet policy values such as monitor names.
