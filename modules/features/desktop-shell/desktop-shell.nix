@@ -1,5 +1,7 @@
 {
   flake.moduleImports.desktop-shell = [
+    "audio"
+    "bluetooth"
     "monitors"
     "niri"
     "display-manager"
