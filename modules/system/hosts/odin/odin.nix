@@ -5,7 +5,8 @@
     hostId = "abf835ae";
 
     tags.role = "desktop";
-    moduleNames = ["nvidia"];
+    tags.gpu = "nvidia";
+    tags.features = ["creative" "dev" "gaming"];
 
     networkInterfaces.eno1 = {
       ipv4 = "192.168.1.162/24";

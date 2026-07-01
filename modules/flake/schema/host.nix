@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
-  inherit (lib.types) enum submodule path attrsOf listOf str anything;
+  inherit (lib.types) either enum submodule path attrsOf listOf str anything;
   genSchema = inputs.gen-schema.lib;
 
   getIpFromInterface = isIpv4: interfaces: let
@@ -124,7 +124,7 @@ in {
     };
 
     tags = mkOption {
-      type = attrsOf str;
+      type = attrsOf (either str (listOf str));
       description = "Host tags for organization and feature gates";
       default = {};
       defaultText = {text = "{}";};

@@ -21,8 +21,10 @@ in {
             publicKey = rootPath + "/secrets/hosts/${config.name}/host_ed25519.pub";
 
             moduleNames = lib.flatten (["base" "boot" "hardware" config.owner.name]
-              ++ lib.optional (config.tags.role or null == "desktop") ["desktop-shell" "programs" "theming"]
+              ++ lib.optional (config.tags.gpu or null == "nvidia") "nvidia"
+              ++ lib.optional (config.tags.role or null == "desktop") ["desktop-shell" "programs-core" "theming"]
               ++ lib.optional (config.tags.role or null == "server") "services"
+              ++ lib.optional (config.tags.features or [] != []) (map (f: "programs-${f}") config.tags.features)
               ++ lib.optional config.preservation.enable "preservation");
           }
         )
