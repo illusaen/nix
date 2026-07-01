@@ -110,16 +110,9 @@ in {
       description = "Derived path to host facter.json";
     };
 
-    secretPath = mkOption {
-      type = path;
-      description = "Derived path to host secrets directory";
-      internal = true;
-      readOnly = true;
-    };
-
     publicKey = mkOption {
       type = path;
-      description = "Derived path to public key used by host for agenix";
+      description = "Derived path to this host's SSH public key.";
       readOnly = true;
     };
 

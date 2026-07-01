@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption;
-  inherit (lib.types) submodule nullOr path listOf int str bool attrsOf anything;
+  inherit (lib.types) submodule nullOr listOf int str bool attrsOf anything;
   genSchema = inputs.gen-schema.lib;
   sshKeyType = submodule {
     options = {
@@ -55,13 +55,6 @@ in {
       default = {};
       defaultText = {text = "{}";};
       description = "User identity information";
-    };
-
-    secretPath = mkOption {
-      type = path;
-      readOnly = true;
-      internal = true;
-      description = "Per-user secret directory";
     };
 
     groups = mkOption {

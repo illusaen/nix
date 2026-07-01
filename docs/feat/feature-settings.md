@@ -75,8 +75,8 @@ Current schema responsibilities:
 - `schema.fleet.options.hosts`, `schema.fleet.options.users`, and
   `schema.fleet.options.groups` declare the fleet-owned entity registries.
 - `schema.host.imports` and `schema.user.imports` define computed entity
-  fields, such as `host.ipv4`, `host.secretPath`, `host.publicKey`,
-  `user.secretPath`, and `user.resolvedGroups`.
+  fields, such as `host.ipv4`, `host.publicKey`, and
+  `user.resolvedGroups`.
 - `genSchema.mkInstanceRegistry ... extraModules` wires registry-level computed
   defaults into each entity instance.
 

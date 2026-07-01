@@ -17,12 +17,8 @@ in {
             lib,
             ...
           }: {
-            secretPath = rootPath + "/secrets/hosts/${config.name}";
             facter = rootPath + "/modules/system/hosts/${config.name}/facter.json";
-            publicKey =
-              if config.secretPath != null
-              then config.secretPath + "/host_ed25519.pub"
-              else null;
+            publicKey = rootPath + "/secrets/hosts/${config.name}/host_ed25519.pub";
 
             moduleNames = lib.flatten (["base" "boot" "hardware" config.owner.name]
               ++ lib.optional (config.tags.role or null == "desktop") ["desktop-shell" "programs" "theming"]
@@ -36,11 +32,6 @@ in {
   schema.fleet.options.users =
     (genSchema.mkInstanceRegistry config.schema.user {
       refs.resolvedGroups = config.fleet.groups;
-      extraModules = [
-        ({config, ...}: {
-          secretPath = rootPath + "/secrets/users/${config.name}";
-        })
-      ];
     })
     // {defaultText = {text = "{}";};};
   schema.fleet.options.groups =

@@ -15,6 +15,10 @@
   };
 
   inputs = {
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     base16.url = "github:SenchoPens/base16.nix";
     codex-desktop-linux = {
       url = "github:ilysenko/codex-desktop-linux";

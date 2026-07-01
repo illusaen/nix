@@ -33,8 +33,7 @@ add more abstraction than this cleanup needs.
 | `owner` | Used | Selects the host user and validates injected host context. |
 | `hostId` | Used | Sets `networking.hostId`. |
 | `facter` | Used | Feeds hardware facter configuration. |
-| `secretPath` | Reserved | Kept for future host secret integration. |
-| `publicKey` | Reserved | Validated today; kept for future agenix/sops host-key use. |
+| `publicKey` | Used | Points to the tracked host SSH public key used for SSH known hosts and agenix recipients. |
 | `tags` | Used | Role tags expand default module names such as desktop or services. |
 | `moduleSettings` | Used | Feeds host-level module setting overrides. |
 | `moduleNames` | Used | Declares the named modules enabled by the host. |
@@ -53,7 +52,6 @@ the smaller schema is faster to evaluate and easier to read.
 | `identity.accountName` | Reserved | Useful for external account metadata; no system consumer yet. |
 | `identity.email` | Reserved | Useful for Git or account metadata; no system consumer yet. |
 | `identity.sshKeys` | Used | Populates OpenSSH authorized keys. |
-| `secretPath` | Reserved | Kept for future user secret integration. |
 | `groups` | Used | Feeds the registry membership graph. |
 | `resolvedGroups` | Used | Registry-resolved group data backs transitive POSIX group membership. |
 | `moduleSettings` | Used | Feeds user-level module setting overrides. |
@@ -80,8 +78,8 @@ hosts. Host and user `moduleSettings` should remain narrower overrides.
 
 - Keep `moduleImports` as one logical dependency list keyed by module name.
   Resolution should select the generic module plus the active platform module.
-- Keep secrets-related paths for now, but do not add secret-manager wiring until
-  the secret backend and host key model are explicit.
+- Keep host public keys as registry metadata; avoid adding secret path metadata
+  until there is a direct consumer.
 - Prefer direct NixOS/Darwin module generation from entity registries over a
   broad aspect framework. The current code is easier to optimize when registry
   data has a small number of obvious consumers.

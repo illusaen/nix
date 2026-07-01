@@ -6,7 +6,7 @@
     pkgs,
     ...
   }: let
-    sshKeyPath = "/etc/ssh/ssh_host_ed25519_key";
+    sshKeyPath = "/etc/ssh/host_ed25519";
     accountName = "illusaen";
     displayName = "Wendy Chen";
     email = "jaewchen@gmail.com";

@@ -37,8 +37,7 @@
 | networkInterfaces | attrsOf | {} | Network interfaces |
 | owner | ref(user) | — | Primary user for this host |
 | preservation | submodule | — |  |
-| publicKey | path | — | Derived path to public key used by host for agenix |
-| secretPath | path | — | Derived path to host secrets directory |
+| publicKey | path | — | Derived path to this host's SSH public key. |
 | system | enum | — | System platform |
 | tags | attrsOf | {} | Host tags for organization and feature gates |
 
@@ -59,5 +58,4 @@
 | identity | submodule | {} | User identity information |
 | moduleSettings | attrsOf | {} | User-level raw module settings overrides. |
 | resolvedGroups | setOf(ref(group)) | \[ ... \] | Computed set of group instances using group registry |
-| secretPath | path | — | Per-user secret directory |
 | system | submodule | — |  |
