@@ -147,10 +147,6 @@
         "dom.push.connection.enabled" = false;
         "dom.battery.enabled" = false;
         "dom.private-attribution.submission.enabled" = false;
-
-        "sidebar.revamp" = true;
-        "sidebar.verticalTabs" = true;
-
         "reader.parse-on-load.enabled" = false;
 
         "shimmer.remove-winctr-buttons" = true;

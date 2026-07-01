@@ -130,6 +130,7 @@ in {
 
           # Build the path based on the safe number of levels
           for i in {1..$levels}; do
+            echo "$i"
             up_path="../$up_path"
           done
 
