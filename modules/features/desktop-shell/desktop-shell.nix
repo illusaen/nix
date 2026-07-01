@@ -3,6 +3,7 @@
     "audio"
     "bluetooth"
     "monitors"
+    "fonts"
     "niri"
     "display-manager"
     "nautilus"
