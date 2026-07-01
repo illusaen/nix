@@ -7,14 +7,18 @@
   flake.modules.nixos.secrets = {pkgs, ...}: {
     imports = [inputs.agenix.nixosModules.default];
 
-    age = {
-      identityPaths = ["/etc/ssh/host_ed25519"];
-      secrets = {};
-    };
+    age.identityPaths = ["/etc/ssh/host_ed25519"];
 
     environment.systemPackages = [
       inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
       pkgs.age
+    ];
+
+    persist.files = [
+      {
+        file = "/etc/ssh/host_ed25519";
+        mode = "0600";
+      }
     ];
   };
 }

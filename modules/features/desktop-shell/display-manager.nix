@@ -4,6 +4,7 @@
     lib,
     config,
     fleet,
+    moduleSettings,
     ...
   }: let
     sddmTheme = pkgs.where-is-my-sddm-theme.override {
@@ -37,7 +38,7 @@
                 keymap_options = xcfg.xkb.options;
               };
               output = {
-                name = fleet.monitors.conn.secondary;
+                name = moduleSettings.monitors.secondary;
                 mode = "off";
               };
             };

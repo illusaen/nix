@@ -114,7 +114,7 @@ The shape could be:
 {
   fleet.hosts.odin.wrappers.waybar = { host, fleet, moduleSettings, pkgs, ... }: {
     imports = [ ./wrappers/waybar/module.nix ];
-    monitors = host.monitors.conn;
+    monitors = moduleSettings.monitors;
     font.size = moduleSettings.desktop-shell.waybar.fontSize;
   };
 }

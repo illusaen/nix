@@ -22,9 +22,14 @@
     fleet,
     ...
   }: let
+    desktopHosts =
+      fleet.hosts
+      |> builtins.attrValues
+      |> builtins.filter (host: host.tags.role or null == "desktop");
+    desktopHost = builtins.head desktopHosts;
     scheme = (fleet.base16.scheme pkgs).withHashtag;
     inherit (fleet.theming) cursor;
-    monitors = fleet.monitors.conn;
+    monitors = desktopHost.moduleSettings.monitors;
     animations = import ./_animations.nix;
     extra = import ./_extra.nix;
     mouse = import ./_mouse.nix {
