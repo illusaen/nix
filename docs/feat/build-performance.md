@@ -185,9 +185,10 @@ targets.
 
 - `autostart` is desktop-only. `tailscale-systray` was split out so the
   Tailscale daemon can stay in `base` without depending on `systemdAutostart`.
-- `environment.systemPackages` contains duplicates such as multiple `zsh`
-  entries. Nix store closures deduplicate by path, so this is mostly readability,
-  but cleaning it up makes package origins easier to inspect.
+- Repo-owned `environment.systemPackages` duplication was cleaned up for `zsh`.
+  Remaining duplicate paths come from upstream NixOS modules, such as filesystem
+  tools, firewall/nftables helpers, user/group management, and shell defaults.
+  Nix store closures deduplicate by path, so these are mostly readability noise.
 - `modules/features/programs/steam.nix` has `homebrew.cashs`, which looks like a
   typo for `homebrew.casks`. This is not a Linux build-time issue, but it is dead
   configuration.
@@ -200,8 +201,8 @@ targets.
    `noctalia` should remain in default package outputs.
 3. Fix `muninn` facter/hardware data so the aarch64 host no longer evaluates
    x86-only AMD microcode.
-4. Clean duplicate package entries in `environment.systemPackages` for
-   readability.
+4. Investigate upstream NixOS duplicate package paths only if they become
+   operationally confusing; the repo-owned duplicate has been removed.
 
 ## Verification Commands
 

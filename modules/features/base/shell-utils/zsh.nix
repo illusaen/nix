@@ -1,12 +1,7 @@
-{self, ...}: let
+let
   historyFile = ".local/state/.zsh_history";
 in {
   flake.modules.nixos.zsh = {
-    imports = [self.nixosModules.zsh];
-    wrappers.zsh = {
-      enable = true;
-      asSystemDefault = true;
-    };
     persistUser.files = [
       {
         file = historyFile;
@@ -21,7 +16,6 @@ in {
     ...
   }: {
     users.users.${user.name}.shell = pkgs.local.zsh or pkgs.zsh;
-    environment.systemPackages = [(pkgs.local.zsh or pkgs.zsh)];
   };
 
   flake.wrappers.zsh = {
