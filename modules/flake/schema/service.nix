@@ -5,7 +5,7 @@
 }: let
   genSchema = inputs.gen-schema.lib;
 in {
-  schema.service.options = {config, ...}: {
+  schema.service.options = {
     port = lib.mkOption {
       type = lib.types.int;
       description = "Service port number";
@@ -22,8 +22,7 @@ in {
     backups = lib.mkOption {
       type = genSchema.setOf (genSchema.ref "host");
       default = [];
-      description = "Hosts this service also runs on - the service's host is automatically removed";
-      apply = value: lib.filter (h: h.id_hash != config.host.id_hash) value;
+      description = "Hosts this service also runs on";
     };
   };
 

@@ -1,3 +1,3 @@
 {
-  flake.moduleImports.services = ["llama-cpp"];
+  flake.moduleImports.services = [];
 }

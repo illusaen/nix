@@ -87,6 +87,7 @@ in {
   schema.fleet.options.services =
     (genSchema.mkInstanceRegistry config.schema.service {
       refs.host = config.fleet.hosts;
+      refs.backups = config.fleet.hosts;
     })
     // {defaultText = {text = "{}";};};
 }

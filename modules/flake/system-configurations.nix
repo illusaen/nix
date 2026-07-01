@@ -44,6 +44,22 @@
     )
     names;
 
+  routedServicesFor = host: let
+    isPrimary = _name: service: service.host.id_hash == host.id_hash;
+    isBackup = name: service: !(isPrimary name service) && lib.any (backup: backup.id_hash == host.id_hash) service.backups;
+    primary = lib.filterAttrs isPrimary config.fleet.services;
+    backups = lib.filterAttrs isBackup config.fleet.services;
+    withRole = role: lib.mapAttrs (_name: service: service // {inherit role;});
+  in {
+    inherit primary backups;
+    all = (withRole "backup" backups) // (withRole "primary" primary);
+  };
+
+  missingServiceModulesFor = class: routedServices:
+    routedServices.all
+    |> builtins.attrNames
+    |> builtins.filter (name: classModuleNames class name == []);
+
   normalizeSettingsModule = raw:
     if raw ? imports || raw ? options || raw ? config
     then raw
@@ -133,6 +149,12 @@
     class,
     name,
     host,
+    routedServices ? {
+      primary = {};
+      backups = {};
+      all = {};
+    },
+    missingServiceModules ? [],
     activeNames ? [],
   }: let
     inherit (config) fleet;
@@ -153,7 +175,12 @@
       userModuleSettings = user.moduleSettings or {};
     };
     resolvedFleet = fleet // {moduleSettings = fleetModuleSettings;};
-    resolvedHost = host // {moduleSettings = hostModuleSettings;};
+    resolvedHost =
+      host
+      // {
+        moduleSettings = hostModuleSettings;
+        services = routedServices;
+      };
     resolvedUser = user // {moduleSettings = userModuleSettings;};
     provenance = {
       fleet = moduleSettingsProvenance {
@@ -199,6 +226,13 @@
             (id_hash ${user.id_hash} vs ${host.owner.id_hash}).
           '';
         }
+        {
+          assertion = missingServiceModules == [];
+          message = ''
+            ${class} host ${name} has routed services without matching flake modules:
+            ${lib.concatStringsSep ", " missingServiceModules}
+          '';
+        }
       ];
     };
   };
@@ -212,9 +246,12 @@
     |> lib.filterAttrs (_name: host: host.class == class)
     |> lib.mapAttrs (
       name: host: let
-        activeNames = moduleNameClosure host.moduleNames;
+        routedServices = routedServicesFor host;
+        routedServiceNames = builtins.attrNames routedServices.all;
+        missingServiceModules = missingServiceModulesFor class routedServices;
+        activeNames = moduleNameClosure (host.moduleNames ++ routedServiceNames);
         ctx = mkHostContext {
-          inherit class name host activeNames;
+          inherit class name host routedServices missingServiceModules activeNames;
         };
         evaluationModule = {
           imports = [ctx.module] ++ modulesForNames class activeNames ++ [host.extraModule];
