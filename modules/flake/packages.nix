@@ -22,25 +22,20 @@
       );
   };
 
-  perSystem = {
-    system,
-    config,
-    ...
-  }: let
+  perSystem = {system, ...}: let
     pkgs = import inputs.nixpkgs-unstable {
       inherit system;
       config.allowUnfree = true;
-      overlays = [(_final: _prev: {local = config.packages;}) inputs.noctalia.overlays.default];
+      overlays = [self.overlays.default];
     };
   in {
     _module.args.pkgs = pkgs;
     pkgsDirectory = rootPath + /packages;
 
     # Placing long building packages into packages for gh workflow to build and cache
-    packages = {
-      inherit (pkgs) bambu-studio;
+    legacyPackages = {
       llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
-      inherit (pkgs) noctalia;
+      inherit (pkgs) bambu-studio;
     };
   };
 

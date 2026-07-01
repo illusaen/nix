@@ -3,9 +3,11 @@
     fleet,
     moduleSettings,
     pkgs,
+    self,
     ...
   }: let
-    package = (pkgs.local.niri or pkgs.niri).passthru.wrap {
+    package = self.wrappers.niri.wrap {
+      inherit pkgs;
       _module.args = {
         inherit fleet moduleSettings;
       };

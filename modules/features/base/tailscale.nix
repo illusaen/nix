@@ -16,6 +16,10 @@
       allowedUDPPorts = [config.services.tailscale.port];
     };
 
+    persist.directories = ["/var/lib/tailscale"];
+  };
+
+  flake.modules.nixos.tailscale-systray = {config, ...}: {
     systemdAutostart = [
       (let
         inherit (config.services.tailscale) package;
@@ -25,8 +29,6 @@
         exec = "${package} systray";
       })
     ];
-
-    persist.directories = ["/var/lib/tailscale"];
   };
 
   flake.modules.darwin.tailscale.homebrew.masApps.Tailscale = 1475387142;

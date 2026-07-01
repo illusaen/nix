@@ -9,6 +9,7 @@
     "nautilus"
     "misc-scripts"
     "noctalia"
+    "tailscale-systray"
     "wallpaper"
   ];
 }

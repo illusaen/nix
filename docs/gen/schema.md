@@ -8,7 +8,6 @@
 | groups | attrsOf | {} | group instances |
 | hosts | attrsOf | {} | host instances |
 | moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
-| monitors | submodule | — |  |
 | services | attrsOf | {} | service instances |
 | theming | submodule | — |  |
 | timeZone | str | CST | Default timezone for the fleet |
@@ -37,6 +36,7 @@
 | networkInterfaces | attrsOf | {} | Network interfaces |
 | owner | ref(user) | — | Primary user for this host |
 | preservation | submodule | — |  |
+| privateKey | path | /etc/ssh/host_ed25519 | Path to this host's SSH private key. |
 | publicKey | path | — | Derived path to this host's SSH public key. |
 | system | enum | — | System platform |
 | tags | attrsOf | {} | Host tags for organization and feature gates |

@@ -55,6 +55,13 @@
       })
       config.flake.fleetWrapperModules;
     flake.nixosModules = builtins.mapAttrs (_: v: v.install) self.wrappers;
-    perSystem = {pkgs, ...}: {wrappers.pkgs = pkgs;};
+    perSystem = {pkgs, ...}: {
+      wrappers = {
+        inherit pkgs;
+        packages = {
+          noctalia-wrapped = true;
+        };
+      };
+    };
   };
 }

@@ -8,9 +8,11 @@
     fleet,
     moduleSettings,
     pkgs,
+    self,
     ...
   }: let
-    package = pkgs.local.noctalia-wrapped.passthru.wrap {
+    package = self.wrappers.noctalia-wrapped.wrap {
+      inherit pkgs;
       _module.args = {
         inherit fleet moduleSettings;
       };
@@ -22,6 +24,8 @@
       inherit package;
       systemd.enable = true;
     };
+
+    nixpkgs.overlays = [inputs.noctalia.overlays.default];
   };
 
   flake.wrappers.noctalia-wrapped = {

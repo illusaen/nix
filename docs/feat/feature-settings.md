@@ -225,9 +225,8 @@ The architecture should keep four stages separate.
 3. **Context preparation**
    The system configuration layer resolves the recursive named module closure,
    imports matching generic plus platform modules, builds the active settings
-   schema from `flake.moduleOptions`, resolves fleet/host/user moduleSettings,
-   and injects resolved `fleet`, `host`, `user`, `moduleSettings`, and
-   `moduleSettingsProvenance`.
+   schema from `flake.moduleOptions`, resolves host-effective moduleSettings,
+   and injects resolved `fleet`, `host`, `user`, and `moduleSettings`.
 
 4. **System evaluation**
    `lib.nixosSystem` or `inputs.darwin.lib.darwinSystem` evaluates the final
@@ -272,7 +271,7 @@ Recommended direction:
 Values are resolved with the Nix module system, so normal option typing and
 override semantics apply.
 
-Precedence is:
+Precedence for the injected host-effective settings view is:
 
 1. Module option defaults.
 2. `fleet.moduleSettings`.
@@ -280,30 +279,16 @@ Precedence is:
 4. `fleet.users.<name>.moduleSettings`.
 5. Any `lib.mkForce` value wins over normal values at any entity level.
 
-The resolved injected entities are:
+The resolved injected settings are available as:
 
-- `fleet.moduleSettings`: defaults plus fleet values.
-- `host.moduleSettings`: defaults plus fleet and host values.
-- `user.moduleSettings`: defaults plus fleet, host, and user values.
+- `moduleSettings`
+- `fleet.moduleSettings`
+- `host.moduleSettings`
+- `user.moduleSettings`
 
-## Provenance
-
-`moduleSettingsProvenance` is injected as a best-effort source map with the same
-shape as resolved settings:
-
-```nix
-moduleSettingsProvenance.host.nix-settings.warnDirty
-```
-
-Source values are `default`, `fleet`, `host`, or `user`. This is useful for
-debugging simple scalar settings.
-
-Limitations:
-
-- Complex merges can make a final value come from multiple sources.
-- List concatenation and nested attrset merges may not have one precise source.
-- `lib.mkForce` changes effective priority; provenance is still best-effort and
-  should be treated as diagnostic information, not as a formal proof.
+All four currently point at the same host-effective settings view. Separate
+fleet-only or user-only resolved views should be added only when a consumer
+needs them.
 
 ## Findings From References
 

@@ -14,47 +14,43 @@ systems are then built from named modules:
 - `huginn`: `base`, `boot`, `hardware`, `wendy`, `services`, `preservation`
 - `muninn`: `base`, `boot`, `hardware`, `wendy`, `services`, `preservation`
 
-Role-based host defaults are working, but several imported feature groups are
-too broad.
+Role-based host defaults are working. Several broad feature groups have already
+been narrowed, and the remaining large bundle is the desktop `programs`
+aggregator.
 
 ## Highest Impact Cleanup
 
 ### Split Desktop Hardware From Server Hardware
 
-`hardware` currently imports:
+Status: implemented.
+
+`hardware` now imports only common hardware modules:
 
 ```nix
 [
-  "audio"
-  "bluetooth"
   "networking"
   "facter"
 ]
 ```
 
-Because every host gets `hardware`, servers also get desktop audio and
-Bluetooth behavior:
+Desktop-only hardware behavior now comes from `desktop-shell`:
 
-- `pavucontrol`
-- `playerctld`
-- PipeWire 32-bit ALSA support
-- `blueman`
-- Bluetooth persistence
+```nix
+[
+  "audio"
+  "bluetooth"
+]
+```
 
-This is unnecessary for `huginn` and `muninn`.
-
-Recommended change:
-
-- Keep `hardware = [ "networking" "facter" ]`.
-- Add a new `desktop-hardware = [ "audio" "bluetooth" ]`.
-- Add `desktop-hardware` only for hosts with `tags.role = "desktop"`.
-
-This should reduce server closures and make server rebuilds less likely to pull
-desktop packages.
+This removes explicit desktop audio and Bluetooth packages from server host
+closures.
 
 ### Move Fonts Out Of Base
 
-`base` imports `fonts`, and `fonts` installs the full UI font set:
+Status: implemented.
+
+`fonts` moved out of `base` and into `desktop-shell`. The full UI font set is
+now desktop-only:
 
 - Font Awesome
 - Maple Mono NF CN
@@ -62,15 +58,6 @@ desktop packages.
 - Monaspace
 - Noto Color Emoji
 - Material Symbols
-
-That is useful for desktops, but headless server hosts usually do not need it.
-
-Recommended change:
-
-- Remove `fonts` from `base`.
-- Add `fonts` to `desktop-shell` or `theming`.
-- If a server needs fonts for a service later, add a service-specific font
-  module instead of making fonts global.
 
 ### Split Desktop Programs Into Smaller Groups
 
@@ -116,50 +103,43 @@ implicitly belong to every desktop host.
 
 ### Remove Unused Module Settings Provenance
 
-`system-configurations.nix` computes:
+Status: implemented.
 
-- fleet-level module settings
-- host-level module settings
-- user-level module settings
-- provenance for all three
+`system-configurations.nix` now computes only the host-level resolved
+`moduleSettings` view that modules consume. `moduleSettingsProvenance` is no
+longer injected.
 
-Only `moduleSettings` is used outside the resolver today. No module currently
-uses `moduleSettingsProvenance`, `fleet.moduleSettings`, or
-`user.moduleSettings`.
+The injected values are:
 
-Recommended change:
+- `moduleSettings`
+- `fleet.moduleSettings`
+- `host.moduleSettings`
+- `user.moduleSettings`
 
-- Compute only host-level `moduleSettings` by default.
-- Remove `moduleSettingsProvenance` from `specialArgs` until a consumer exists.
-- Do not resolve fleet/user settings separately unless a module actually needs
-  those views.
-
-This removes multiple `lib.evalModules` calls per host during evaluation.
+All currently point at the same resolved host view. This removes multiple
+`lib.evalModules` calls per host during evaluation.
 
 ### Keep Host-Specific Wrappers Out Of Global Package Builds
+
+Status: partially implemented.
 
 Host-specific wrappers now use the correct pattern:
 
 ```nix
-pkgs.local.niri.passthru.wrap {
+self.wrappers.niri.wrap {
+  inherit pkgs;
   _module.args = {
     inherit fleet moduleSettings;
   };
 }
 ```
 
-The tradeoff is that `niri` and `noctalia-wrapped` still also exist as global
-base packages under `packages.<system>`. Those base packages exist so the host
-can call `passthru.wrap`, but they are not the final host-specific packages.
+`self` is injected into host module arguments. `noctalia-wrapped` is excluded
+from `perSystem.wrappers.packages` because it is only used as a host-specific
+wrapper base.
 
-Recommended future simplification:
-
-- Add `self` to host `specialArgs`.
-- Build host wrappers from `self.wrappers.<name>.wrap { inherit pkgs; ... }`.
-- Exclude host-only wrapper bases from `perSystem.wrappers.packages`.
-
-That would avoid exporting and building base variants that are not meant to be
-installed directly.
+`niri` still remains exported because `niri-scripts` depends on `pkgs.local.niri`
+as a runtime input.
 
 ## Package Output Cleanup
 
@@ -169,46 +149,42 @@ heavy upstream packages:
 - `bambu-studio`
 - `llama-cpp` with CUDA
 - `noctalia`
-- all wrapper packages
+- wrapper packages, except host-only wrapper bases
 
 Exporting a package does not mean `nix flake check` builds it by default, but it
 does make it easy for CI or cache jobs to build more than a host rebuild needs.
 
-Recommended change:
+Implemented:
+
+- `llama-cpp` service now uses `pkgs.local.llama-cpp`, so the CUDA override is
+  defined once.
+- `noctalia-wrapped` is no longer exported as a default package.
+- `niri` still remains exported because `niri-scripts` uses it.
+
+Still recommended:
 
 - Keep hand-maintained local packages in `packages`.
 - Move cache-only upstream packages behind an explicit cache workflow or a
   documented package group.
-- Reuse exported heavy packages from modules when they are intentionally
-  exported. For example, if `packages.llama-cpp` stays, the service module
-  should use `pkgs.local.llama-cpp` instead of repeating
-  `pkgs.llama-cpp.override { cudaSupport = true; }`.
 
 ## Check Output Cleanup
 
-`checks` currently include full NixOS toplevel builds:
+Status: implemented.
 
-- `checks.x86_64-linux.configurations:nixos:huginn`
-- `checks.x86_64-linux.configurations:nixos:odin`
-- `checks.aarch64-linux.configurations:nixos:muninn`
+Default `checks` no longer include full NixOS toplevel builds. Full host builds
+are exposed under `hostBuilds`:
 
-This is useful for confidence, but expensive when `nix flake check` is used as a
-fast local validation command.
+- `hostBuilds.x86_64-linux.configurations:nixos:huginn`
+- `hostBuilds.x86_64-linux.configurations:nixos:odin`
+- `hostBuilds.aarch64-linux.configurations:nixos:muninn`
 
-Recommended change:
-
-- Split fast checks from full system build checks.
-- Keep formatting, schema, and evaluation checks in default `checks`.
-- Move full host toplevel builds to a separate explicit command or CI job, such
-  as `nix build .#nixosConfigurations.odin.config.system.build.toplevel`.
-
-This makes local validation faster while preserving full build coverage when it
-is intentionally requested.
+This makes local `nix flake check` faster while preserving explicit full build
+targets.
 
 ## Smaller Cleanups
 
-- `base` imports `autostart`, but only graphical sessions use it. Move it to
-  `desktop-shell` or `programs`.
+- `autostart` is desktop-only. `tailscale-systray` was split out so the
+  Tailscale daemon can stay in `base` without depending on `systemdAutostart`.
 - `environment.systemPackages` contains duplicates such as multiple `zsh`
   entries. Nix store closures deduplicate by path, so this is mostly readability,
   but cleaning it up makes package origins easier to inspect.
@@ -218,13 +194,14 @@ is intentionally requested.
 
 ## Suggested Implementation Order
 
-1. Split `hardware` into common and desktop-only hardware.
-2. Move `fonts` and `autostart` out of `base`.
-3. Simplify module settings resolution and remove unused provenance.
-4. Split `programs` into smaller desktop app groups.
-5. Decide whether heavy upstream packages should remain exported.
-6. Decide whether full host builds belong in default `checks`.
-7. Refactor host-specific wrappers to avoid exporting unused base packages.
+1. Split `programs` into smaller desktop app groups only if `odin` will stop
+   importing some of them.
+2. Decide whether cache-only upstream packages such as `bambu-studio` and
+   `noctalia` should remain in default package outputs.
+3. Fix `muninn` facter/hardware data so the aarch64 host no longer evaluates
+   x86-only AMD microcode.
+4. Clean duplicate package entries in `environment.systemPackages` for
+   readability.
 
 ## Verification Commands
 
@@ -234,6 +211,8 @@ Use these after each cleanup step:
 nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.mapAttrs (_: h: h.moduleNames) f.evaluation.config.fleet.hosts'
 nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in map (p: p.name or null) f.nixosConfigurations.huginn.config.environment.systemPackages'
 nix eval --impure --expr '(builtins.getFlake "path:/home/wendy/Projects/nix").nixosConfigurations.odin.config.system.build.toplevel.drvPath'
+nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.attrNames f.checks.x86_64-linux'
+nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.attrNames f.hostBuilds.x86_64-linux'
 ```
 
 For closure size comparisons, build the target first and then inspect it:

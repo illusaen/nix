@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  self,
   ...
 }: let
   moduleClasses = ["generic" "nixos" "darwin"];
@@ -103,47 +104,7 @@
   in
     evaluated.config;
 
-  flattenModuleSettings = prefix: value:
-    if builtins.isAttrs value && !(value ? _type)
-    then
-      value
-      |> lib.mapAttrsToList (name: flattenModuleSettings (prefix ++ [name]))
-      |> lib.concatLists
-    else [prefix];
-
-  hasPath = path: value:
-    if path == []
-    then true
-    else if builtins.isAttrs value && builtins.hasAttr (builtins.head path) value
-    then hasPath (builtins.tail path) value.${builtins.head path}
-    else false;
-
-  setPath = path: value:
-    if path == []
-    then value
-    else {${builtins.head path} = setPath (builtins.tail path) value;};
-
   recursiveMerge = lib.foldl' lib.recursiveUpdate {};
-
-  moduleSettingsProvenance = {
-    resolved,
-    fleetModuleSettings ? {},
-    hostModuleSettings ? {},
-    userModuleSettings ? {},
-  }: let
-    paths = flattenModuleSettings [] resolved;
-    sourceFor = path:
-      if hasPath path userModuleSettings
-      then "user"
-      else if hasPath path hostModuleSettings
-      then "host"
-      else if hasPath path fleetModuleSettings
-      then "fleet"
-      else "default";
-  in
-    paths
-    |> map (path: setPath path (sourceFor path))
-    |> recursiveMerge;
 
   mkHostContext = {
     class,
@@ -159,53 +120,25 @@
   }: let
     inherit (config) fleet;
     user = host.owner;
-    fleetModuleSettings = resolveModuleSettings {
-      inherit class activeNames;
-      fleetModuleSettings = fleet.moduleSettings or {};
-    };
     hostModuleSettings = resolveModuleSettings {
-      inherit class activeNames;
-      fleetModuleSettings = fleet.moduleSettings or {};
-      hostModuleSettings = host.moduleSettings or {};
-    };
-    userModuleSettings = resolveModuleSettings {
       inherit class activeNames;
       fleetModuleSettings = fleet.moduleSettings or {};
       hostModuleSettings = host.moduleSettings or {};
       userModuleSettings = user.moduleSettings or {};
     };
-    resolvedFleet = fleet // {moduleSettings = fleetModuleSettings;};
     resolvedHost =
       host
       // {
         moduleSettings = hostModuleSettings;
         services = routedServices;
       };
-    resolvedUser = user // {moduleSettings = userModuleSettings;};
-    provenance = {
-      fleet = moduleSettingsProvenance {
-        resolved = fleetModuleSettings;
-        fleetModuleSettings = fleet.moduleSettings or {};
-      };
-      host = moduleSettingsProvenance {
-        resolved = hostModuleSettings;
-        fleetModuleSettings = fleet.moduleSettings or {};
-        hostModuleSettings = host.moduleSettings or {};
-      };
-      user = moduleSettingsProvenance {
-        resolved = userModuleSettings;
-        fleetModuleSettings = fleet.moduleSettings or {};
-        hostModuleSettings = host.moduleSettings or {};
-        userModuleSettings = user.moduleSettings or {};
-      };
-    };
   in {
     specialArgs = {
-      fleet = resolvedFleet;
+      fleet = fleet // {moduleSettings = hostModuleSettings;};
       host = resolvedHost;
-      user = resolvedUser;
+      user = user // {moduleSettings = hostModuleSettings;};
+      inherit self;
       moduleSettings = hostModuleSettings;
-      moduleSettingsProvenance = provenance;
     };
 
     module = {
@@ -263,7 +196,7 @@
         }
     );
 
-  mkChecks = class: configurations:
+  mkHostBuilds = class: configurations:
     configurations
     |> lib.mapAttrsToList (
       name: evaluation: {
@@ -294,9 +227,9 @@ in {
   config.flake = {
     inherit nixosConfigurations darwinConfigurations;
 
-    checks =
+    hostBuilds =
       lib.recursiveUpdate
-      (mkChecks "nixos" nixosConfigurations)
-      (mkChecks "darwin" darwinConfigurations);
+      (mkHostBuilds "nixos" nixosConfigurations)
+      (mkHostBuilds "darwin" darwinConfigurations);
   };
 }

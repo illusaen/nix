@@ -31,11 +31,11 @@ jobs:
       # Optional: build specific packages exposed by your flake.
       - name: Build bambu-studio package
         run: |
-          nix build .#bambu-studio
+          nix build .#legacyPackages.x86_64-linux.bambu-studio
 
       - name: Build llama-cpp package
         run: |
-          nix build .#llama-cpp
+          nix build .#legacyPackages.x86_64-linux.llama-cpp
 
       - name: Build NixOS configuration
         run: |

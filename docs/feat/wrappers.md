@@ -157,11 +157,13 @@ Then, in the host system module, extend the global package with host arguments:
     fleet,
     moduleSettings,
     pkgs,
+    self,
     ...
   }: {
     programs.niri = {
       enable = true;
-      package = (pkgs.local.niri or pkgs.niri).passthru.wrap {
+      package = self.wrappers.niri.wrap {
+        inherit pkgs;
         _module.args = {
           inherit fleet moduleSettings;
         };
@@ -187,7 +189,7 @@ Use the same pattern for generated files:
     hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
   in {
     imports = [wlib.modules.default];
-    package = pkgs.noctalia;
+    package = pkgs.local.noctalia or pkgs.noctalia;
 
     env.NOCTALIA_CONFIG_DIR =
       lib.mkIf hasHostSettings (dirOf config.constructFiles.generatedConfig.path);
@@ -219,7 +221,7 @@ flake.wrappers.niri = { fleet ? null, moduleSettings ? null, ... }: { };
 The Nix module system still tries to resolve function parameters from module
 arguments. Reading from `config._module.args.<name> or null` keeps the base
 global wrapper evaluable and lets host modules inject context later with
-`.passthru.wrap`.
+`.wrap`.
 
 The split is:
 

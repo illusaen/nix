@@ -1,6 +1,11 @@
 {
-  flake.modules.nixos.llama-cpp = {pkgs, ...}: let
-    llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
+  flake.modules.nixos.llama-cpp = {
+    self,
+    pkgs,
+    host,
+    ...
+  }: let
+    llama-cpp = self.legacyPackages.${host.system}.llama-cpp;
     iniFormat = pkgs.formats.ini {};
   in {
     environment.systemPackages = [llama-cpp];
