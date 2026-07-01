@@ -271,7 +271,8 @@
           "configurations:${class}:${name}" = evaluation.config.system.build.toplevel;
         };
       }
-    );
+    )
+    |> recursiveMerge;
 
   nixosConfigurations = mkConfigurationsOption {
     class = "nixos";
@@ -294,8 +295,8 @@ in {
     inherit nixosConfigurations darwinConfigurations;
 
     checks =
+      lib.recursiveUpdate
       (mkChecks "nixos" nixosConfigurations)
-      ++ (mkChecks "darwin" darwinConfigurations)
-      |> lib.mkMerge;
+      (mkChecks "darwin" darwinConfigurations);
   };
 }

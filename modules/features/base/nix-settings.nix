@@ -17,7 +17,11 @@
     };
   };
 
-  flake.modules.generic.nix-settings = {moduleSettings, ...}: {
+  flake.modules.generic.nix-settings = {
+    fleet,
+    moduleSettings,
+    ...
+  }: {
     nix.settings = {
       experimental-features = [
         "nix-command"
@@ -49,7 +53,7 @@
 
     nixpkgs.config.allowUnfree = true;
 
-    time.timeZone = "America/Chicago";
+    time.timeZone = fleet.timeZone;
 
     security.sudo.extraConfig = ''
       Defaults lecture = never

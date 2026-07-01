@@ -38,4 +38,9 @@ in {
   flake.modules.nixos.monitors = {
     hardware.i2c.enable = true;
   };
+
+  fleet.groups.i2c = {
+    isPosix = true;
+    members = ["system-access"];
+  };
 }

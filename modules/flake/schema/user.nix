@@ -21,12 +21,6 @@
 in {
   schema.user.imports = [
     ({config, ...}: {
-      options.system.gid = mkOption {
-        type = nullOr int;
-        default = config.system.uid;
-        description = "Group ID for the Unix account";
-      };
-
       options.resolvedGroups = mkOption {
         type = genSchema.setOf (genSchema.ref "group");
         readOnly = true;

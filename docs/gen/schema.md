@@ -9,6 +9,7 @@
 | hosts | attrsOf | {} | host instances |
 | moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
 | monitors | submodule | — |  |
+| services | attrsOf | {} | service instances |
 | theming | submodule | — |  |
 | timeZone | str | CST | Default timezone for the fleet |
 | users | attrsOf | {} | user instances |
@@ -18,8 +19,7 @@
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| gid | nullOr |  | Group ID for the Unix account |
-| isPosix | bool | false | If the group is a system created group |
+| isPosix | bool | false | If the group maps to an existing POSIX system group |
 | members | setOf(ref(user)) | \[ ... \] | Users who are in the group. Can also be assigned group names; members of the named group will also be members of this group |
 
 ## host
@@ -41,6 +41,15 @@
 | secretPath | path | — | Derived path to host secrets directory |
 | system | enum | — | System platform |
 | tags | attrsOf | {} | Host tags for organization and feature gates |
+
+## service
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| backups | setOf(ref(host)) | \[ ... \] | Hosts this service also runs on |
+| host | ref(host) | — | Host this service runs on |
+| port | int | — | Service port number |
+| protocol | enum | tcp | Network protocol |
 
 ## user
 

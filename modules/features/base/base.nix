@@ -7,6 +7,7 @@
     "lix"
     "state-version"
     "security"
+    "autostart"
     "bat"
     "zsh"
     "defaults"
