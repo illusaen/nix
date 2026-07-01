@@ -1,5 +1,5 @@
 {
-  flake.moduleImports.nixos.hardware = [
+  flake.moduleImports.hardware = [
     "audio"
     "bluetooth"
     "networking"

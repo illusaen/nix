@@ -69,12 +69,9 @@ modules.
 
 ```nix
 {
-  flake.moduleImports.generic.base = [
+  flake.moduleImports.base = [
     "nix-settings"
     "fonts"
-  ];
-
-  flake.moduleImports.nixos.base = [
     "state-version"
     "security"
   ];
@@ -82,9 +79,9 @@ modules.
 ```
 
 If a NixOS host imports `"base"`, the system configuration imports generic
-`base`, NixOS `base`, then recursively imports generic `nix-settings`, generic
-`fonts`, NixOS `state-version`, and NixOS `security` when those module entries
-exist.
+`base`, NixOS `base`, then recursively activates `nix-settings`, `fonts`,
+`state-version`, and `security`. For each active name, the configuration imports
+the generic module and the host-class module when those entries exist.
 
 The same recursive closure drives settings schema selection. Only named modules
 in this active closure can contribute `flake.moduleOptions`.

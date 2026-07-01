@@ -8,7 +8,7 @@
     };
   };
 
-  flake.moduleImports.nixos.boot = [
+  flake.moduleImports.boot = [
     "disko"
   ];
 }

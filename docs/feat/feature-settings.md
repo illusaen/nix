@@ -29,8 +29,7 @@ fleet.hosts.odin.moduleNames = [ "base" "programs" ];
 The recursive closure is driven by:
 
 ```nix
-flake.moduleImports.generic.base = [ "nix-settings" ];
-flake.moduleImports.nixos.base = [ "state-version" ];
+flake.moduleImports.base = [ "nix-settings" "state-version" ];
 ```
 
 ## Declarations

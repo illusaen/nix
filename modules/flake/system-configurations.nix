@@ -21,16 +21,14 @@
     lib.optionals (config.flake.modules.generic ? ${name}) ["generic"]
     ++ lib.optionals (config.flake.modules.${class} ? ${name}) [class];
 
-  moduleNameClosure = class: names: let
+  moduleNameClosure = names: let
     go = seen: pending:
       if pending == []
       then seen
       else let
         name = builtins.head pending;
         rest = builtins.tail pending;
-        children =
-          (config.flake.moduleImports.generic.${name} or [])
-          ++ (config.flake.moduleImports.${class}.${name} or []);
+        children = config.flake.moduleImports.${name} or [];
       in
         if lib.elem name seen
         then go seen rest
@@ -214,7 +212,7 @@
     |> lib.filterAttrs (_name: host: host.class == class)
     |> lib.mapAttrs (
       name: host: let
-        activeNames = moduleNameClosure class host.moduleNames;
+        activeNames = moduleNameClosure host.moduleNames;
         ctx = mkHostContext {
           inherit class name host activeNames;
         };
@@ -249,7 +247,10 @@
     hosts = config.fleet.hosts;
   };
 in {
-  options.flake.moduleImports = mkClassAttrsOption (lib.types.listOf lib.types.str);
+  options.flake.moduleImports = lib.mkOption {
+    type = lib.types.lazyAttrsOf (lib.types.listOf lib.types.str);
+    default = {};
+  };
   options.flake.moduleOptions = mkClassAttrsOption lib.types.raw;
 
   config.flake = {

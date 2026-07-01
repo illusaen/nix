@@ -1,3 +1,3 @@
 {
-  flake.moduleImports.nixos.services = ["llama-cpp"];
+  flake.moduleImports.services = ["llama-cpp"];
 }
