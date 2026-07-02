@@ -206,17 +206,17 @@ Still recommended:
 
 ## Check Output Cleanup
 
-Status: implemented.
+Status: implemented, then simplified further.
 
-Default `checks` no longer include full NixOS toplevel builds. Full host builds
-are exposed under `hostBuilds`:
+Default `checks` no longer include full NixOS toplevel builds. The secondary
+`hostBuilds` aggregate was removed because it traversed every host
+configuration to expose aliases that were not used by the repo.
 
-- `hostBuilds.x86_64-linux.configurations:nixos:huginn`
-- `hostBuilds.x86_64-linux.configurations:nixos:odin`
-- `hostBuilds.aarch64-linux.configurations:nixos:muninn`
+Use the normal configuration targets for explicit full builds:
 
-This makes local `nix flake check` faster while preserving explicit full build
-targets.
+```sh
+nix build .#nixosConfigurations.odin.config.system.build.toplevel
+```
 
 ## Smaller Cleanups
 
@@ -250,7 +250,6 @@ nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Pro
 nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in map (p: p.name or null) f.nixosConfigurations.huginn.config.environment.systemPackages'
 nix eval --impure --expr '(builtins.getFlake "path:/home/wendy/Projects/nix").nixosConfigurations.odin.config.system.build.toplevel.drvPath'
 nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.attrNames f.checks.x86_64-linux'
-nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.attrNames f.hostBuilds.x86_64-linux'
 ```
 
 For closure size comparisons, build the target first and then inspect it:

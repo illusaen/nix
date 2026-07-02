@@ -45,14 +45,42 @@
     )
     names;
 
-  routedServicesFor = host: let
-    isPrimary = _name: service: service.host.id_hash == host.id_hash;
-    isBackup = name: service: !(isPrimary name service) && lib.any (backup: backup.id_hash == host.id_hash) service.backups;
-    primary = lib.filterAttrs isPrimary config.fleet.services;
-    backups = lib.filterAttrs isBackup config.fleet.services;
-    withRole = role: lib.mapAttrs (_name: service: service // {inherit role;});
-  in
-    (withRole "backup" backups) // (withRole "primary" primary);
+  serviceRouteEntries =
+    lib.concatMap (
+      name: let
+        service = config.fleet.services.${name};
+        mkEntry = role: host: {
+          hostHash = host.id_hash;
+          inherit name;
+          service = service // {inherit role;};
+        };
+      in
+        [(mkEntry "primary" service.host)]
+        ++ map
+        (mkEntry "backup")
+        (builtins.filter (backup: backup.id_hash != service.host.id_hash) service.backups)
+    )
+    (builtins.attrNames config.fleet.services);
+
+  serviceRoutesByHost =
+    builtins.foldl' (
+      routes: entry:
+        routes
+        // {
+          ${entry.hostHash} =
+            (routes.${entry.hostHash} or {})
+            // {
+              ${entry.name} = entry.service;
+            };
+        }
+    ) {}
+    serviceRouteEntries;
+
+  routedServicesFor = host: serviceRoutesByHost.${host.id_hash} or {};
+
+  hostsByClass = class: lib.filterAttrs (_name: host: host.class == class) config.fleet.hosts;
+  nixosHosts = hostsByClass "nixos";
+  darwinHosts = hostsByClass "darwin";
 
   missingServiceModulesFor = class: routedServices:
     routedServices
@@ -101,8 +129,6 @@
     };
   in
     evaluated.config;
-
-  recursiveMerge = lib.foldl' lib.recursiveUpdate {};
 
   mkHostContext = {
     class,
@@ -170,7 +196,6 @@
     hosts,
   }:
     hosts
-    |> lib.filterAttrs (_name: host: host.class == class)
     |> lib.mapAttrs (
       name: host: let
         routedServices = routedServicesFor host;
@@ -190,27 +215,20 @@
         }
     );
 
-  mkHostBuilds = class: configurations:
-    configurations
-    |> lib.mapAttrsToList (
-      name: evaluation: {
-        ${evaluation.config.nixpkgs.hostPlatform.system} = {
-          "configurations:${class}:${name}" = evaluation.config.system.build.toplevel;
-        };
-      }
-    )
-    |> recursiveMerge;
-
   nixosConfigurations = mkConfigurationsOption {
     class = "nixos";
     fn = lib.nixosSystem;
-    hosts = config.fleet.hosts;
+    hosts = nixosHosts;
   };
-  darwinConfigurations = mkConfigurationsOption {
-    class = "darwin";
-    fn = inputs.darwin.lib.darwinSystem;
-    hosts = config.fleet.hosts;
-  };
+  darwinConfigurations =
+    if darwinHosts == {}
+    then {}
+    else
+      mkConfigurationsOption {
+        class = "darwin";
+        fn = inputs.darwin.lib.darwinSystem;
+        hosts = darwinHosts;
+      };
 in {
   options.flake.moduleImports = lib.mkOption {
     type = lib.types.lazyAttrsOf (lib.types.listOf lib.types.str);
@@ -220,10 +238,5 @@ in {
 
   config.flake = {
     inherit nixosConfigurations darwinConfigurations;
-
-    hostBuilds =
-      lib.recursiveUpdate
-      (mkHostBuilds "nixos" nixosConfigurations)
-      (mkHostBuilds "darwin" darwinConfigurations);
   };
 }

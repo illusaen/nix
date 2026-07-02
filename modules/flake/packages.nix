@@ -1,10 +1,28 @@
 {
   inputs,
+  lib,
   rootPath,
-  withSystem,
   self,
   ...
-}: {
+}: let
+  localPackageNames = [
+    "alacritty"
+    "bat"
+    "gh"
+    "git"
+    "mactahoe-cursors"
+    "mactahoe-gtk-theme"
+    "mactahoe-icon-theme"
+    "misc-scripts"
+    "niri"
+    "niri-scripts"
+    "starship"
+    "ytdlp"
+    "zathura"
+    "zed"
+    "zsh"
+  ];
+in {
   flake-file.inputs = {
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -14,12 +32,9 @@
   imports = [inputs.pkgs-by-name-for-flake-parts.flakeModule];
 
   flake = {
-    overlays.default = _final: prev:
-      withSystem prev.stdenv.hostPlatform.system (
-        {config, ...}: {
-          local = config.packages;
-        }
-      );
+    overlays.default = _final: prev: {
+      local = lib.genAttrs localPackageNames (name: self.packages.${prev.stdenv.hostPlatform.system}.${name});
+    };
   };
 
   perSystem = {system, ...}: let

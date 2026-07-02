@@ -1,8 +1,4 @@
-{
-  inputs,
-  self,
-  ...
-}: {
+{inputs, ...}: {
   imports = [inputs.wrappers.flakeModules.wrappers];
 
   config = {
@@ -11,7 +7,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    flake.nixosModules = builtins.mapAttrs (_: v: v.install) self.wrappers;
     perSystem = {pkgs, ...}: {
       wrappers = {
         inherit pkgs;
