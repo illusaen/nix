@@ -1,4 +1,5 @@
 {lib, ...}: {
+  debug = true;
   flake.modules.generic.defaults = {host, ...}: {
     nixpkgs.hostPlatform = host.system;
     networking.hostName = host.name;
@@ -29,7 +30,7 @@
       isNormalUser = true;
       uid = lib.mkIf (user.system.uid != null) user.system.uid;
       description = user.identity.displayName or user.name;
-      extraGroups = resolvedExtraGroups;
+      extraGroups = builtins.trace directResolvedGroups resolvedExtraGroups;
       openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
       password = "arst";
     };

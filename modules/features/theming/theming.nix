@@ -21,7 +21,7 @@
       packageName = "mactahoe-icon-theme";
     };
     cursor = {
-      name = "MacTahoe Cursors";
+      name = "MacTahoe-Cursors";
       packageName = "mactahoe-cursors";
       size = 28;
     };

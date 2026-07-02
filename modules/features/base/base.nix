@@ -11,5 +11,6 @@
     "zsh"
     "defaults"
     "tailscale"
+    "networking"
   ];
 }
