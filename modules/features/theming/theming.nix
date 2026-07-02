@@ -23,7 +23,7 @@
     cursor = {
       name = "MacTahoe-Cursors";
       packageName = "mactahoe-cursors";
-      size = 28;
+      size = 32;
     };
   };
 
