@@ -16,7 +16,7 @@
       lib.genAttrs mimeTypes (_: application);
   };
 
-  flake.fleetWrappers.zathura = {
+  flake.wrappers.zathura = {
     lib,
     wlib,
     ...

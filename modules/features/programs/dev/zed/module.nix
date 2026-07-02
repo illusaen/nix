@@ -1,7 +1,7 @@
 {
   flake.modules.generic.zed = {pkgs, ...}: {environment.systemPackages = [pkgs.local.zed];};
 
-  flake.fleetWrappers.zed = {
+  flake.wrappers.zed = {
     wlib,
     pkgs,
     ...

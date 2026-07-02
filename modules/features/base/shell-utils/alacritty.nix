@@ -1,7 +1,7 @@
 {
   flake.modules.generic.shell-utils = {pkgs, ...}: {environment.systemPackages = [pkgs.local.alacritty];};
 
-  flake.fleetWrappers.alacritty = {
+  flake.wrappers.alacritty = {
     lib,
     wlib,
     ...

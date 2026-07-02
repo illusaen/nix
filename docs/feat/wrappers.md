@@ -1,13 +1,7 @@
 # Wrappers
 
 This repo uses `nix-wrapper-modules` for portable wrapper derivations. There
-are two wrapper declaration paths:
-
-- `flake.wrappers` is the original upstream shape.
-- `flake.fleetWrappers` is an opt-in fleet-aware shape.
-
-Use `flake.wrappers` unless a wrapper needs fleet schema data during wrapper
-evaluation.
+is one wrapper declaration path: the upstream `flake.wrappers` shape.
 
 ## Original Shape
 
@@ -33,58 +27,15 @@ Function modules receive the usual wrapper module arguments, such as `pkgs`,
 }
 ```
 
-Keeping the original path matters because many wrappers are global package
-definitions. They should not depend on fleet context when they only describe the
-program, files, flags, or generated config for a wrapper derivation.
+Keeping the normal path matters because wrappers are global package definitions.
+They should not depend on host or fleet context when they only describe the
+program, files, flags, environment variables, or generated config for a wrapper
+derivation.
 
-## Fleet-Aware Shape
-
-Use `flake.fleetWrappers` when a wrapper needs fleet-level schema data:
-
-```nix
-{
-  flake.fleetWrappers.waybar = { fleet, pkgs, ... }: {
-    imports = [ ./wrappers/waybar/module.nix ];
-    font = {
-      sans = fleet.fonts.sans.name;
-      mono = fleet.fonts.mono.name;
-      icon = fleet.fonts.icon.name;
-      size = fleet.fonts.sizes.applications;
-    };
-    scheme = (fleet.base16.scheme pkgs).withHashtag;
-  };
-}
-```
-
-`flake.fleetWrappers` is validated with `fleet` in module arguments, then its
-module declarations are forwarded into `flake.wrappers`. The exported result is
-still available through the normal output:
-
-```text
-self.wrappers.waybar
-```
-
-This gives wrappers access to fleet-level data without replacing the upstream
-interface. Wrappers that do not need fleet context stay on `flake.wrappers`.
-
-Avoid declaring the same wrapper name in both `flake.wrappers` and
-`flake.fleetWrappers` unless the definitions are intentionally meant to merge
-under the Nix module system.
-
-## What Belongs In Fleet Context
-
-Fleet-aware wrappers are appropriate for values that are global across the
-fleet:
-
-- font families and font sizes
-- base16 scheme selection
-- shared wrapper defaults
-- shared command aliases or flags
-- global monitor naming vocabulary
-
-Fleet-aware wrappers are not enough for values that vary by host. A global
-wrapper output has no single host identity, so injecting `host` into
-`flake.wrappers` would be ambiguous.
+Runtime-selected theme wrappers should usually stay on `flake.wrappers`. If the
+wrapper only points at `$XDG_STATE_HOME/nix-theme/current` with an environment
+variable or flag, it does not need fleet context. The theme profile generator
+owns the fleet-derived colors, fonts, and app config instead.
 
 ## Host-Specific Wrapper Behavior
 

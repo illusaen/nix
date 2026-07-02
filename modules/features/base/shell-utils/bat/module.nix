@@ -14,7 +14,7 @@
     '';
   };
 
-  flake.fleetWrappers.bat = {
+  flake.wrappers.bat = {
     wlib,
     pkgs,
     ...
