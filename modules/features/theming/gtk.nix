@@ -64,11 +64,5 @@
         }
       ];
     };
-    system.userActivationScripts.installLibadwaitaTheme = ''
-      echo "Installing gtk theme to gtk-4.0"
-      libadwaita_dir="$HOME/.config/gtk-4.0"
-      [ -d "$libadwaita_dir" ] && rm -r "$libadwaita_dir"
-      ln -sfn ${lib.escapeShellArg "${pkgs.local.${gtk.packageName}}/share/libadwaita-themes"} "$libadwaita_dir"
-    '';
   };
 }

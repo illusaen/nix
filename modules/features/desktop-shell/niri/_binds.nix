@@ -27,6 +27,10 @@
     props.hotkey-overlay-title = "Notification Center";
     content.spawn-sh = "noctalia msg panel-toggle control-center";
   };
+  "Mod+Alt+T" = _: {
+    props.hotkey-overlay-title = "Theme Selector";
+    content.spawn = "theme-select";
+  };
 
   "Mod+Ctrl+Space" = _: {
     props.hotkey-overlay-title = "Power Menu";

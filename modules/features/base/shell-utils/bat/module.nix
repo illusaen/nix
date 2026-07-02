@@ -16,33 +16,11 @@
 
   flake.fleetWrappers.bat = {
     wlib,
-    lib,
     pkgs,
-    fleet,
-    config,
     ...
   }: {
     imports = [wlib.modules.default];
     package = pkgs.bat;
-    env.BAT_CONFIG_DIR = dirOf config.constructFiles.generatedConfig.path;
-    constructFiles.generatedConfig = {
-      content = ''
-        --theme="Base16"
-        --italic-text=always
-      '';
-      relPath = "config";
-    };
-    constructFiles.themeConfig = let
-      scheme = fleet.base16.scheme pkgs;
-      bat-theme = scheme {
-        template = ./bat.tmTheme.mustache;
-        extension = ".tmTheme";
-      };
-    in {
-      relPath = "themes/Base16.tmTheme";
-      builder = ''
-        ln -s ${lib.escapeShellArg bat-theme} "$2"
-      '';
-    };
+    env.BAT_CONFIG_DIR = "\${NIX_THEME_STATE_DIR:-\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme}/current/bat";
   };
 }

@@ -27,7 +27,7 @@
     };
   };
 
-  flake.moduleImports.theming = ["gtk"];
+  flake.moduleImports.theming = ["gtk" "runtime-theming"];
 
   flake.modules.nixos.theming = {pkgs, ...}: let
     inherit (config.fleet.theming) icon cursor;

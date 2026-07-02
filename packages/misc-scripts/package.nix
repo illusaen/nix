@@ -22,6 +22,9 @@ in
         python3
         ddcutil
       ])
+      (pythonScript "noctalia-dev-config" ./scripts/noctalia-dev-config.py [
+        python3
+      ])
       (pythonScript "switcher" ./scripts/switch-input.py [
         python3
         ddcutil
