@@ -47,6 +47,7 @@ in {
       whichstore = "nix_store_for_command";
     };
     zshrc.content = ''
+      eval "$(direnv hook zsh)"
       eval "$(${lib.getExe pkgs.zoxide} init zsh --cmd n)"
       eval "$(${lib.getExe pkgs.local.starship} init zsh)"
       source <(fzf --zsh)
@@ -59,6 +60,18 @@ in {
       bindkey '^[[1;5D' backward-word
       bindkey '^[[1;5C' forward-word
       bindkey '^W' backward-kill-word
+
+      zmodload zsh/terminfo
+      [[ -n "''${terminfo[khome]}" ]] && bindkey "''${terminfo[khome]}" beginning-of-line
+      [[ -n "''${terminfo[kend]}" ]] && bindkey "''${terminfo[kend]}" end-of-line
+      [[ -n "''${terminfo[kdch1]}" ]] && bindkey "''${terminfo[kdch1]}" delete-char
+      bindkey '^[[H' beginning-of-line
+      bindkey '^[[F' end-of-line
+      bindkey '^[[1~' beginning-of-line
+      bindkey '^[[4~' end-of-line
+      bindkey '^[[7~' beginning-of-line
+      bindkey '^[[8~' end-of-line
+      bindkey '^[[3~' delete-char
 
       dot_cd_accept_line() {
         emulate -L zsh

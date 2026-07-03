@@ -12,12 +12,6 @@
 
     programs.nix-ld.enable = true;
 
-    programs.zsh = {
-      enable = true;
-      autosuggestions.enable = true;
-      syntaxHighlighting.enable = true;
-    };
-
     environment.systemPackages = with pkgs; [
       coreutils
       eza
@@ -30,11 +24,6 @@
       zoxide
     ];
 
-    persistUser.files = [
-      {
-        file = ".local/share/zoxide/db.zo";
-        how = "symlink";
-      }
-    ];
+    persistUser.directories = [".local/share/zoxide"];
   };
 }
