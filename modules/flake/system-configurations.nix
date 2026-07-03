@@ -50,7 +50,7 @@
       name: let
         service = config.fleet.services.${name};
         mkEntry = role: host: {
-          hostHash = host.id_hash;
+          hostName = host.name;
           inherit name;
           service = service // {inherit role;};
         };
@@ -58,7 +58,7 @@
         [(mkEntry "primary" service.host)]
         ++ map
         (mkEntry "backup")
-        (builtins.filter (backup: backup.id_hash != service.host.id_hash) service.backups)
+        (builtins.filter (backup: backup.name != service.host.name) service.backups)
     )
     (builtins.attrNames config.fleet.services);
 
@@ -67,8 +67,8 @@
       routes: entry:
         routes
         // {
-          ${entry.hostHash} =
-            (routes.${entry.hostHash} or {})
+          ${entry.hostName} =
+            (routes.${entry.hostName} or {})
             // {
               ${entry.name} = entry.service;
             };
@@ -76,7 +76,7 @@
     ) {}
     serviceRouteEntries;
 
-  routedServicesFor = host: serviceRoutesByHost.${host.id_hash} or {};
+  routedServicesFor = host: serviceRoutesByHost.${host.name} or {};
 
   hostsByClass = class: lib.filterAttrs (_name: host: host.class == class) config.fleet.hosts;
   nixosHosts = hostsByClass "nixos";
@@ -164,19 +164,17 @@
     module = {
       assertions = [
         {
-          assertion = host.id_hash == fleet.hosts.${name}.id_hash;
+          assertion = host.name == name;
           message = ''
             ${class} host ${name} injected host ${host.name},
             but expected fleet.hosts.${name}
-            (id_hash ${host.id_hash} vs ${fleet.hosts.${name}.id_hash}).
           '';
         }
         {
-          assertion = user.id_hash == host.owner.id_hash;
+          assertion = user.name == host.owner.name;
           message = ''
             ${class} host ${name} injected user ${user.name},
             but host ${host.name} has owner ${host.owner.name}
-            (id_hash ${user.id_hash} vs ${host.owner.id_hash}).
           '';
         }
         {
@@ -248,17 +246,21 @@ in {
   };
 
   config.perSystem = {system, ...}: let
-    matchingNixosConfigurations = lib.filterAttrs (_name: host: host.config.nixpkgs.hostPlatform.system == system) nixosConfigurations;
-    matchingIsoConfigurations = lib.filterAttrs (_name: host: host.config.nixpkgs.hostPlatform.system == system) nixosIsoConfigurations;
+    matchingNixosHostNames =
+      nixosHosts
+      |> lib.filterAttrs (_name: host: host.system == system)
+      |> builtins.attrNames;
 
     systemPackages =
-      matchingNixosConfigurations
-      |> lib.mapAttrs' (name: host:
-        lib.nameValuePair "system-${name}" host.config.system.build.toplevel);
+      matchingNixosHostNames
+      |> map (name:
+        lib.nameValuePair "system-${name}" nixosConfigurations.${name}.config.system.build.toplevel)
+      |> builtins.listToAttrs;
     isoPackages =
-      matchingIsoConfigurations
-      |> lib.mapAttrs' (name: host:
-        lib.nameValuePair "iso-${name}" host.config.system.build.isoImage);
+      matchingNixosHostNames
+      |> map (name:
+        lib.nameValuePair "iso-${name}" nixosIsoConfigurations.${name}.config.system.build.isoImage)
+      |> builtins.listToAttrs;
   in {
     packages = systemPackages // isoPackages;
   };

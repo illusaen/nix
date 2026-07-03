@@ -1,5 +1,4 @@
 {lib, ...}: {
-  debug = true;
   flake.modules.generic.defaults = {host, ...}: {
     nixpkgs.hostPlatform = host.system;
     networking.hostName = host.name;
@@ -11,18 +10,11 @@
     user,
     ...
   }: let
-    isPosixGroup = _name: group: group.isPosix or false;
-    resolvedGroups =
-      (user.resolvedGroups or [])
-      |> builtins.filter (name: (fleet.groups.${name} or null) != null)
-      |> map (name: fleet.groups.${name});
     resolvedExtraGroups =
-      resolvedGroups
-      |> builtins.filter isPosixGroupValue
-      |> map (group: group.name)
+      (user.resolvedGroups or [])
+      |> builtins.filter (name: fleet.groups.${name}.isPosix or false)
       |> (groups: groups ++ lib.optional user.system.isAdmin "wheel")
       |> lib.unique;
-    isPosixGroupValue = group: isPosixGroup (group.name or "") group;
   in {
     users.users.${user.name} = {
       isNormalUser = true;

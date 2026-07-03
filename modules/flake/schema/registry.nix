@@ -5,7 +5,7 @@
   ...
 }: let
   genSchema = inputs.gen-schema.lib;
-  fleetUsers = config.fleet.users;
+  fleetUserRegistry = config.fleet.users;
   fleetGroups = config.fleet.groups;
 in {
   schema.fleet.options.hosts =
@@ -42,40 +42,40 @@ in {
         }: {
           resolvedGroups = lib.mkAfter (
             let
-              expand = seen: name:
-                if builtins.hasAttr name fleetUsers
-                then [name]
-                else if builtins.hasAttr name fleetGroups
+              groupContainsUser = seen: name:
+                if builtins.hasAttr name fleetGroups
                 then
                   if builtins.elem name seen
                   then
                     throw "Group membership cycle: ${
                       builtins.concatStringsSep " -> " (seen ++ [name])
                     }"
-                  else builtins.concatMap (expand (seen ++ [name])) fleetGroups.${name}.members
+                  else
+                    lib.any
+                    (member:
+                      member
+                      == config.name
+                      || lib.elem member config.groups
+                      || groupContainsUser (seen ++ [name]) member)
+                    fleetGroups.${name}.members
+                else if builtins.hasAttr name fleetUserRegistry
+                then name == config.name
                 else throw "Unknown user or group '${name}'";
               groupHasUser = group:
-                lib.elem config.name (builtins.concatMap (expand [group.name]) (group.members or []));
+                groupContainsUser [] group.name;
             in
               fleetGroups
               |> builtins.attrValues
               |> builtins.filter groupHasUser
               |> map (group: group.name)
+              |> (groups: config.groups ++ groups)
           );
         })
       ];
     })
     // {defaultText = {text = "{}";};};
   schema.fleet.options.groups =
-    (genSchema.mkInstanceRegistry config.schema.group {
-      extraModules = [
-        ({
-          config,
-          lib,
-          ...
-        }: {members = lib.mkAfter (fleetUsers |> builtins.attrValues |> builtins.filter (user: lib.elem config.name user.groups) |> map (user: user.name));})
-      ];
-    })
+    (genSchema.mkInstanceRegistry config.schema.group {})
     // {defaultText = {text = "{}";};};
   schema.fleet.options.services =
     (genSchema.mkInstanceRegistry config.schema.service {

@@ -43,7 +43,7 @@
     programs.ssh.knownHosts =
       fleet.hosts
       |> builtins.attrValues
-      |> builtins.filter (h: h.id_hash != host.id_hash && h.publicKey != null)
+      |> builtins.filter (h: h.name != host.name && h.publicKey != null)
       |> map (h:
         lib.nameValuePair h.name {
           hostNames = [h.name "${h.name}.${fleet.domain}" h.ipv4];
