@@ -12,7 +12,7 @@
     devConfigDir = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      description = "Mutable Noctalia config directory for fast UI iteration.";
+      description = "Mutable Noctalia config home for fast UI iteration. Noctalia reads config.toml from the noctalia subdirectory.";
     };
   };
 
@@ -59,25 +59,13 @@
     imports = [wlib.modules.default];
     package = pkgs.noctalia;
 
-    env.NOCTALIA_CONFIG_DIR = lib.mkIf hasHostSettings (
+    env.NOCTALIA_CONFIG_HOME = lib.mkIf hasHostSettings (
       if devConfigDir != null
       then devConfigDir
-      else "\${NIX_THEME_STATE_DIR:-\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme}/current/noctalia"
+      else {
+        data = "\${NIX_THEME_STATE_DIR:-\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme}/current";
+        esc-fn = wlib.escapeShellArgWithEnv;
+      }
     );
-    constructFiles.generatedConfig = lib.mkIf (hasHostSettings && devConfigDir != null) {
-      builder = let
-        file = pkgs.replaceVars ./noctalia-config.toml.template {
-          mono = fleet.fonts.mono.name;
-          sans = fleet.fonts.sans.name;
-          inherit (moduleSettings.monitors) main secondary;
-          image = fleet.wallpaper.image;
-          imageDirectory = fleet.wallpaper.directory;
-          location = fleet.timeZone |> lib.splitString "/" |> lib.last;
-        };
-      in ''
-        ln -s ${lib.escapeShellArg file} "$2"
-      '';
-      relPath = "noctalia-config.toml";
-    };
   };
 }

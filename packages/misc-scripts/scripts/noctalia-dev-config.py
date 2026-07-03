@@ -57,8 +57,9 @@ def render(root: Path, output: Path) -> None:
     for needle, replacement in replacements.items():
         text = text.replace(needle, replacement)
 
-    output.mkdir(parents=True, exist_ok=True)
-    (output / "noctalia-config.toml").write_text(text)
+    config_dir = output / "noctalia"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "config.toml").write_text(text)
 
 
 def restart_service() -> None:
@@ -79,7 +80,7 @@ def main() -> int:
 
     output = Path(args.output).expanduser().resolve()
     render(repo_root(), output)
-    print(output / "noctalia-config.toml")
+    print(output / "noctalia" / "config.toml")
 
     if args.restart:
         restart_service()

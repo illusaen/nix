@@ -142,11 +142,13 @@ Use the same pattern for generated files:
     imports = [wlib.modules.default];
     package = pkgs.local.noctalia or pkgs.noctalia;
 
-    env.NOCTALIA_CONFIG_DIR =
-      lib.mkIf hasHostSettings (dirOf config.constructFiles.generatedConfig.path);
+    env.NOCTALIA_CONFIG_HOME = lib.mkIf hasHostSettings {
+      data = "''${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme/current";
+      esc-fn = wlib.escapeShellArgWithEnv;
+    };
 
     constructFiles.generatedConfig = lib.mkIf hasHostSettings {
-      relPath = "noctalia-config.toml";
+      relPath = "noctalia/config.toml";
       builder = let
         file = pkgs.replaceVars ./noctalia-config.toml.template {
           inherit (moduleSettings.monitors) main secondary;

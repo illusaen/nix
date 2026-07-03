@@ -219,7 +219,7 @@
         ln -s ${lib.escapeShellArg gtkSettings} "$out/gtk-3.0/settings.ini"
         cp -rs ${lib.escapeShellArg "${gtkPackage}/share/libadwaita-themes"}/* "$out/gtk-4.0/" 2>/dev/null || true
         ln -sfn ${lib.escapeShellArg gtkSettings} "$out/gtk-4.0/settings.ini"
-        ln -s ${lib.escapeShellArg noctaliaConfig} "$out/noctalia/noctalia-config.toml"
+        ln -s ${lib.escapeShellArg noctaliaConfig} "$out/noctalia/config.toml"
         ln -s ${lib.escapeShellArg qtctConf} "$out/qt5ct/qt5ct.conf"
         ln -s ${lib.escapeShellArg qtctConf} "$out/qt6ct/qt6ct.conf"
         ln -s ${lib.escapeShellArg zathurarc} "$out/zathura/zathurarc"
