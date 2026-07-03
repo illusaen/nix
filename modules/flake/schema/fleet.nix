@@ -53,7 +53,7 @@ in {
   };
 
   config.fleet = {
-    domain = "lan";
+    domain = "home.arpa";
     timeZone = "America/Chicago";
   };
 }

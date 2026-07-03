@@ -10,5 +10,10 @@
       protocol = "http";
       host = "odin";
     };
+    pihole = {
+      host = "huginn";
+      backups = ["muninn"];
+      port = 53;
+    };
   };
 }

@@ -1,1 +1,1 @@
-* speedup builds where possible
+* theme runtime switcher still has some issues

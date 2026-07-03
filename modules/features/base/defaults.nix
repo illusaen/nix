@@ -7,32 +7,35 @@
 
   flake.modules.nixos.defaults = {
     fleet,
+    host,
     user,
     ...
   }: let
     isPosixGroup = _name: group: group.isPosix or false;
-    posixGroups = lib.filterAttrs isPosixGroup (fleet.groups or {});
-    isPosixGroupValue = group: isPosixGroup (group.name or "") group;
-    userInGroup = group:
-      lib.any (member: member.id_hash == user.id_hash) (group.members or []);
-    directResolvedGroups =
+    resolvedGroups =
       (user.resolvedGroups or [])
-      |> builtins.filter isPosixGroupValue
-      |> map (group: group.name);
+      |> builtins.filter (name: (fleet.groups.${name} or null) != null)
+      |> map (name: fleet.groups.${name});
     resolvedExtraGroups =
-      posixGroups
-      |> lib.filterAttrs (name: group: name != user.name && userInGroup group)
-      |> builtins.attrNames
-      |> (groups: groups ++ directResolvedGroups ++ lib.optional user.system.isAdmin "wheel")
+      resolvedGroups
+      |> builtins.filter isPosixGroupValue
+      |> map (group: group.name)
+      |> (groups: groups ++ lib.optional user.system.isAdmin "wheel")
       |> lib.unique;
+    isPosixGroupValue = group: isPosixGroup (group.name or "") group;
   in {
     users.users.${user.name} = {
       isNormalUser = true;
       uid = lib.mkIf (user.system.uid != null) user.system.uid;
       description = user.identity.displayName or user.name;
-      extraGroups = builtins.trace directResolvedGroups resolvedExtraGroups;
+      extraGroups = resolvedExtraGroups;
       openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
       password = "arst";
+    };
+
+    hardware = lib.mkIf (host.system != "x86_64-linux") {
+      cpu.amd.updateMicrocode = lib.mkForce false;
+      cpu.intel.updateMicrocode = lib.mkForce false;
     };
   };
 }

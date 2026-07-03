@@ -6,6 +6,7 @@
 }: let
   genSchema = inputs.gen-schema.lib;
   fleetUsers = config.fleet.users;
+  fleetGroups = config.fleet.groups;
 in {
   schema.fleet.options.hosts =
     (genSchema.mkInstanceRegistry config.schema.host {
@@ -33,47 +34,46 @@ in {
     // {defaultText = {text = "{}";};};
   schema.fleet.options.users =
     (genSchema.mkInstanceRegistry config.schema.user {
-      refs.resolvedGroups = config.fleet.groups;
-    })
-    // {defaultText = {text = "{}";};};
-  schema.fleet.options.groups =
-    (genSchema.mkInstanceRegistry config.schema.group {
-      refs.members = {
-        instances = config.fleet.users;
-        deferred = true;
-        coerce = groups: _default: member: let
-          users = config.fleet.users;
-          expand = seen: name: let
-            isUser = builtins.hasAttr name users;
-            isGroup = builtins.hasAttr name groups;
-          in
-            if !builtins.isString name
-            then [name]
-            else if isUser && isGroup
-            then throw "Ambiguous member '${name}': both a user and group exist"
-            else if isUser
-            then [users.${name}]
-            else if isGroup
-            then
-              if builtins.elem name seen
-              then
-                throw "Group membership cycle: ${
-                  builtins.concatStringsSep " -> " (seen ++ [name])
-                }"
-              else
-                builtins.concatMap
-                (expand (seen ++ [name]))
-                groups.${name}.members
-            else throw "Unknown user or group '${name}'";
-        in
-          expand [] member;
-      };
       extraModules = [
         ({
           config,
           lib,
           ...
-        }: {members = lib.mkAfter (fleetUsers |> builtins.attrValues |> builtins.filter (user: lib.elem config.name user.groups));})
+        }: {
+          resolvedGroups = lib.mkAfter (
+            let
+              expand = seen: name:
+                if builtins.hasAttr name fleetUsers
+                then [name]
+                else if builtins.hasAttr name fleetGroups
+                then
+                  if builtins.elem name seen
+                  then
+                    throw "Group membership cycle: ${
+                      builtins.concatStringsSep " -> " (seen ++ [name])
+                    }"
+                  else builtins.concatMap (expand (seen ++ [name])) fleetGroups.${name}.members
+                else throw "Unknown user or group '${name}'";
+              groupHasUser = group:
+                lib.elem config.name (builtins.concatMap (expand [group.name]) (group.members or []));
+            in
+              fleetGroups
+              |> builtins.attrValues
+              |> builtins.filter groupHasUser
+              |> map (group: group.name)
+          );
+        })
+      ];
+    })
+    // {defaultText = {text = "{}";};};
+  schema.fleet.options.groups =
+    (genSchema.mkInstanceRegistry config.schema.group {
+      extraModules = [
+        ({
+          config,
+          lib,
+          ...
+        }: {members = lib.mkAfter (fleetUsers |> builtins.attrValues |> builtins.filter (user: lib.elem config.name user.groups) |> map (user: user.name));})
       ];
     })
     // {defaultText = {text = "{}";};};

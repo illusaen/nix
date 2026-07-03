@@ -1,13 +1,7 @@
-{
-  inputs,
-  lib,
-  ...
-}: let
+{lib, ...}: let
   inherit (lib) mkOption;
-  inherit (lib.types) bool;
+  inherit (lib.types) bool listOf str;
   mkOptionWithoutReflection = option: mkOption option // {identity = false;};
-
-  genSchema = inputs.gen-schema.lib;
 in {
   schema.group.options = {
     isPosix = mkOptionWithoutReflection {
@@ -16,9 +10,10 @@ in {
       description = "If the group maps to an existing POSIX system group";
     };
     members = mkOption {
-      type = genSchema.setOf (genSchema.ref "user");
+      type = listOf str;
       default = [];
-      description = "Users who are in the group. Can also be assigned group names; members of the named group will also be members of this group";
+      apply = lib.unique;
+      description = "User or group names that belong to this group.";
     };
   };
 }

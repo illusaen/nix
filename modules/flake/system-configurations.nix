@@ -194,6 +194,7 @@
     class,
     fn,
     hosts,
+    extraModuleNames ? [],
   }:
     hosts
     |> lib.mapAttrs (
@@ -201,7 +202,7 @@
         routedServices = routedServicesFor host;
         routedServiceNames = builtins.attrNames routedServices;
         missingServiceModules = missingServiceModulesFor class routedServices;
-        activeNames = moduleNameClosure (host.moduleNames ++ routedServiceNames);
+        activeNames = moduleNameClosure (host.moduleNames ++ routedServiceNames ++ extraModuleNames);
         ctx = mkHostContext {
           inherit class name host routedServices missingServiceModules activeNames;
         };
@@ -220,6 +221,12 @@
     fn = lib.nixosSystem;
     hosts = nixosHosts;
   };
+  nixosIsoConfigurations = mkConfigurationsOption {
+    class = "nixos";
+    fn = lib.nixosSystem;
+    hosts = nixosHosts;
+    extraModuleNames = ["iso"];
+  };
   darwinConfigurations =
     if darwinHosts == {}
     then {}
@@ -237,6 +244,22 @@ in {
   options.flake.moduleOptions = mkClassAttrsOption lib.types.raw;
 
   config.flake = {
-    inherit nixosConfigurations darwinConfigurations;
+    inherit nixosConfigurations nixosIsoConfigurations darwinConfigurations;
+  };
+
+  config.perSystem = {system, ...}: let
+    matchingNixosConfigurations = lib.filterAttrs (_name: host: host.config.nixpkgs.hostPlatform.system == system) nixosConfigurations;
+    matchingIsoConfigurations = lib.filterAttrs (_name: host: host.config.nixpkgs.hostPlatform.system == system) nixosIsoConfigurations;
+
+    systemPackages =
+      matchingNixosConfigurations
+      |> lib.mapAttrs' (name: host:
+        lib.nameValuePair "system-${name}" host.config.system.build.toplevel);
+    isoPackages =
+      matchingIsoConfigurations
+      |> lib.mapAttrs' (name: host:
+        lib.nameValuePair "iso-${name}" host.config.system.build.isoImage);
+  in {
+    packages = systemPackages // isoPackages;
   };
 }

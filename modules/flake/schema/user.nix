@@ -1,11 +1,6 @@
-{
-  inputs,
-  lib,
-  ...
-}: let
+{lib, ...}: let
   inherit (lib) mkOption;
   inherit (lib.types) submodule nullOr listOf int str bool attrsOf anything;
-  genSchema = inputs.gen-schema.lib;
   sshKeyType = submodule {
     options = {
       tag = mkOption {
@@ -22,10 +17,10 @@ in {
   schema.user.imports = [
     ({config, ...}: {
       options.resolvedGroups = mkOption {
-        type = genSchema.setOf (genSchema.ref "group");
-        readOnly = true;
-        description = "Computed set of group instances using group registry";
+        type = listOf str;
+        description = "Computed group names, including groups that directly or transitively include this user";
         default = config.groups;
+        apply = lib.unique;
       };
     })
   ];
