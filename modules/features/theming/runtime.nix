@@ -16,6 +16,26 @@
     base16Lib = pkgs.callPackage inputs.base16.lib {};
     gtkPackage = pkgs.local.${gtk.packageName};
     themeNames = builtins.attrNames themes.profiles;
+    themeListFile = pkgs.writeText "nix-theme-list" (lib.concatStringsSep "\n" themeNames);
+    themeListJson = builtins.toJSON themeNames;
+    profileSubdirs = [
+      "alacritty"
+      "bat/themes"
+      "gtk-3.0"
+      "gtk-4.0"
+      "noctalia"
+      "qt5ct"
+      "qt6ct"
+      "zathura"
+      "zed/themes"
+    ];
+
+    mkProfileLinkCommands = files:
+      files
+      |> lib.mapAttrsToList (target: source: ''
+        ln -sfn ${lib.escapeShellArg source} "$out/${target}"
+      '')
+      |> lib.concatStringsSep "\n";
 
     mkGtkIni = profile: let
       isDark = profile.colorScheme == "dark";
@@ -159,79 +179,107 @@
 
     mkProfile = name: profile: let
       scheme = base16Lib.mkSchemeAttrs profile.base16Theme;
-      gtkSettings = mkGtkIni profile;
-      qtctConf = mkQtctConf profile;
-      alacrittyToml = mkAlacrittyToml scheme;
-      batConfig = pkgs.writeText "bat-config" ''
-        --theme="Base16"
-        --italic-text=always
-      '';
-      batTheme = scheme {
-        template = ../base/shell-utils/bat/bat.tmTheme.mustache;
-        extension = ".tmTheme";
-      };
-      zedSettings = pkgs.writeText "zed-settings.json" (builtins.toJSON (import ../programs/dev/zed/_config.nix (let
-        pxToPt = size: builtins.floor (size * 4 / 3 + 0.5);
-      in {
-        inherit lib scheme;
-        inherit (fonts) sans mono icon;
-        sizeBuffer = pxToPt fonts.sizes.terminal;
-        sizeUi = pxToPt fonts.sizes.desktop;
-      })));
-      zedTheme = scheme {
-        template = ../programs/dev/zed/zed-base24.json.mustache;
-        extension = ".json";
-      };
-      zathurarc = mkZathurarc scheme;
       selectedWallpaper =
         if profile.wallpaper != null
         then profile.wallpaper
         else wallpaper.image;
-      metadata = pkgs.writeText "theme-env" ''
-        THEME_NAME=${lib.escapeShellArg name}
-        COLOR_SCHEME=${lib.escapeShellArg (
-          if profile.colorScheme == "dark"
-          then "prefer-dark"
-          else "default"
-        )}
-        GTK_THEME=${lib.escapeShellArg gtk.name}
-        ICON_THEME=${lib.escapeShellArg icon.name}
-        CURSOR_THEME=${lib.escapeShellArg cursor.name}
-        CURSOR_SIZE=${lib.escapeShellArg (toString cursor.size)}
-        WALLPAPER=${lib.escapeShellArg (toString selectedWallpaper)}
-      '';
-      noctaliaConfig = pkgs.replaceVars ../desktop-shell/noctalia/noctalia-config.toml.template {
-        mono = fonts.mono.name;
-        sans = fonts.sans.name;
-        main = "DP-2";
-        secondary = "HDMI-A-2";
-        image = selectedWallpaper;
-        imageDirectory = wallpaper.directory;
-        location = config.fleet.timeZone |> lib.splitString "/" |> lib.last;
+      pxToPt = size: builtins.floor (size * 4 / 3 + 0.5);
+      profileFiles = {
+        "env" = pkgs.writeText "theme-env" ''
+          THEME_NAME=${lib.escapeShellArg name}
+          COLOR_SCHEME=${lib.escapeShellArg (
+            if profile.colorScheme == "dark"
+            then "prefer-dark"
+            else "default"
+          )}
+          GTK_THEME=${lib.escapeShellArg gtk.name}
+          ICON_THEME=${lib.escapeShellArg icon.name}
+          CURSOR_THEME=${lib.escapeShellArg cursor.name}
+          CURSOR_SIZE=${lib.escapeShellArg (toString cursor.size)}
+          WALLPAPER=${lib.escapeShellArg (toString selectedWallpaper)}
+        '';
+        "alacritty/alacritty.toml" = mkAlacrittyToml scheme;
+        "bat/config" = pkgs.writeText "bat-config" ''
+          --theme="Base16"
+          --italic-text=always
+        '';
+        "bat/themes/Base16.tmTheme" = scheme {
+          template = ../base/shell-utils/bat/bat.tmTheme.mustache;
+          extension = ".tmTheme";
+        };
+        "gtk-3.0/settings.ini" = mkGtkIni profile;
+        "gtk-4.0/settings.ini" = mkGtkIni profile;
+        "noctalia/config.toml" = pkgs.replaceVars ../desktop-shell/noctalia/noctalia-config.toml.template {
+          mono = fonts.mono.name;
+          sans = fonts.sans.name;
+          main = "DP-2";
+          secondary = "HDMI-A-2";
+          image = selectedWallpaper;
+          imageDirectory = wallpaper.directory;
+          location = config.fleet.timeZone |> lib.splitString "/" |> lib.last;
+        };
+        "qt5ct/qt5ct.conf" = mkQtctConf profile;
+        "qt6ct/qt6ct.conf" = mkQtctConf profile;
+        "zathura/zathurarc" = mkZathurarc scheme;
+        "zed/settings.json" = pkgs.writeText "zed-settings.json" (builtins.toJSON (import ../programs/dev/zed/_config.nix {
+          inherit lib scheme;
+          inherit (fonts) sans mono icon;
+          sizeBuffer = pxToPt fonts.sizes.terminal;
+          sizeUi = pxToPt fonts.sizes.desktop;
+        }));
+        "zed/themes/base24-theme.json" = scheme {
+          template = ../programs/dev/zed/zed-base24.json.mustache;
+          extension = ".json";
+        };
       };
     in
       pkgs.runCommand "nix-theme-profile-${name}" {} ''
-        mkdir -p "$out"/{alacritty,bat/themes,gtk-3.0,gtk-4.0,noctalia,qt5ct,qt6ct,zathura,zed/themes}
-        ln -s ${lib.escapeShellArg metadata} "$out/env"
-        ln -s ${lib.escapeShellArg alacrittyToml} "$out/alacritty/alacritty.toml"
-        ln -s ${lib.escapeShellArg batConfig} "$out/bat/config"
-        ln -s ${lib.escapeShellArg batTheme} "$out/bat/themes/Base16.tmTheme"
-        ln -s ${lib.escapeShellArg gtkSettings} "$out/gtk-3.0/settings.ini"
+        mkdir -p ${lib.concatMapStringsSep " " (dir: ''"$out/${dir}"'') profileSubdirs}
         cp -rs ${lib.escapeShellArg "${gtkPackage}/share/libadwaita-themes"}/* "$out/gtk-4.0/" 2>/dev/null || true
-        ln -sfn ${lib.escapeShellArg gtkSettings} "$out/gtk-4.0/settings.ini"
-        ln -s ${lib.escapeShellArg noctaliaConfig} "$out/noctalia/config.toml"
-        ln -s ${lib.escapeShellArg qtctConf} "$out/qt5ct/qt5ct.conf"
-        ln -s ${lib.escapeShellArg qtctConf} "$out/qt6ct/qt6ct.conf"
-        ln -s ${lib.escapeShellArg zathurarc} "$out/zathura/zathurarc"
-        ln -s ${lib.escapeShellArg zedSettings} "$out/zed/settings.json"
-        ln -s ${lib.escapeShellArg zedTheme} "$out/zed/themes/base24-theme.json"
+        ${mkProfileLinkCommands profileFiles}
       '';
 
     profileDirs = lib.mapAttrs mkProfile themes.profiles;
     profilesPackage = pkgs.linkFarm "nix-theme-profiles" (
       lib.mapAttrsToList (name: path: {inherit name path;}) profileDirs
     );
-    themeList = pkgs.writeText "nix-theme-list" (lib.concatStringsSep "\n" themeNames);
+    themeList = pkgs.writeShellApplication {
+      name = "theme-list";
+      runtimeInputs = [pkgs.coreutils];
+      text = ''
+        set -euo pipefail
+
+        if [ "''${1:-}" = "--json" ]; then
+          printf '%s\n' ${lib.escapeShellArg themeListJson}
+          exit 0
+        fi
+
+        cat ${themeListFile}
+      '';
+    };
+
+    themeCurrent = pkgs.writeShellApplication {
+      name = "theme-current";
+      runtimeInputs = [pkgs.coreutils];
+      text = ''
+        set -euo pipefail
+
+        state_dir="${profileStateDir}"
+        selected="$state_dir/selected"
+
+        if [ -s "$selected" ]; then
+          cat "$selected"
+          exit 0
+        fi
+
+        if [ -e "$state_dir/current" ]; then
+          basename "$(readlink -f "$state_dir/current")"
+          exit 0
+        fi
+
+        exit 1
+      '';
+    };
 
     themeApply = pkgs.writeShellApplication {
       name = "theme-apply";
@@ -259,7 +307,7 @@
         if [ ! -d "$profile" ]; then
           echo "Unknown theme: $theme" >&2
           echo "Available themes:" >&2
-          sed 's/^/  /' ${themeList} >&2
+          sed 's/^/  /' ${themeListFile} >&2
           exit 1
         fi
 
@@ -285,7 +333,7 @@
         ln -sfn "$state_dir/current/qt5ct/qt5ct.conf" "$HOME/.config/qt5ct/qt5ct.conf"
         ln -sfn "$state_dir/current/qt6ct/qt6ct.conf" "$HOME/.config/qt6ct/qt6ct.conf"
 
-        if command -v gsettings >/dev/null 2>&1; then
+        if command -v gsettings >/dev/null 2>&1 && gsettings list-schemas 2>/dev/null | grep -qx org.gnome.desktop.interface; then
           gsettings set org.gnome.desktop.interface color-scheme "$COLOR_SCHEME" || true
           gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" || true
           gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" || true
@@ -307,9 +355,56 @@
       ];
       text = ''
         set -euo pipefail
-        theme="$(cat ${themeList} | fuzzel --dmenu --prompt 'Theme: ')"
+        theme="$(cat ${themeListFile} | fuzzel --dmenu --prompt 'Theme: ')"
         [ -n "$theme" ] || exit 0
         exec theme-apply "$theme"
+      '';
+    };
+
+    themeCycle = pkgs.writeShellApplication {
+      name = "theme-cycle";
+      runtimeInputs = [
+        pkgs.coreutils
+        themeApply
+        themeCurrent
+      ];
+      text = ''
+        set -euo pipefail
+
+        direction="''${1:-next}"
+        current="$(theme-current 2>/dev/null || true)"
+        first=""
+        previous=""
+        selected=""
+
+        while IFS= read -r theme; do
+          [ -n "$theme" ] || continue
+          [ -n "$first" ] || first="$theme"
+
+          if [ "$direction" = "previous" ] || [ "$direction" = "prev" ]; then
+            if [ "$theme" = "$current" ]; then
+              selected="$previous"
+              break
+            fi
+            previous="$theme"
+          else
+            if [ "$previous" = "$current" ]; then
+              selected="$theme"
+              break
+            fi
+            previous="$theme"
+          fi
+        done < ${themeListFile}
+
+        if [ -z "$selected" ]; then
+          if [ "$direction" = "previous" ] || [ "$direction" = "prev" ]; then
+            selected="$previous"
+          else
+            selected="$first"
+          fi
+        fi
+
+        exec theme-apply "$selected"
       '';
     };
   in {
@@ -317,6 +412,9 @@
       pkgs.fuzzel
       profilesPackage
       themeApply
+      themeCurrent
+      themeCycle
+      themeList
       themeSelect
     ];
     environment.sessionVariables = {

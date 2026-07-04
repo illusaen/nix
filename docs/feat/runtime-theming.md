@@ -14,6 +14,16 @@ theme-apply tokyo-night-moon
 theme-apply catppuccin-latte
 ```
 
+Other commands:
+
+```sh
+theme-current
+theme-cycle
+theme-cycle previous
+theme-list
+theme-list --json
+```
+
 `theme-apply` updates GTK and Qt config links, applies GNOME interface settings
 when `gsettings` is available, and best-effort restarts user services that are
 expected to reload theme-sensitive UI, currently `noctalia.service` and

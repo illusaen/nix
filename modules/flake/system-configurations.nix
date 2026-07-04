@@ -262,6 +262,6 @@ in {
         lib.nameValuePair "iso-${name}" nixosIsoConfigurations.${name}.config.system.build.isoImage)
       |> builtins.listToAttrs;
   in {
-    packages = systemPackages // isoPackages;
+    legacyPackages = systemPackages // isoPackages;
   };
 }

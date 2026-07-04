@@ -33,7 +33,13 @@ in {
 
   flake = {
     overlays.default = _final: prev: {
-      local = lib.genAttrs localPackageNames (name: self.packages.${prev.stdenv.hostPlatform.system}.${name});
+      local = lib.genAttrs localPackageNames (
+        name: let
+          system = prev.stdenv.hostPlatform.system;
+          packageSet = self.legacyPackages.${system};
+        in
+          packageSet.${name} or self.packages.${system}.${name}
+      );
     };
   };
 
