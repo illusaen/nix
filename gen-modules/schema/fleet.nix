@@ -1,12 +1,11 @@
 {
-  inputs,
   lib,
   config,
+  genSchema,
   ...
 }: let
   inherit (lib) mkOption;
   inherit (lib.types) attrsOf anything str;
-  genSchema = inputs.gen-schema.lib;
 
   mkSingletonInstanceOption = kindValue: args:
     mkOption {

@@ -1,11 +1,10 @@
 {
   lib,
-  inputs,
+  genSchema,
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
   inherit (lib.types) either enum submodule path attrsOf listOf str anything;
-  genSchema = inputs.gen-schema.lib;
 
   getIpFromInterface = isIpv4: interfaces: let
     version =

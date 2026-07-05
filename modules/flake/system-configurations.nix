@@ -5,6 +5,7 @@
   self,
   ...
 }: let
+  fleet = config.gen.composed.values.fleet;
   moduleClasses = ["generic" "nixos" "darwin"];
   mkClassAttrsOption = type:
     lib.mkOption {
@@ -48,7 +49,7 @@
   serviceRouteEntries =
     lib.concatMap (
       name: let
-        service = config.fleet.services.${name};
+        service = fleet.services.${name};
         mkEntry = role: host: {
           hostName = host.name;
           inherit name;
@@ -60,7 +61,7 @@
         (mkEntry "backup")
         (builtins.filter (backup: backup.name != service.host.name) service.backups)
     )
-    (builtins.attrNames config.fleet.services);
+    (builtins.attrNames fleet.services);
 
   serviceRoutesByHost =
     builtins.foldl' (
@@ -78,7 +79,7 @@
 
   routedServicesFor = host: serviceRoutesByHost.${host.name} or {};
 
-  hostsByClass = class: lib.filterAttrs (_name: host: host.class == class) config.fleet.hosts;
+  hostsByClass = class: lib.filterAttrs (_name: host: host.class == class) fleet.hosts;
   nixosHosts = hostsByClass "nixos";
   darwinHosts = hostsByClass "darwin";
 
@@ -138,7 +139,6 @@
     missingServiceModules ? [],
     activeNames ? [],
   }: let
-    inherit (config) fleet;
     user = host.owner;
     hostModuleSettings = resolveModuleSettings {
       inherit class activeNames;

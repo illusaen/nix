@@ -1,17 +1,17 @@
 {
-  config,
   helpers,
   inputs,
   lib,
   ...
 }: {
   flake.modules.nixos.runtime-theming = {
+    fleet,
     pkgs,
     user,
     ...
   }: let
-    inherit (config.fleet) fonts themes wallpaper;
-    inherit (config.fleet.theming) cursor gtk icon;
+    inherit (fleet) fonts themes wallpaper;
+    inherit (fleet.theming) cursor gtk icon;
     profileStateDir = "\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme";
     base16Lib = pkgs.callPackage inputs.base16.lib {};
     gtkPackage = pkgs.local.${gtk.packageName};
@@ -216,7 +216,7 @@
           secondary = "HDMI-A-2";
           image = selectedWallpaper;
           imageDirectory = wallpaper.directory;
-          location = config.fleet.timeZone |> lib.splitString "/" |> lib.last;
+          location = fleet.timeZone |> lib.splitString "/" |> lib.last;
         };
         "qt5ct/qt5ct.conf" = mkQtctConf profile;
         "qt6ct/qt6ct.conf" = mkQtctConf profile;

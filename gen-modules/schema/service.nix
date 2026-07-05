@@ -1,10 +1,8 @@
 {
-  inputs,
+  genSchema,
   lib,
   ...
-}: let
-  genSchema = inputs.gen-schema.lib;
-in {
+}: {
   schema.service.options = {
     port = lib.mkOption {
       type = lib.types.int;

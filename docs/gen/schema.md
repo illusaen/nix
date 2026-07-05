@@ -9,6 +9,7 @@
 | hosts | attrsOf | {} | host instances |
 | moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
 | services | attrsOf | {} | service instances |
+| themes | submodule | — |  |
 | theming | submodule | — |  |
 | timeZone | str | CST | Default timezone for the fleet |
 | users | attrsOf | {} | user instances |
@@ -19,7 +20,7 @@
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | isPosix | bool | false | If the group maps to an existing POSIX system group |
-| members | setOf(ref(user)) | \[ ... \] | Users who are in the group. Can also be assigned group names; members of the named group will also be members of this group |
+| members | listOf | \[ ... \] | User or group names that belong to this group. |
 
 ## host
 
@@ -57,5 +58,5 @@
 | groups | listOf | \[ ... \] | List of groups the user belongs to, with names from the group registry |
 | identity | submodule | {} | User identity information |
 | moduleSettings | attrsOf | {} | User-level raw module settings overrides. |
-| resolvedGroups | setOf(ref(group)) | \[ ... \] | Computed set of group instances using group registry |
+| resolvedGroups | listOf | \[ ... \] | Computed group names, including groups that directly or transitively include this user |
 | system | submodule | — |  |

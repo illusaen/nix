@@ -39,13 +39,6 @@
     files = {
       url = "github:mightyiam/files";
       flake = false;
-      inputs = {
-        flake-parts.follows = "flake-parts";
-        git-hooks.follows = "git-hooks-nix";
-        import-tree.follows = "import-tree";
-        nixpkgs.follows = "nixpkgs-unstable";
-        treefmt-nix.follows = "treefmt-nix";
-      };
     };
     firefox-addons = {
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
@@ -56,7 +49,7 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs-unstable";
     };
-    gen-schema.url = "github:sini/gen-schema";
+    gen-flake.url = "github:sini/gen-flake";
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
     import-tree.url = "github:denful/import-tree";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
