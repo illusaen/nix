@@ -10,7 +10,7 @@
     {inherit evaluation;} // evaluation.config.processedFlake;
 
   nixConfig = {
-    experimental-features = ["nix-command" "flakes" "pipe-operator"];
+    experimental-features = ["nix-command" "flakes" "pipe-operator" "pipe-operators"];
     lazy-trees = true;
   };
 

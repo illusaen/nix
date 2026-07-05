@@ -9,6 +9,7 @@
         "nix-command"
         "flakes"
         "pipe-operator"
+        "pipe-operators"
       ];
     };
 

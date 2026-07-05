@@ -27,6 +27,7 @@
         "nix-command"
         "flakes"
         "pipe-operator"
+        "pipe-operators"
       ];
       abort-on-warn = moduleSettings.nix-settings.abortOnWarn;
       accept-flake-config = true;
