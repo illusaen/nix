@@ -1,3 +1,3 @@
 {
-  flake.moduleImports.programs-creative = ["images" "bambu-studio"];
+  flake.moduleImports.programs-creative = ["images" "bambu-studio" "word"];
 }

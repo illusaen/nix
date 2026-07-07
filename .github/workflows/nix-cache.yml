@@ -41,6 +41,10 @@ jobs:
         run: |
           nix --extra-experimental-features pipe-operators build .#legacyPackages.x86_64-linux.llama-cpp
 
+      - name: Build noctalia package
+        run: |
+          nix --extra-experimental-features pipe-operators build .#legacyPackages.x86_64-linux.noctalia
+
       - name: Build NixOS configuration
         run: |
           nix --extra-experimental-features pipe-operators build .#nixosConfigurations.odin.config.system.build.toplevel

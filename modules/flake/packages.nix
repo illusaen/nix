@@ -57,6 +57,7 @@ in {
     legacyPackages = {
       llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
       inherit (pkgs) bambu-studio;
+      noctalia = inputs.noctalia.packages.${system}.default;
     };
   };
 
