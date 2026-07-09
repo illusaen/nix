@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
-  inherit (lib.types) either enum submodule path attrsOf listOf nullOr str anything;
+  inherit (lib.types) either enum submodule path attrsOf listOf nullOr str;
 
   getIpFromInterface = isIpv4: interfaces: let
     version =
@@ -147,13 +147,6 @@ in {
       default = {};
       defaultText = {text = "{}";};
       description = "Host monitor connectors.";
-    };
-
-    moduleSettings = mkOption {
-      type = attrsOf anything;
-      description = "Host-level raw module settings overrides.";
-      default = {};
-      defaultText = {text = "{}";};
     };
 
     moduleNames = mkOption {

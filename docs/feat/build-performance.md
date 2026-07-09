@@ -138,23 +138,14 @@ nix eval --read-only --impure .#nixosConfigurations.odin.config.system.build.top
 Do not use `--read-only` as a substitute for build or switch commands; it is
 only for eval timing and smoke checks.
 
-### Remove Unused Module Settings Provenance
+### Remove Per-Host Settings Resolver
 
 Status: implemented.
 
-`system-configurations.nix` now computes only the host-level resolved
-`moduleSettings` view that modules consume. `moduleSettingsProvenance` is no
-longer injected.
-
-The injected values are:
-
-- `moduleSettings`
-- `fleet.moduleSettings`
-- `host.moduleSettings`
-- `user.moduleSettings`
-
-All currently point at the same resolved host view. This removes multiple
-`lib.evalModules` calls per host during evaluation.
+`system-configurations.nix` no longer builds a separate per-host settings schema.
+Host-specific facts live in the host schema, and module-local behavior uses
+normal NixOS/Darwin module options. This removes the extra `lib.evalModules`
+pass per host.
 
 ### Keep Host-Specific Wrappers Out Of Global Package Builds
 
@@ -166,7 +157,8 @@ Host-specific wrappers now use the correct pattern:
 self.wrappers.niri.wrap {
   inherit pkgs;
   _module.args = {
-    inherit fleet moduleSettings;
+    inherit fleet;
+    inherit (host) monitors;
   };
 }
 ```

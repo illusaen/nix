@@ -7,19 +7,6 @@
   ...
 }: let
   inherit (genValues) fleet;
-  moduleClasses = ["generic" "nixos" "darwin"];
-  mkClassAttrsOption = type:
-    lib.mkOption {
-      type = lib.types.submodule {
-        options = lib.genAttrs moduleClasses (_class:
-          lib.mkOption {
-            type = lib.types.lazyAttrsOf type;
-            default = {};
-          });
-      };
-      default = {};
-    };
-
   classModuleNames = class: name:
     lib.optionals (config.flake.modules.generic ? ${name}) ["generic"]
     ++ lib.optionals (config.flake.modules.${class} ? ${name}) [class];
@@ -89,77 +76,24 @@
     |> builtins.attrNames
     |> builtins.filter (name: classModuleNames class name == []);
 
-  normalizeSettingsModule = raw:
-    if raw ? imports || raw ? options || raw ? config
-    then raw
-    else {options = raw;};
-
-  settingDeclarationModules = class: names:
-    lib.concatMap (
-      name: let
-        classes = classModuleNames class name;
-        declarations =
-          classes
-          |> builtins.filter (moduleClass: config.flake.moduleOptions.${moduleClass} ? ${name})
-          |> map (moduleClass: normalizeSettingsModule config.flake.moduleOptions.${moduleClass}.${name});
-      in
-        lib.optional (declarations != []) {
-          options.${name} = lib.mkOption {
-            type = lib.types.submodule {imports = declarations;};
-            default = {};
-            description = "Settings for the ${name} module.";
-          };
-        }
-    )
-    names;
-
-  resolveModuleSettings = {
-    class,
-    activeNames,
-    fleetModuleSettings ? {},
-    hostModuleSettings ? {},
-    userModuleSettings ? {},
-  }: let
-    evaluated = lib.evalModules {
-      modules =
-        settingDeclarationModules class activeNames
-        ++ [
-          {config = lib.mkOverride 800 fleetModuleSettings;}
-          {config = lib.mkOverride 700 hostModuleSettings;}
-          {config = lib.mkOverride 600 userModuleSettings;}
-        ];
-    };
-  in
-    evaluated.config;
-
   mkHostContext = {
     class,
     name,
     host,
     routedServices ? {},
     missingServiceModules ? [],
-    activeNames ? [],
   }: let
     user = host.owner;
-    hostModuleSettings = resolveModuleSettings {
-      inherit class activeNames;
-      fleetModuleSettings = fleet.moduleSettings or {};
-      hostModuleSettings = host.moduleSettings or {};
-      userModuleSettings = user.moduleSettings or {};
-    };
     resolvedHost =
       host
       // {
-        moduleSettings = hostModuleSettings;
         services = routedServices;
       };
   in {
     specialArgs = {
-      fleet = fleet // {moduleSettings = hostModuleSettings;};
+      inherit fleet;
       host = resolvedHost;
-      user = user // {moduleSettings = hostModuleSettings;};
-      inherit self;
-      moduleSettings = hostModuleSettings;
+      inherit self user;
     };
 
     module = {
@@ -203,7 +137,7 @@
         missingServiceModules = missingServiceModulesFor class routedServices;
         activeNames = moduleNameClosure (host.moduleNames ++ routedServiceNames ++ extraModuleNames);
         ctx = mkHostContext {
-          inherit class name host routedServices missingServiceModules activeNames;
+          inherit class name host routedServices missingServiceModules;
         };
         evaluationModule = {
           imports = [ctx.module] ++ modulesForNames class activeNames ++ [host.extraModule];
@@ -240,7 +174,6 @@ in {
     type = lib.types.lazyAttrsOf (lib.types.listOf lib.types.str);
     default = {};
   };
-  options.flake.moduleOptions = mkClassAttrsOption lib.types.raw;
 
   config.flake = {
     inherit nixosConfigurations nixosIsoConfigurations darwinConfigurations;

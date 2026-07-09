@@ -7,7 +7,6 @@
 | fonts | submodule | — |  |
 | groups | attrsOf | {} | group instances |
 | hosts | attrsOf | {} | host instances |
-| moduleSettings | attrsOf | {} | Fleet-level raw module settings defaults. |
 | services | attrsOf | {} | service instances |
 | themes | submodule | — |  |
 | theming | submodule | — |  |
@@ -33,7 +32,6 @@
 | ipv4 | str |  | Primary IPv4 address (derived from first interface with IPs, CIDR stripped) |
 | ipv6 | str |  | Primary IPv6 address (derived from first interface with IPs, CIDR stripped) |
 | moduleNames | listOf | \[ ... \] | Named flake modules that this host contributes to its system configuration. |
-| moduleSettings | attrsOf | {} | Host-level raw module settings overrides. |
 | monitors | submodule | {} | Host monitor connectors. |
 | networkInterfaces | attrsOf | {} | Network interfaces |
 | owner | ref(user) | — | Primary user for this host |
@@ -58,6 +56,5 @@
 |--------|------|---------|-------------|
 | groups | listOf | \[ ... \] | List of groups the user belongs to, with names from the group registry |
 | identity | submodule | {} | User identity information |
-| moduleSettings | attrsOf | {} | User-level raw module settings overrides. |
 | resolvedGroups | listOf | \[ ... \] | Computed group names, including groups that directly or transitively include this user |
 | system | submodule | — |  |

@@ -5,7 +5,7 @@
   ...
 }: let
   inherit (lib) mkOption;
-  inherit (lib.types) attrsOf anything str;
+  inherit (lib.types) str;
 
   mkSingletonInstanceOption = kindValue: args:
     mkOption {
@@ -41,13 +41,6 @@ in {
       type = str;
       default = "CST";
       description = "Default timezone for the fleet";
-    };
-
-    moduleSettings = mkOption {
-      type = attrsOf anything;
-      default = {};
-      defaultText = {text = "{}";};
-      description = "Fleet-level raw module settings defaults.";
     };
   };
 

@@ -6,7 +6,7 @@ This audit compares this repository with the entity and aspect designs in
 ## Summary
 
 The current architecture already uses `moduleNames`, `moduleImports`,
-`moduleSettings`, preservation, host ownership, and service routing. The main
+preservation, host ownership, and service routing. The main
 gaps were entity metadata that existed in the registries but did not affect the
 generated system: host network interfaces, fleet domain/time zone, and POSIX
 user/group metadata.
@@ -35,7 +35,7 @@ add more abstraction than this cleanup needs.
 | `facter` | Used | Feeds hardware facter configuration. |
 | `publicKey` | Used | Points to the tracked host SSH public key used for SSH known hosts and agenix recipients. |
 | `tags` | Used | Role tags expand default module names such as desktop or services. |
-| `moduleSettings` | Used | Feeds host-level module setting overrides. |
+| `monitors` | Used | Feeds host-specific display and wrapper configuration. |
 | `moduleNames` | Used | Declares the named modules enabled by the host. |
 | `extraModule` | Used | Adds host-local ad hoc module configuration. |
 | `preservation` | Used | Drives preservation and disko behavior. |
@@ -54,7 +54,6 @@ the smaller schema is faster to evaluate and easier to read.
 | `identity.sshKeys` | Used | Populates OpenSSH authorized keys. |
 | `groups` | Used | Feeds the registry membership graph. |
 | `resolvedGroups` | Used | Registry-resolved group data backs transitive POSIX group membership. |
-| `moduleSettings` | Used | Feeds user-level module setting overrides. |
 | `system.uid` | Used | Sets the NixOS user UID. |
 | `system.isAdmin` | Used | Adds `wheel` access. |
 | `group.isPosix` | Used | Marks groups that map to existing system groups and can be emitted in `extraGroups`. |
@@ -69,10 +68,6 @@ groups should be avoided because they bypass `fleet.groups`.
 | --- | --- | --- |
 | `domain` | Used | Sets the NixOS networking domain. |
 | `timeZone` | Used | Sets `time.timeZone`. |
-| `moduleSettings` | Used | Feeds fleet-level module setting defaults. |
-
-Fleet-level settings are the right place for defaults that should apply to all
-hosts. Host and user `moduleSettings` should remain narrower overrides.
 
 ## Cleanup Notes
 

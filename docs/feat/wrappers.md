@@ -105,7 +105,7 @@ Then, in the host system module, extend the global package with host arguments:
 {
   flake.modules.nixos.niri = {
     fleet,
-    moduleSettings,
+    host,
     pkgs,
     self,
     ...
@@ -115,7 +115,8 @@ Then, in the host system module, extend the global package with host arguments:
       package = self.wrappers.niri.wrap {
         inherit pkgs;
         _module.args = {
-          inherit fleet moduleSettings;
+          inherit fleet;
+          inherit (host) monitors;
         };
       };
     };
@@ -167,7 +168,7 @@ signature:
 
 ```nix
 # Avoid this.
-flake.wrappers.niri = { fleet ? null, moduleSettings ? null, ... }: { };
+flake.wrappers.niri = { fleet ? null, monitors ? null, ... }: { };
 ```
 
 The Nix module system still tries to resolve function parameters from module
@@ -178,6 +179,7 @@ global wrapper evaluable and lets host modules inject context later with
 The split is:
 
 - Wrapper layer: owns generated wrapper settings and generated files.
-- Host system module: injects `fleet`, `host`, `user`, or `moduleSettings` and
+- Host system module: injects `fleet`, `host`, `user`, or narrowed host data and
   assigns the resulting derivation to a system option.
-- Module settings: owns host/user/fleet policy values such as monitor names.
+- Host schema and normal NixOS options own host-specific values such as monitor
+  names.

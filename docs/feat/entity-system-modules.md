@@ -83,9 +83,6 @@ If a NixOS host imports `"base"`, the system configuration imports generic
 `state-version`, and `security`. For each active name, the configuration imports
 the generic module and the host-class module when those entries exist.
 
-The same recursive closure drives settings schema selection. Only named modules
-in this active closure can contribute `flake.moduleOptions`.
-
 ## Host Extra Modules
 
 Use `fleet.hosts.<name>.extraModule` for host-owned ad-hoc system config.
@@ -157,30 +154,21 @@ Fleet also receives normal instance fields such as `name` and `id_hash`, and
 
 ```nix
 {
-  flake.moduleOptions.generic.nix-settings.warnDirty = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
+  flake.modules.generic.nix-settings = {
+    nix.settings.warn-dirty = false;
   };
-
-  flake.modules.generic.nix-settings = { moduleSettings, ... }: {
-    nix.settings.warn-dirty = moduleSettings.nix-settings.warnDirty;
-  };
-
-  fleet.moduleSettings.nix-settings.warnDirty = false;
 
   fleet.hosts.odin = {
     system = "x86_64-linux";
     owner = "wendy";
     moduleNames = [ "base" "programs" ];
-    moduleSettings.nix-settings.warnDirty = true;
     extraModule.networking.domain = "lan";
   };
 }
 ```
 
-The evaluated NixOS system for `odin` imports the host module names, resolves
-settings for that active closure, and injects the final host settings into
-system modules.
+The evaluated NixOS system for `odin` imports the host module names, injects
+the host, owner, fleet, and self context, and applies the host extra module.
 
 ## Variants and Outputs
 
@@ -191,4 +179,4 @@ sources of truth.
 
 For example, a future ISO output could point at `fleet.hosts.odin` and add an
 `iso` module name or tag-driven module, while the canonical host identity,
-owner, system, moduleSettings, and default module stack stay in the host registry.
+owner, system, host facts, and default module stack stay in the host registry.

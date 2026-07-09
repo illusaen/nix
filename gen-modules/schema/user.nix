@@ -1,6 +1,6 @@
 {lib, ...}: let
   inherit (lib) mkOption;
-  inherit (lib.types) submodule nullOr listOf int str bool attrsOf anything;
+  inherit (lib.types) submodule nullOr listOf int str bool;
   sshKeyType = submodule {
     options = {
       tag = mkOption {
@@ -57,13 +57,6 @@ in {
       description = "List of groups the user belongs to, with names from the group registry";
       default = [];
       apply = lib.unique;
-    };
-
-    moduleSettings = mkOption {
-      type = attrsOf anything;
-      default = {};
-      defaultText = {text = "{}";};
-      description = "User-level raw module settings overrides.";
     };
 
     system = mkOption {
