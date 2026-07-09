@@ -3,9 +3,10 @@
   inputs,
   lib,
   self,
+  genValues,
   ...
 }: let
-  fleet = config.gen.composed.values.fleet;
+  inherit (genValues) fleet;
   moduleClasses = ["generic" "nixos" "darwin"];
   mkClassAttrsOption = type:
     lib.mkOption {

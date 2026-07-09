@@ -1,37 +1,15 @@
-{lib, ...}: {
-  flake.moduleOptions.generic.nix-settings = {
-    abortOnWarn = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether Nix should abort on warnings.";
-    };
-    warnDirty = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether Nix should warn about dirty Git trees.";
-    };
-    useXdgBaseDirectories = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether Nix should use XDG base directories.";
-    };
-  };
-
-  flake.modules.generic.nix-settings = {
-    fleet,
-    moduleSettings,
-    ...
-  }: {
+{
+  flake.modules.generic.nix-settings = {fleet, ...}: {
     nix.settings = {
       experimental-features = [
         "nix-command"
         "flakes"
       ];
-      abort-on-warn = moduleSettings.nix-settings.abortOnWarn;
+      abort-on-warn = true;
       accept-flake-config = true;
       auto-optimise-store = true;
-      warn-dirty = moduleSettings.nix-settings.warnDirty;
-      use-xdg-base-directories = moduleSettings.nix-settings.useXdgBaseDirectories;
+      warn-dirty = false;
+      use-xdg-base-directories = true;
       trusted-users = [
         "root"
         "@wheel"

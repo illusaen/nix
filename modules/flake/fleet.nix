@@ -1,5 +1,5 @@
 {
-  config,
+  genValues,
   inputs,
   lib,
   ...
@@ -13,8 +13,8 @@
     helpers = (import ./helpers-lib.nix {inherit lib;})._module.args.helpers;
   };
 
-  flake.fleet = config.gen.composed.values.fleet;
+  flake.fleet = genValues.fleet;
 
   perSystem.files.file."docs/gen/schema.md".text =
-    inputs.gen-flake.inputs.gen-schema.lib.renderDocs config.gen.composed.values.schema;
+    inputs.gen-flake.inputs.gen-schema.lib.renderDocs genValues.schema;
 }
