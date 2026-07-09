@@ -6,6 +6,7 @@
 }: {
   flake.modules.nixos.runtime-theming = {
     fleet,
+    host,
     pkgs,
     user,
     ...
@@ -212,8 +213,11 @@
         "noctalia/config.toml" = pkgs.replaceVars ../desktop-shell/noctalia/noctalia-config.toml.template {
           mono = fonts.mono.name;
           sans = fonts.sans.name;
-          main = "DP-2";
-          secondary = "HDMI-A-2";
+          main = host.monitors.main;
+          secondary =
+            if host.monitors.secondary != null
+            then host.monitors.secondary
+            else host.monitors.main;
           image = selectedWallpaper;
           imageDirectory = wallpaper.directory;
           location = fleet.timeZone |> lib.splitString "/" |> lib.last;

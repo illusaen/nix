@@ -34,6 +34,7 @@
 | ipv6 | str |  | Primary IPv6 address (derived from first interface with IPs, CIDR stripped) |
 | moduleNames | listOf | \[ ... \] | Named flake modules that this host contributes to its system configuration. |
 | moduleSettings | attrsOf | {} | Host-level raw module settings overrides. |
+| monitors | submodule | {} | Host monitor connectors. |
 | networkInterfaces | attrsOf | {} | Network interfaces |
 | owner | ref(user) | — | Primary user for this host |
 | preservation | submodule | — |  |

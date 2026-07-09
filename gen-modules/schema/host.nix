@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (lib) mkOption mkEnableOption;
-  inherit (lib.types) either enum submodule path attrsOf listOf str anything;
+  inherit (lib.types) either enum submodule path attrsOf listOf nullOr str anything;
 
   getIpFromInterface = isIpv4: interfaces: let
     version =
@@ -127,6 +127,26 @@ in {
       description = "Host tags for organization and feature gates";
       default = {};
       defaultText = {text = "{}";};
+    };
+
+    monitors = mkOption {
+      type = submodule {
+        options = {
+          main = mkOption {
+            type = nullOr str;
+            default = null;
+            description = "Primary monitor connector.";
+          };
+          secondary = mkOption {
+            type = nullOr str;
+            default = null;
+            description = "Secondary monitor connector.";
+          };
+        };
+      };
+      default = {};
+      defaultText = {text = "{}";};
+      description = "Host monitor connectors.";
     };
 
     moduleSettings = mkOption {

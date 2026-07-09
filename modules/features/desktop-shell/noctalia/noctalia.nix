@@ -22,6 +22,7 @@
 
   flake.modules.nixos.noctalia = {
     fleet,
+    host,
     moduleSettings,
     pkgs,
     self,
@@ -31,6 +32,7 @@
       inherit pkgs;
       _module.args = {
         inherit fleet moduleSettings;
+        inherit (host) monitors;
       };
     };
   in {
@@ -59,14 +61,14 @@
     ...
   }: let
     fleet = config._module.args.fleet or null;
-    moduleSettings = config._module.args.moduleSettings or null;
-    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
+    moduleSettings = config._module.args.moduleSettings or {};
+    hasFleet = fleet != null;
     devConfigDir = moduleSettings.noctalia.devConfigDir or null;
   in {
     imports = [wlib.modules.default];
     package = pkgs.noctalia;
 
-    env.NOCTALIA_CONFIG_HOME = lib.mkIf hasHostSettings (
+    env.NOCTALIA_CONFIG_HOME = lib.mkIf hasFleet (
       if devConfigDir != null
       then devConfigDir
       else {

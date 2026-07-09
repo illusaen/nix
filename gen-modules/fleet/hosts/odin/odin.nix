@@ -13,7 +13,7 @@
       ipv6 = "fe80::fa06:591c:fca0:664e/64";
     };
 
-    moduleSettings.monitors = {
+    monitors = {
       main = "DP-2";
       secondary = "HDMI-A-2";
     };

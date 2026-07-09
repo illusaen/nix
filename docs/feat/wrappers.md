@@ -80,15 +80,14 @@ settings with `lib.mkIf`.
     ...
   }: let
     fleet = config._module.args.fleet or null;
-    moduleSettings = config._module.args.moduleSettings or null;
-    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
+    monitors = config._module.args.monitors or null;
+    hasHostSettings = fleet != null && monitors != null && monitors.main != null;
   in {
     imports = [wlib.wrapperModules.niri];
 
     settings = lib.mkIf hasHostSettings (
       let
         scheme = (fleet.base16.scheme pkgs).withHashtag;
-        inherit (moduleSettings) monitors;
         outputs = import ./_outputs.nix {inherit monitors;};
       in {
         inherit outputs;
@@ -136,8 +135,8 @@ Use the same pattern for generated files:
     ...
   }: let
     fleet = config._module.args.fleet or null;
-    moduleSettings = config._module.args.moduleSettings or null;
-    hasHostSettings = fleet != null && moduleSettings != null && moduleSettings ? monitors;
+    monitors = config._module.args.monitors or null;
+    hasHostSettings = fleet != null && monitors != null && monitors.main != null;
   in {
     imports = [wlib.modules.default];
     package = pkgs.local.noctalia or pkgs.noctalia;
@@ -151,7 +150,7 @@ Use the same pattern for generated files:
       relPath = "noctalia/config.toml";
       builder = let
         file = pkgs.replaceVars ./noctalia-config.toml.template {
-          inherit (moduleSettings.monitors) main secondary;
+          inherit (monitors) main secondary;
           mono = fleet.fonts.mono.name;
           sans = fleet.fonts.sans.name;
         };
