@@ -28,6 +28,9 @@ jobs:
       - name: Build plain CI derivation
         run: nix-build ci.nix -A plain-eval
 
+      - name: Check deploy planning
+        run: bin/deploy --plan --on @server
+
       - name: Evaluate Colmena hive shape
         run: |
           nix-instantiate --eval --strict --json hive.nix -A odin.networking.hostName

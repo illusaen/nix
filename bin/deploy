@@ -3,58 +3,168 @@ set -eu
 
 usage() {
   cat <<'USAGE'
-usage: bin/deploy [--dry-run|--build] HOST
+usage: bin/deploy [--plan|--dry-run|--build|--apply] [--on] TARGET
+
+Targets:
+  HOST       Deploy one host.
+  @all       Select every host.
+  @nixos     Select every NixOS host.
+  @darwin    Select every Darwin host.
+  @TAG       Select hosts whose fleet tags include TAG.
 
 Deploy NixOS hosts through Colmena and Darwin hosts through nix-darwin.
 USAGE
 }
 
 mode=apply
-case "${1:-}" in
-  --dry-run)
-    mode=dry-run
-    shift
-    ;;
-  --build)
-    mode=build
-    shift
-    ;;
-  -h|--help)
-    usage
-    exit 0
-    ;;
-esac
 
-host="${1:-}"
-if [ -z "$host" ]; then
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --plan)
+      mode=plan
+      shift
+      ;;
+    --dry-run)
+      mode=dry-run
+      shift
+      ;;
+    --build|--build-only)
+      mode=build
+      shift
+      ;;
+    --apply)
+      mode=apply
+      shift
+      ;;
+    --on)
+      shift
+      break
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --*)
+      printf 'unknown option: %s\n' "$1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+target="${1:-}"
+if [ -z "$target" ]; then
   usage >&2
   exit 2
 fi
 
-platform="$(
-  nix-instantiate --eval --strict --json default.nix -A "hosts.${host}.platform" 2>/dev/null \
-    | tr -d '"'
-)"
+eval_expr() {
+  nix --extra-experimental-features nix-command eval --impure --raw --expr "$1"
+}
 
-case "$platform:$mode" in
-  nixos:dry-run)
-    exec colmena -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
-    ;;
-  nixos:build)
-    exec colmena -f hive.nix build --eval-node-limit 1 --on "$host"
-    ;;
-  nixos:apply)
-    exec colmena -f hive.nix apply --eval-node-limit 1 --on "$host"
-    ;;
-  darwin:dry-run|darwin:build)
-    exec nix-build darwin.nix -A "${host}.system"
-    ;;
-  darwin:apply)
-    printf '%s\n' "darwin apply is not wired yet; build first with: bin/deploy --build $host" >&2
-    exit 1
-    ;;
-  *)
-    printf 'unsupported host or mode: %s (%s)\n' "$host" "$platform" >&2
-    exit 1
-    ;;
-esac
+host_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" (builtins.attrNames api.hosts)'
+nixos_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" api.deploy.nixosHostNames'
+darwin_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" api.deploy.darwinHostNames'
+
+select_hosts() {
+  case "$target" in
+    @all)
+      eval_expr "$host_names_expr"
+      ;;
+    @nixos)
+      eval_expr "$nixos_names_expr"
+      ;;
+    @darwin)
+      eval_expr "$darwin_names_expr"
+      ;;
+    @*)
+      tag="${target#@}"
+      eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (builtins.filter (name: builtins.elem \"$tag\" (api.hosts.\${name}.tags or [])) (builtins.attrNames api.hosts))"
+      ;;
+    *)
+      eval_expr "let api = import ./default.nix; in if api.hosts ? \"$target\" then \"$target\" else throw \"unknown host '$target'\""
+      ;;
+  esac
+}
+
+platform_for() {
+  eval_expr "let api = import ./default.nix; in api.hosts.\"$1\".platform"
+}
+
+target_host_for() {
+  eval_expr "let api = import ./default.nix; in api.hosts.\"$1\".targetHost"
+}
+
+plan_host() {
+  host="$1"
+  platform="$(platform_for "$host")"
+  target_host="$(target_host_for "$host")"
+  printf '%s\t%s\t%s\t%s\n' "$mode" "$host" "$platform" "$target_host"
+}
+
+deploy_nixos() {
+  host="$1"
+  case "$mode" in
+    plan)
+      plan_host "$host"
+      ;;
+    dry-run)
+      colmena -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
+      ;;
+    build)
+      colmena -f hive.nix build --eval-node-limit 1 --on "$host"
+      ;;
+    apply)
+      colmena -f hive.nix apply --eval-node-limit 1 --on "$host"
+      ;;
+  esac
+}
+
+deploy_darwin() {
+  host="$1"
+  case "$mode" in
+    plan)
+      plan_host "$host"
+      ;;
+    dry-run|build)
+      nix-build darwin.nix -A "${host}.system"
+      ;;
+    apply)
+      result="$(nix-build darwin.nix -A "${host}.system")"
+      if [ ! -x "$result/activate" ]; then
+        printf 'darwin activation script not found for %s at %s/activate\n' "$host" "$result" >&2
+        exit 1
+      fi
+      "$result/activate"
+      ;;
+  esac
+}
+
+hosts="$(select_hosts)"
+if [ -z "$hosts" ]; then
+  printf 'target selected no hosts: %s\n' "$target" >&2
+  exit 1
+fi
+
+if [ "$mode" = plan ]; then
+  printf 'mode\thost\tplatform\ttargetHost\n'
+fi
+
+for host in $hosts; do
+  platform="$(platform_for "$host")"
+  case "$platform" in
+    nixos)
+      deploy_nixos "$host"
+      ;;
+    darwin)
+      deploy_darwin "$host"
+      ;;
+    *)
+      printf 'unsupported host platform: %s (%s)\n' "$host" "$platform" >&2
+      exit 1
+      ;;
+  esac
+done

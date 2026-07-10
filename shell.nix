@@ -1,16 +1,20 @@
 {system ? builtins.currentSystem}: let
   sources = import ./npins;
   pkgs = import sources.nixpkgs.outPath {inherit system;};
+  agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
 in
   pkgs.mkShell {
-    packages = with pkgs; [
-      agenix
-      colmena
-      deadnix
-      nil
-      npins
-      shellcheck
-      statix
-      treefmt
-    ];
+    packages =
+      [
+        agenixPackage
+      ]
+      ++ (with pkgs; [
+        colmena
+        deadnix
+        nil
+        npins
+        shellcheck
+        statix
+        treefmt
+      ]);
   }
