@@ -14,7 +14,7 @@
 
     config = {
       _module.args = {
-        inherit fleet host sources;
+        inherit fleet fleetLib host sources;
         user = fleet.users.${host.owner};
       };
 
@@ -46,7 +46,7 @@
         evalConfig {
           inherit (host) system;
           specialArgs = {
-            inherit fleet host sources;
+            inherit fleet fleetLib host sources;
             user = fleet.users.${host.owner};
           };
           modules = [
@@ -72,7 +72,7 @@
         darwin.lib.darwinSystem {
           inherit (host) system;
           specialArgs = {
-            inherit fleet host sources;
+            inherit fleet fleetLib host sources;
             user = fleet.users.${host.owner};
           };
           modules = [

@@ -30,6 +30,8 @@ let
       == expectedHiveHosts
       && nixosConfigurations.odin.config.networking.hostName == "odin"
       && nixosConfigurations.odin.config.services.llama-cpp.settings.host == "0.0.0.0"
+      && nixosConfigurations.odin.config.services.openssh.enable == true
+      && nixosConfigurations.odin.config.services.tailscale.enable == true
     then true
     else throw "nixosConfigurations plain API did not evaluate as expected";
 

@@ -3,8 +3,25 @@ let
   serviceLib = import ../lib/services.nix {inherit fleetLib;};
 
   baseFleet = {
-    users.wendy = {};
-    groups = {};
+    users.wendy.groups = ["system-access"];
+    groups = {
+      system-access = {
+        isPosix = false;
+        members = [];
+      };
+      wheel = {
+        isPosix = true;
+        members = ["system-access"];
+      };
+      kvm = {
+        isPosix = true;
+        members = ["hardware-access"];
+      };
+      hardware-access = {
+        isPosix = false;
+        members = [];
+      };
+    };
     hosts = {
       odin = {
         system = "x86_64-linux";
@@ -46,6 +63,8 @@ let
 
   testFleet = patch:
     baseFleet // patch;
+
+  routedFleet = serviceLib.routeHosts baseFleet;
 in {
   platformForSystem =
     fleetLib.platformForSystem "x86_64-linux"
@@ -54,6 +73,16 @@ in {
     && fleetLib.platformForSystem "wasm32-wasi" == null;
 
   validFleet = validationErrors baseFleet == [];
+
+  userPosixGroups =
+    fleetLib.userPosixGroups baseFleet "wendy" == ["wheel"];
+
+  userPosixGroupsIgnoreUnmatched =
+    fleetLib.userPosixGroups (testFleet {
+      users.wendy.groups = ["unknown-nonvalidated"];
+    })
+    "wendy"
+    == [];
 
   duplicateFeature =
     hasError "host 'odin' lists feature 'base' more than once"
@@ -81,6 +110,55 @@ in {
               tags = ["desktop" "desktop"];
             };
         };
+    });
+
+  unknownUserGroup =
+    hasError "user 'wendy' references unknown group 'missing'"
+    (testFleet {
+      users.wendy.groups = ["missing"];
+    });
+
+  duplicateUserGroup =
+    hasError "user 'wendy' lists group 'system-access' more than once"
+    (testFleet {
+      users.wendy.groups = ["system-access" "system-access"];
+      groups.system-access = {
+        isPosix = false;
+        members = [];
+      };
+    });
+
+  unknownGroupMember =
+    hasError "group 'wheel' references unknown member group 'missing'"
+    (testFleet {
+      groups.wheel = {
+        isPosix = true;
+        members = ["missing"];
+      };
+    });
+
+  duplicateGroupMember =
+    hasError "group 'wheel' lists member group 'system-access' more than once"
+    (testFleet {
+      groups = {
+        system-access = {
+          isPosix = false;
+          members = [];
+        };
+        wheel = {
+          isPosix = true;
+          members = ["system-access" "system-access"];
+        };
+      };
+    });
+
+  duplicateUserUid =
+    hasError "uid '1000' is used by multiple users"
+    (testFleet {
+      users = {
+        wendy.system.uid = 1000;
+        guest.system.uid = 1000;
+      };
     });
 
   duplicateTargetHost =
@@ -161,6 +239,58 @@ in {
             };
         };
     });
+
+  duplicateServiceBackup =
+    hasError "service 'app' lists backup host 'huginn' more than once"
+    (testFleet {
+      services = {
+        app =
+          baseFleet.services.app
+          // {
+            backups = ["huginn" "huginn"];
+          };
+      };
+    });
+
+  routedPrimaryService =
+    routedFleet.odin.services.app.role
+    == "primary"
+    && routedFleet.odin.services.app.port == 8080
+    && builtins.elem "llama-cpp" routedFleet.odin.features;
+
+  routedBackupService = let
+    fleet = testFleet {
+      services = {
+        app =
+          baseFleet.services.app
+          // {
+            backups = ["huginn"];
+          };
+      };
+    };
+    routed = serviceLib.routeHosts fleet;
+  in
+    routed.huginn.services.app.role
+    == "backup"
+    && builtins.elem "llama-cpp" routed.huginn.features;
+
+  routedImplicitServiceFeature = let
+    fleet = testFleet {
+      services = {
+        app = builtins.removeAttrs baseFleet.services.app ["feature"];
+      };
+    };
+    routed = serviceLib.routeHosts fleet;
+  in
+    builtins.elem "app" routed.odin.features;
+
+  normalizedHostDefaults =
+    routedFleet.odin.platform
+    == "nixos"
+    && routedFleet.odin.name == "odin"
+    && routedFleet.odin.privateKey == "/etc/ssh/ssh_host_ed25519_key"
+    && toString routedFleet.odin.publicKey == toString (../secrets/hosts + "/odin/host_ed25519.pub")
+    && routedFleet.odin.preservation.enable == false;
 
   servicePortConflicts =
     serviceLib.portConflicts (testFleet {

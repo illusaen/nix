@@ -83,12 +83,31 @@ _: let
       require false "host '${name}' lists tag '${tag}' more than once")
     (duplicates (host.tags or [])));
 
+  validateUser = fleet: name: user:
+    concatLists (map (group:
+      require (hasAttr group fleet.groups) "user '${name}' references unknown group '${group}'")
+    (user.groups or []))
+    ++ concatLists (map (group:
+      require false "user '${name}' lists group '${group}' more than once")
+    (duplicates (user.groups or [])));
+
+  validateGroup = fleet: name: group:
+    concatLists (map (member:
+      require (hasAttr member fleet.groups) "group '${name}' references unknown member group '${member}'")
+    (group.members or []))
+    ++ concatLists (map (member:
+      require false "group '${name}' lists member group '${member}' more than once")
+    (duplicates (group.members or [])));
+
   validateService = fleet: name: service:
     require (hasAttr service.primary fleet.hosts) "service '${name}' primary host '${service.primary}' does not exist"
     ++ concatLists (map (backup:
       require (hasAttr backup fleet.hosts) "service '${name}' backup host '${backup}' does not exist")
     (service.backups or []))
     ++ require (!(builtins.elem service.primary (service.backups or []))) "service '${name}' lists primary host '${service.primary}' as a backup"
+    ++ concatLists (map (backup:
+      require false "service '${name}' lists backup host '${backup}' more than once")
+    (duplicates (service.backups or [])))
     ++ require (service.port > 0 && service.port < 65536) "service '${name}' port must be between 1 and 65535"
     ++ require (service.protocol == "tcp" || service.protocol == "udp" || service.protocol == "http" || service.protocol == "https") "service '${name}' has invalid protocol '${service.protocol}'";
 
@@ -118,11 +137,36 @@ _: let
       require false "network address '${address}' is used by multiple hosts")
     duplicateAddresses);
 
+  validateUniqueUserValues = fleet: let
+    names = attrNames fleet.users;
+    usersWithUid = filter (name: (fleet.users.${name}.system.uid or null) != null) names;
+    duplicateUids = duplicates (map (name: fleet.users.${name}.system.uid) usersWithUid);
+  in
+    concatLists (map (uid:
+      require false "uid '${toString uid}' is used by multiple users")
+    duplicateUids);
+
+  userPosixGroups = fleet: userName: let
+    user = fleet.users.${userName};
+    userGroups = user.groups or [];
+  in
+    filter (
+      name: let
+        group = fleet.groups.${name};
+      in
+        (group.isPosix or false)
+        && builtins.any (member: builtins.elem member userGroups) (group.members or [])
+    )
+    (attrNames fleet.groups);
+
   validate = fleet:
-    concatLists (map (name: validateHost fleet name fleet.hosts.${name}) (attrNames fleet.hosts))
+    concatLists (map (name: validateUser fleet name fleet.users.${name}) (attrNames fleet.users))
+    ++ concatLists (map (name: validateGroup fleet name fleet.groups.${name}) (attrNames fleet.groups))
+    ++ concatLists (map (name: validateHost fleet name fleet.hosts.${name}) (attrNames fleet.hosts))
     ++ concatLists (map (name: validateService fleet name fleet.services.${name}) (attrNames fleet.services))
     ++ validateSecretHostKeys fleet
-    ++ validateUniqueHostValues fleet;
+    ++ validateUniqueHostValues fleet
+    ++ validateUniqueUserValues fleet;
 
   assertValid = fleet: let
     errors = validate fleet;
@@ -140,5 +184,5 @@ _: let
       (filter (name: hosts.${name}.platform == platform) (attrNames hosts))
     );
 in {
-  inherit assertValid duplicates hostAddressEntries platformForSystem platformHosts unique validate;
+  inherit assertValid duplicates hostAddressEntries platformForSystem platformHosts unique userPosixGroups validate;
 }

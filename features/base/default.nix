@@ -1,23 +1,16 @@
 _: {
-  imports = ["secrets"];
+  imports = ["secrets" "ssh" "tailscale"];
 
   modules.nixos = {
     fleet,
+    fleetLib,
     host,
     lib,
     user,
     ...
   }: let
     userName = user.name or host.owner;
-    userGroups = user.groups or [];
-    posixGroups = builtins.attrNames (
-      lib.filterAttrs (
-        _name: group:
-          (group.isPosix or false)
-          && builtins.any (member: builtins.elem member userGroups) (group.members or [])
-      )
-      fleet.groups
-    );
+    posixGroups = fleetLib.userPosixGroups fleet userName;
     extraGroups = lib.unique (posixGroups ++ lib.optional (user.system.isAdmin or false) "wheel");
     staticInterfaces = host.networkInterfaces or {};
     hasStaticInterfaces = staticInterfaces != {};
@@ -70,6 +63,7 @@ _: {
       uid = lib.mkIf ((user.system.uid or null) != null) user.system.uid;
       description = user.identity.displayName or userName;
       inherit extraGroups;
+      openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
       password = "arst";
     };
 
