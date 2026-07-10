@@ -31,7 +31,7 @@ in
       };
 
       networking.hostName = hostName;
-      nixpkgs.hostPlatform = host.system;
+      nixpkgs.hostPlatform.system = host.system;
     }
   )
   api.deploy.nixosHosts

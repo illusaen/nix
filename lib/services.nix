@@ -37,6 +37,7 @@
       in
         host
         // {
+          name = hostName;
           inherit services;
           features = unique ((host.features or []) ++ routedFeatureNames services);
         }

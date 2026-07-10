@@ -45,12 +45,14 @@
     mapAttrs (
       hostName: host:
         lib.nixosSystem {
-          inherit (host) system;
           specialArgs = {
             inherit fleet host sources;
             user = fleet.users.${host.owner};
           };
           modules = [
+            {
+              nixpkgs.hostPlatform.system = host.system;
+            }
             (mkHostModule {
               inherit fleet hostName host sources;
             })
@@ -74,6 +76,9 @@
             user = fleet.users.${host.owner};
           };
           modules = [
+            {
+              nixpkgs.hostPlatform.system = host.system;
+            }
             (mkHostModule {
               inherit fleet hostName host sources;
             })
