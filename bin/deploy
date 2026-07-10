@@ -65,29 +65,8 @@ eval_expr() {
   nix --extra-experimental-features nix-command eval --impure --raw --expr "$1"
 }
 
-host_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" (builtins.attrNames api.hosts)'
-nixos_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" api.deploy.nixosHostNames'
-darwin_names_expr='let api = import ./default.nix; in builtins.concatStringsSep "\n" api.deploy.darwinHostNames'
-
 select_hosts() {
-  case "$target" in
-    @all)
-      eval_expr "$host_names_expr"
-      ;;
-    @nixos)
-      eval_expr "$nixos_names_expr"
-      ;;
-    @darwin)
-      eval_expr "$darwin_names_expr"
-      ;;
-    @*)
-      tag="${target#@}"
-      eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (builtins.filter (name: builtins.elem \"$tag\" (api.hosts.\${name}.tags or [])) (builtins.attrNames api.hosts))"
-      ;;
-    *)
-      eval_expr "let api = import ./default.nix; in if api.hosts ? \"$target\" then \"$target\" else throw \"unknown host '$target'\""
-      ;;
-  esac
+  eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (api.deploy.selectHostNames \"$target\")"
 }
 
 platform_for() {

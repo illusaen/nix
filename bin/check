@@ -19,6 +19,9 @@ check hostFeaturesHavePlatformModules
 check serviceFeaturesExist
 check serviceFeaturesHaveNixosModules
 check hostPublicKeysExist
+check serviceSecretsDeclared
+check servicePortsDoNotConflict
+check deploySelectors
 
 nix-instantiate --parse hive.nix >/dev/null
 nix-instantiate --parse darwin.nix >/dev/null

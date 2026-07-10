@@ -11,7 +11,7 @@
     feature = "navidrome";
     primary = "odin";
     backups = [];
-    port = 8080;
+    port = 4533;
     protocol = "http";
   };
 

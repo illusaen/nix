@@ -1,5 +1,5 @@
 {fleetLib ? import ./fleet.nix {}}: let
-  inherit (builtins) attrNames listToAttrs map;
+  inherit (builtins) attrNames filter listToAttrs map;
   inherit (fleetLib) unique;
 
   serviceForHost = hostName: serviceName: service:
@@ -29,6 +29,46 @@
 
   routedFeatureNames = routedServices:
     unique (map (name: routedServices.${name}.feature or name) (attrNames routedServices));
+
+  transportProtocol = protocol:
+    if protocol == "http" || protocol == "https"
+    then "tcp"
+    else protocol;
+
+  servicePortEntriesForHost = hostName: services: let
+    routedServices = servicesForHost hostName services;
+  in
+    map (serviceName: let
+      service = routedServices.${serviceName};
+      protocol = transportProtocol service.protocol;
+      port = toString service.port;
+    in {
+      inherit hostName port protocol serviceName;
+      key = "${hostName}:${protocol}:${port}";
+    })
+    (attrNames routedServices);
+
+  portConflictsForHost = hostName: services: let
+    entries = servicePortEntriesForHost hostName services;
+    keys = unique (map (entry: entry.key) entries);
+    duplicateKeys =
+      filter (
+        key:
+          builtins.length (filter (entry: entry.key == key) entries) > 1
+      )
+      keys;
+  in
+    map (key: {
+      inherit hostName key;
+      services = map (entry: entry.serviceName) (filter (entry: entry.key == key) entries);
+    })
+    duplicateKeys;
+
+  portConflicts = fleet:
+    builtins.concatLists (
+      map (hostName: portConflictsForHost hostName fleet.services)
+      (attrNames fleet.hosts)
+    );
 
   normalizeHost = hostName: host: let
     preservation =
@@ -64,5 +104,5 @@
     )
     fleet.hosts;
 in {
-  inherit normalizeHost routeHosts routedFeatureNames servicesForHost;
+  inherit normalizeHost portConflicts routeHosts routedFeatureNames servicesForHost;
 }
