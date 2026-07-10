@@ -72,6 +72,18 @@ eval_expr() {
   nix --extra-experimental-features nix-command eval --impure --raw --expr "$1"
 }
 
+colmena_nix_config() {
+  if [ -n "${NIX_CONFIG:-}" ]; then
+    printf '%s\nabort-on-warn = false\n' "$NIX_CONFIG"
+  else
+    printf '%s\n' 'abort-on-warn = false'
+  fi
+}
+
+colmena_cmd() {
+  NIX_CONFIG="$(colmena_nix_config)" colmena "$@"
+}
+
 select_hosts() {
   eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (api.deploy.selectHostNames \"$target\")"
 }
@@ -98,28 +110,32 @@ deploy_nixos() {
       plan_host "$host"
       ;;
     dry-run)
-      colmena -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
+      colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
       ;;
     build)
-      colmena -f hive.nix build --eval-node-limit 1 --on "$host"
+      colmena_cmd -f hive.nix build --eval-node-limit 1 --on "$host"
       ;;
     apply)
-      colmena -f hive.nix apply --eval-node-limit 1 --on "$host"
+      colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host"
       ;;
   esac
 }
 
 deploy_darwin() {
   host="$1"
+  attr="${host}.config.system.build.toplevel"
   case "$mode" in
     plan)
       plan_host "$host"
       ;;
     dry-run|build)
-      nix-build darwin.nix -A "${host}.system"
+      nix-build darwin.nix -A "$attr"
       ;;
     apply)
-      result="$(nix-build darwin.nix -A "${host}.system")"
+      result="$(nix-build darwin.nix -A "$attr")"
+      if [ -x "$result/activate-user" ]; then
+        "$result/activate-user"
+      fi
       if [ ! -x "$result/activate" ]; then
         printf 'darwin activation script not found for %s at %s/activate\n' "$host" "$result" >&2
         exit 1
@@ -130,13 +146,17 @@ deploy_darwin() {
 }
 
 hosts="$(select_hosts)"
-if [ -z "$hosts" ]; then
-  printf 'target selected no hosts: %s\n' "$target" >&2
-  exit 1
-fi
-
 if [ "$mode" = plan ]; then
   printf 'mode\thost\tplatform\ttargetHost\n'
+fi
+
+if [ -z "$hosts" ]; then
+  if [ "$mode" = plan ]; then
+    exit 0
+  fi
+
+  printf 'target selected no hosts: %s\n' "$target" >&2
+  exit 1
 fi
 
 for host in $hosts; do

@@ -39,12 +39,12 @@
     fleet,
     sources,
   }: let
-    nixpkgs = import sources.nixpkgs.outPath {};
-    inherit (nixpkgs) lib;
+    evalConfig = import "${sources.nixpkgs.outPath}/nixos/lib/eval-config.nix";
   in
     mapAttrs (
       hostName: host:
-        lib.nixosSystem {
+        evalConfig {
+          inherit (host) system;
           specialArgs = {
             inherit fleet host sources;
             user = fleet.users.${host.owner};

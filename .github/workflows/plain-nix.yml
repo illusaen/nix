@@ -29,7 +29,9 @@ jobs:
         run: nix-build ci.nix -A plain-eval
 
       - name: Check deploy planning
-        run: bin/deploy --plan --on @server
+        run: |
+          bin/deploy --plan --on @server
+          bin/deploy --plan --on @darwin
 
       - name: Evaluate Colmena hive shape
         run: |

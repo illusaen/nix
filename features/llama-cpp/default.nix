@@ -8,14 +8,24 @@
     ...
   }: let
     service = host.services.llama-cpp;
+    enabled = service.role == "primary" || service.role == "backup";
     iniFormat = pkgs.formats.ini {};
   in {
-    config = lib.mkIf (service.role == "primary") {
+    config = lib.mkIf enabled {
+      assertions = [
+        {
+          assertion = service.protocol == "http" || service.protocol == "https";
+          message = "llama-cpp expects an HTTP transport protocol";
+        }
+      ];
+
       environment.systemPackages = [pkgs.llama-cpp];
 
       services.llama-cpp = {
         enable = true;
+        openFirewall = true;
         package = pkgs.llama-cpp;
+        settings.host = "0.0.0.0";
         settings.port = service.port;
         settings.models-preset = iniFormat.generate "llama-cpp-models.ini" {
           "*" = {
