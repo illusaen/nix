@@ -1,18 +1,7 @@
 _: {
   imports = [];
 
-  modules.nixos = {
-    config,
-    lib,
-    ...
-  }: {
-    nixpkgs.config.allowUnfreePredicate = pkg:
-      builtins.elem (lib.getName pkg) [
-        "nvidia-kernel-modules"
-        "nvidia-settings"
-        "nvidia-x11"
-      ];
-
+  modules.nixos = {config, ...}: {
     services.xserver.videoDrivers = ["nvidia"];
 
     hardware.nvidia = {
