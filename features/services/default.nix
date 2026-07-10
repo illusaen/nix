@@ -1,1 +1,5 @@
-_: import ../_pending.nix "services"
+_: {
+  imports = [];
+
+  modules.nixos = _: {};
+}

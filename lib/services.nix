@@ -30,19 +30,37 @@
   routedFeatureNames = routedServices:
     unique (map (name: routedServices.${name}.feature or name) (attrNames routedServices));
 
+  normalizeHost = hostName: host: let
+    preservation =
+      if host.preservation.enable or false
+      then
+        {
+          rootSnapshot = "zroot/local/root@blank";
+          homeSnapshot = "zroot/local/home@blank";
+          persistMount = "/persist";
+        }
+        // host.preservation
+      else host.preservation or {enable = false;};
+  in
+    host
+    // {
+      name = hostName;
+      inherit preservation;
+    };
+
   routeHosts = fleet:
     builtins.mapAttrs (
       hostName: host: let
+        normalizedHost = normalizeHost hostName host;
         services = servicesForHost hostName fleet.services;
       in
-        host
+        normalizedHost
         // {
-          name = hostName;
           inherit services;
-          features = unique ((host.features or []) ++ routedFeatureNames services);
+          features = unique ((normalizedHost.features or []) ++ routedFeatureNames services);
         }
     )
     fleet.hosts;
 in {
-  inherit routeHosts routedFeatureNames servicesForHost;
+  inherit normalizeHost routeHosts routedFeatureNames servicesForHost;
 }

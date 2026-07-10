@@ -1,1 +1,6 @@
-_: import ../_pending.nix "wendy"
+_: {
+  imports = [];
+
+  modules.nixos = _: {};
+  modules.darwin = _: {};
+}
