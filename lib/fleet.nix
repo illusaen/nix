@@ -15,6 +15,13 @@ _: let
     then []
     else [message];
 
+  platformForSystem = system:
+    if builtins.match ".*-linux" system != null
+    then "nixos"
+    else if builtins.match ".*-darwin" system != null
+    then "darwin"
+    else null;
+
   duplicates = values: let
     uniqueValues = unique values;
   in
@@ -66,12 +73,15 @@ _: let
 
   validateHost = fleet: name: host:
     require (hasAttr host.owner fleet.users) "host '${name}' owner '${host.owner}' does not exist"
-    ++ require (host.platform == "nixos" || host.platform == "darwin") "host '${name}' has invalid platform '${host.platform}'"
+    ++ require (platformForSystem host.system != null) "host '${name}' has unsupported system '${host.system}'"
     ++ require (host ? targetHost) "host '${name}' is missing targetHost"
     ++ require (!(host.preservation.enable or false) || (host.preservation.disk or null) != null) "host '${name}' enables preservation without a disk"
     ++ concatLists (map (feature:
       require false "host '${name}' lists feature '${feature}' more than once")
-    (duplicates (host.features or [])));
+    (duplicates (host.features or [])))
+    ++ concatLists (map (tag:
+      require false "host '${name}' lists tag '${tag}' more than once")
+    (duplicates (host.tags or [])));
 
   validateService = fleet: name: service:
     require (hasAttr service.primary fleet.hosts) "service '${name}' primary host '${service.primary}' does not exist"
@@ -130,5 +140,5 @@ _: let
       (filter (name: hosts.${name}.platform == platform) (attrNames hosts))
     );
 in {
-  inherit assertValid duplicates hostAddressEntries platformHosts unique validate;
+  inherit assertValid duplicates hostAddressEntries platformForSystem platformHosts unique validate;
 }

@@ -426,7 +426,6 @@
             <pre><code>{
   odin = {
     system = "x86_64-linux";
-    platform = "nixos";
     owner = "wendy";
     targetHost = "odin.home.arpa";
     tags = [ "desktop" "gpu:nvidia" ];
@@ -443,6 +442,11 @@
     };
   };
 }</code></pre>
+            <p>
+              The host platform is derived from <code>system</code>:
+              Linux systems become <code>nixos</code>, Darwin systems become
+              <code>darwin</code>.
+            </p>
           </div>
           <div>
             <h3>Service example</h3>

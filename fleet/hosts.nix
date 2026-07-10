@@ -1,7 +1,6 @@
 {
   odin = {
     system = "x86_64-linux";
-    platform = "nixos";
     owner = "wendy";
     targetHost = "odin.home.arpa";
     hostId = "abf835ae";
@@ -39,7 +38,6 @@
 
   huginn = {
     system = "x86_64-linux";
-    platform = "nixos";
     owner = "wendy";
     targetHost = "huginn.home.arpa";
     hostId = "d0924987";
@@ -66,7 +64,6 @@
 
   muninn = {
     system = "aarch64-linux";
-    platform = "nixos";
     owner = "wendy";
     targetHost = "muninn.home.arpa";
     hostId = "f687c689";

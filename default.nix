@@ -57,6 +57,35 @@ let
         || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
     )
     serviceSecretRequirements;
+  serviceRoutingErrors = builtins.concatLists (map (serviceName: let
+    service = rawFleet.services.${serviceName};
+    expectedHosts = serviceHosts service;
+    unexpectedHosts =
+      builtins.filter (
+        hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services && !(builtins.elem hostName expectedHosts)
+      )
+      hostNames;
+    missingHosts =
+      builtins.filter (
+        hostName: !(builtins.hasAttr serviceName fleet.hosts.${hostName}.services)
+      )
+      expectedHosts;
+    roleErrors = builtins.concatLists (map (hostName: let
+      routed = fleet.hosts.${hostName}.services.${serviceName};
+      expectedRole =
+        if hostName == service.primary
+        then "primary"
+        else "backup";
+    in
+      if routed.role == expectedRole
+      then []
+      else ["service '${serviceName}' is '${routed.role}' on '${hostName}', expected '${expectedRole}'"])
+    (builtins.filter (hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services) expectedHosts));
+  in
+    (map (hostName: "service '${serviceName}' is missing from routed host '${hostName}'") missingHosts)
+    ++ (map (hostName: "service '${serviceName}' unexpectedly routed to host '${hostName}'") unexpectedHosts)
+    ++ roleErrors)
+  serviceNames);
   hostNames = builtins.attrNames fleet.hosts;
   hostsWithTag = tag:
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
@@ -102,6 +131,8 @@ in {
       })
       host.services)
     fleet.hosts;
+
+    inherit serviceRoutingErrors;
   };
 
   checks = {
@@ -128,6 +159,7 @@ in {
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
+    serviceRoutingComplete = serviceRoutingErrors == [];
     servicePortsDoNotConflict = serviceLib.portConflicts rawFleet == [];
     deploySelectors =
       selectHostNames "odin"

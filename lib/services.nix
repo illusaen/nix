@@ -85,6 +85,7 @@
     host
     // {
       name = hostName;
+      platform = fleetLib.platformForSystem host.system;
       privateKey = host.privateKey or "/etc/ssh/ssh_host_ed25519_key";
       publicKey = host.publicKey or (../secrets/hosts + "/${hostName}/host_ed25519.pub");
       inherit preservation;

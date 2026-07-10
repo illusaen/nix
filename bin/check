@@ -21,6 +21,7 @@ check serviceFeaturesHaveNixosModules
 check hostPublicKeysExist
 check serviceSecretsDeclared
 check serviceSecretRecipientsCoverRoutedHosts
+check serviceRoutingComplete
 check servicePortsDoNotConflict
 check deploySelectors
 
