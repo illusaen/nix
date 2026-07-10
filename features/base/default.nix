@@ -1,5 +1,5 @@
 _: {
-  imports = ["secrets" "ssh" "tailscale"];
+  imports = ["nix-settings" "secrets" "shell-utils" "ssh" "tailscale"];
 
   modules.nixos = {
     fleet,

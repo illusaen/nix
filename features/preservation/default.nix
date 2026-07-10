@@ -12,6 +12,7 @@ _: {
   }: let
     inherit (host.preservation) homeSnapshot persistMount rootSnapshot;
     inherit (lib) mkOption optionalAttrs;
+    hasStaticInterfaces = (host.networkInterfaces or {}) != {};
     inherit (lib.types) attrsOf bool either listOf str submodule;
     withOptionsType = attrsOf (either bool str);
     mkPersistList = description:
@@ -48,16 +49,20 @@ _: {
 
     config = {
       persist = {
-        directories = [
-          "/var/log"
-          "/var/lib/systemd/timers"
-          "/var/lib/systemd/rfkill"
-          "/var/lib/systemd/coredump"
-          {
-            directory = "/var/lib/nixos";
-            inInitrd = true;
-          }
-        ];
+        directories =
+          [
+            "/var/log"
+            "/var/lib/systemd/timers"
+            "/var/lib/systemd/rfkill"
+            "/var/lib/systemd/coredump"
+            {
+              directory = "/var/lib/nixos";
+              inInitrd = true;
+            }
+          ]
+          ++ lib.optionals (!hasStaticInterfaces) [
+            "/etc/NetworkManager/system-connections"
+          ];
         files = [
           {
             file = "/etc/machine-id";

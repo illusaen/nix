@@ -146,7 +146,9 @@ in {
     featureClosure =
       featureLib.close ["nix-settings"]
       == ["nix-settings"]
+      && builtins.elem "nix-settings" (featureLib.close ["base"])
       && builtins.elem "secrets" (featureLib.close ["base"])
+      && builtins.elem "shell-utils" (featureLib.close ["base"])
       && builtins.elem "ssh" (featureLib.close ["base"])
       && builtins.elem "tailscale" (featureLib.close ["base"]);
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
