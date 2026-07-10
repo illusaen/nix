@@ -8,6 +8,8 @@ let
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
   hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
   serviceFeatures = fleetLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
+  declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
+  missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
 in {
   inherit featureLib fleet fleetLib hostLib rawFleet serviceLib sources;
 
@@ -21,6 +23,11 @@ in {
   };
 
   debug = {
+    secrets = {
+      declared = declaredSecrets;
+      missingFiles = missingDeclaredSecrets;
+    };
+
     routedServices = builtins.mapAttrs (_hostName: host:
       builtins.mapAttrs (_serviceName: service: {
         inherit (service) feature port protocol role;

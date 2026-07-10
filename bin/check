@@ -1,14 +1,25 @@
 #!/usr/bin/env sh
 set -eu
 
-nix-instantiate --eval --strict default.nix -A checks.fleet >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.routedServices >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.featureClosure >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.hostFeaturesExist >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.hostFeaturesHavePlatformModules >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.serviceFeaturesExist >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.serviceFeaturesHaveNixosModules >/dev/null
-nix-instantiate --eval --strict default.nix -A checks.hostPublicKeysExist >/dev/null
+check() {
+  name="$1"
+  value="$(nix-instantiate --eval --strict default.nix -A "checks.$name")"
+
+  if [ "$value" != true ]; then
+    printf 'plain Nix migration check failed: %s = %s\n' "$name" "$value" >&2
+    exit 1
+  fi
+}
+
+check fleet
+check routedServices
+check featureClosure
+check hostFeaturesExist
+check hostFeaturesHavePlatformModules
+check serviceFeaturesExist
+check serviceFeaturesHaveNixosModules
+check hostPublicKeysExist
+
 nix-instantiate --parse hive.nix >/dev/null
 nix-instantiate --parse darwin.nix >/dev/null
 
