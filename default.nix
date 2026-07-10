@@ -38,7 +38,10 @@ in {
       == "primary"
       && (serviceLib.servicesForHost "huginn" rawFleet.services).pihole.role == "primary"
       && (serviceLib.servicesForHost "muninn" rawFleet.services).pihole.role == "backup";
-    featureClosure = featureLib.close ["nix-settings"] == ["nix-settings"];
+    featureClosure =
+      featureLib.close ["nix-settings"]
+      == ["nix-settings"]
+      && builtins.elem "secrets" (featureLib.close ["base"]);
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
     hostFeaturesHavePlatformModules =
       builtins.all (
@@ -49,5 +52,6 @@ in {
       (builtins.attrNames fleet.hosts);
     serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
     serviceFeaturesHaveNixosModules = featureLib.missingPlatformModules "nixos" serviceFeatures == [];
+    hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
   };
 }

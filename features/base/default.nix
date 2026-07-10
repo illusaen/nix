@@ -1,5 +1,5 @@
 _: {
-  imports = [];
+  imports = ["secrets"];
 
   modules.nixos = {
     fleet,

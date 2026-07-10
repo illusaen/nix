@@ -8,6 +8,7 @@ nix-instantiate --eval --strict default.nix -A checks.hostFeaturesExist >/dev/nu
 nix-instantiate --eval --strict default.nix -A checks.hostFeaturesHavePlatformModules >/dev/null
 nix-instantiate --eval --strict default.nix -A checks.serviceFeaturesExist >/dev/null
 nix-instantiate --eval --strict default.nix -A checks.serviceFeaturesHaveNixosModules >/dev/null
+nix-instantiate --eval --strict default.nix -A checks.hostPublicKeysExist >/dev/null
 nix-instantiate --parse hive.nix >/dev/null
 nix-instantiate --parse darwin.nix >/dev/null
 
