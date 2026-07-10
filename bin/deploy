@@ -61,6 +61,13 @@ if [ -z "$target" ]; then
   exit 2
 fi
 
+case "$target" in
+  *[!A-Za-z0-9_@:.+-]*)
+    printf 'invalid target selector: %s\n' "$target" >&2
+    exit 2
+    ;;
+esac
+
 eval_expr() {
   nix --extra-experimental-features nix-command eval --impure --raw --expr "$1"
 }

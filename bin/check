@@ -20,6 +20,7 @@ check serviceFeaturesExist
 check serviceFeaturesHaveNixosModules
 check hostPublicKeysExist
 check serviceSecretsDeclared
+check serviceSecretRecipientsCoverRoutedHosts
 check servicePortsDoNotConflict
 check deploySelectors
 

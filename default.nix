@@ -9,6 +9,7 @@ let
   hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
   serviceFeatures = fleetLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
   declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
+  secretDeclarations = import ./secrets/secrets.nix;
   missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
   serviceNames = builtins.attrNames rawFleet.services;
   serviceHosts = service:
@@ -27,6 +28,35 @@ let
   );
   missingServiceSecretDeclarations =
     builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
+  serviceSecretRequirements = builtins.concatLists (map (name: let
+    service = rawFleet.services.${name};
+    feature = service.feature or name;
+  in
+    if feature == "pihole"
+    then
+      map (hostName: {
+        secret = "hosts/${hostName}/pihole-web-password.age";
+        inherit hostName;
+      })
+      (serviceHosts service)
+    else if feature == "navidrome"
+    then
+      map (hostName: {
+        secret = "shared/navidrome-env.age";
+        inherit hostName;
+      })
+      (serviceHosts service)
+    else [])
+  serviceNames);
+  hostPublicKey = hostName:
+    builtins.replaceStrings ["\n"] [""] (builtins.readFile fleet.hosts.${hostName}.publicKey);
+  missingServiceSecretRecipients =
+    builtins.filter (
+      requirement:
+        !(builtins.hasAttr requirement.secret secretDeclarations)
+        || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
+    )
+    serviceSecretRequirements;
   hostNames = builtins.attrNames fleet.hosts;
   hostsWithTag = tag:
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
@@ -61,6 +91,7 @@ in {
       missingFiles = missingDeclaredSecrets;
       expectedForServices = expectedServiceSecrets;
       missingServiceDeclarations = missingServiceSecretDeclarations;
+      missingServiceRecipients = missingServiceSecretRecipients;
     };
 
     routedServices = builtins.mapAttrs (_hostName: host:
@@ -96,6 +127,7 @@ in {
     serviceFeaturesHaveNixosModules = featureLib.missingPlatformModules "nixos" serviceFeatures == [];
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
+    serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
     servicePortsDoNotConflict = serviceLib.portConflicts rawFleet == [];
     deploySelectors =
       selectHostNames "odin"
