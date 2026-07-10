@@ -24,6 +24,7 @@ check serviceSecretRecipientsCoverRoutedHosts
 check serviceRoutingComplete
 check servicePortsDoNotConflict
 check deploySelectors
+check unitTests
 
 nix-instantiate --parse hive.nix >/dev/null
 nix-instantiate --parse darwin.nix >/dev/null

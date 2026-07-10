@@ -4,6 +4,7 @@ let
   serviceLib = import ./lib/services.nix {inherit fleetLib;};
   featureLib = import ./lib/features.nix {inherit fleetLib;};
   hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib;};
+  unitTests = import ./tests/fleet.nix;
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
   hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
@@ -102,7 +103,7 @@ let
     then [target]
     else throw "unknown deploy target '${target}'";
 in {
-  inherit featureLib fleet fleetLib hostLib rawFleet serviceLib sources;
+  inherit featureLib fleet fleetLib hostLib rawFleet serviceLib sources unitTests;
 
   inherit (fleet) hosts;
 
@@ -168,5 +169,6 @@ in {
       && selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
       && selectHostNames "@darwin" == []
       && selectHostNames "@server" == ["huginn" "muninn"];
+    unitTests = builtins.all (name: unitTests.${name} == true) (builtins.attrNames unitTests);
   };
 }

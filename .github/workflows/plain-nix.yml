@@ -25,6 +25,9 @@ jobs:
       - name: Evaluate plain fleet checks
         run: bin/check
 
+      - name: Evaluate fleet unit tests
+        run: nix-instantiate --eval --strict --json tests/fleet.nix
+
       - name: Build plain CI derivation
         run: nix-build ci.nix -A plain-eval
 
