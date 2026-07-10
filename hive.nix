@@ -1,0 +1,37 @@
+let
+  api = import ./default.nix;
+  inherit (api) sources;
+  hostLib = import ./lib/hosts.nix {
+    inherit (api) featureLib fleetLib;
+  };
+  nixpkgs = import sources.nixpkgs.outPath {};
+in
+  {
+    meta = {
+      inherit nixpkgs;
+      specialArgs = {
+        inherit sources;
+        inherit (api) fleet;
+      };
+    };
+  }
+  // builtins.mapAttrs (
+    hostName: host: {
+      imports = [
+        (hostLib.mkHostModule {
+          inherit hostName host sources;
+          inherit (api) fleet;
+        })
+      ];
+
+      deployment = {
+        inherit (host) targetHost;
+        targetUser = "root";
+        buildOnTarget = false;
+      };
+
+      networking.hostName = hostName;
+      nixpkgs.hostPlatform = host.system;
+    }
+  )
+  api.deploy.nixosHosts

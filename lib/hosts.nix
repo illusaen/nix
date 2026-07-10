@@ -1,0 +1,86 @@
+{
+  featureLib ? import ./features.nix {},
+  fleetLib ? import ./fleet.nix {},
+}: let
+  inherit (builtins) mapAttrs;
+
+  mkHostModule = {
+    fleet,
+    hostName,
+    host,
+    sources,
+  }: {
+    imports = featureLib.modulesFor host.platform host.features;
+
+    config = {
+      _module.args = {
+        inherit fleet host sources;
+        user = fleet.users.${host.owner};
+      };
+
+      assertions = [
+        {
+          assertion = host.platform == "nixos" || host.platform == "darwin";
+          message = "host '${hostName}' has unsupported platform '${host.platform}'";
+        }
+        {
+          assertion = featureLib.missingFeatures host.features == [];
+          message = "host '${hostName}' references unknown features: ${builtins.concatStringsSep ", " (featureLib.missingFeatures host.features)}";
+        }
+        {
+          assertion = featureLib.missingPlatformModules host.platform host.features == [];
+          message = "host '${hostName}' references features without ${host.platform} modules: ${builtins.concatStringsSep ", " (featureLib.missingPlatformModules host.platform host.features)}";
+        }
+      ];
+    };
+  };
+
+  mkNixosConfigurations = {
+    fleet,
+    sources,
+  }: let
+    nixpkgs = import sources.nixpkgs.outPath {};
+    inherit (nixpkgs) lib;
+  in
+    mapAttrs (
+      hostName: host:
+        lib.nixosSystem {
+          inherit (host) system;
+          specialArgs = {
+            inherit fleet host sources;
+            user = fleet.users.${host.owner};
+          };
+          modules = [
+            (mkHostModule {
+              inherit fleet hostName host sources;
+            })
+          ];
+        }
+    )
+    (fleetLib.platformHosts "nixos" fleet.hosts);
+
+  mkDarwinConfigurations = {
+    fleet,
+    sources,
+  }: let
+    darwin = import sources.darwin.outPath;
+  in
+    mapAttrs (
+      hostName: host:
+        darwin.lib.darwinSystem {
+          inherit (host) system;
+          specialArgs = {
+            inherit fleet host sources;
+            user = fleet.users.${host.owner};
+          };
+          modules = [
+            (mkHostModule {
+              inherit fleet hostName host sources;
+            })
+          ];
+        }
+    )
+    (fleetLib.platformHosts "darwin" fleet.hosts);
+in {
+  inherit mkDarwinConfigurations mkHostModule mkNixosConfigurations;
+}

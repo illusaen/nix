@@ -39,6 +39,16 @@ _: let
   modulesFor = platform: names:
     map (name: features.${name}.modules.${platform})
     (filter (name: (features.${name}.modules.${platform} or null) != null) (close names));
+
+  missingFeatures = names: filter (name: !(hasAttr name features)) names;
+
+  missingPlatformModules = platform: names:
+    filter (
+      name:
+        hasAttr name features
+        && (features.${name}.modules.${platform} or null) == null
+    )
+    names;
 in {
-  inherit close featureNames features modulesFor;
+  inherit close featureNames features missingFeatures missingPlatformModules modulesFor;
 }

@@ -30,6 +30,7 @@
         config.pre-commit.settings.enabledPackages
         ++ (with pkgs; [
           nixd
+          colmena
         ]);
       env = [
         {

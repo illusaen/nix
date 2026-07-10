@@ -3,10 +3,13 @@ let
   fleetLib = import ./lib/fleet.nix {};
   serviceLib = import ./lib/services.nix {inherit fleetLib;};
   featureLib = import ./lib/features.nix {inherit fleetLib;};
+  hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib;};
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
+  hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
+  serviceFeatures = fleetLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
 in {
-  inherit featureLib fleet fleetLib rawFleet serviceLib sources;
+  inherit featureLib fleet fleetLib hostLib rawFleet serviceLib sources;
 
   inherit (fleet) hosts;
 
@@ -36,5 +39,15 @@ in {
       && (serviceLib.servicesForHost "huginn" rawFleet.services).pihole.role == "primary"
       && (serviceLib.servicesForHost "muninn" rawFleet.services).pihole.role == "backup";
     featureClosure = featureLib.close ["nix-settings"] == ["nix-settings"];
+    hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
+    hostFeaturesHavePlatformModules =
+      builtins.all (
+        name:
+          featureLib.missingPlatformModules fleet.hosts.${name}.platform (fleet.hosts.${name}.features or [])
+          == []
+      )
+      (builtins.attrNames fleet.hosts);
+    serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
+    serviceFeaturesHaveNixosModules = featureLib.missingPlatformModules "nixos" serviceFeatures == [];
   };
 }
