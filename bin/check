@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+
+nix-instantiate --eval --strict default.nix -A checks.fleet >/dev/null
+nix-instantiate --eval --strict default.nix -A checks.routedServices >/dev/null
+nix-instantiate --eval --strict default.nix -A checks.featureClosure >/dev/null
+
+printf '%s\n' 'plain Nix migration checks passed'

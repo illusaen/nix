@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "pins": {
+    "agenix": {
+      "type": "github",
+      "owner": "ryantm",
+      "repo": "agenix",
+      "revision": "b027ee29d959fda4b60b57566d64c98a202e0feb",
+      "hash": "sha256-9VnK6Oqai65puVJ4WYtCTvlJeXxMzAp/69HhQuTdl/I="
+    },
+    "darwin": {
+      "type": "github",
+      "owner": "nix-darwin",
+      "repo": "nix-darwin",
+      "revision": "a1fa429e945becaf60468600daf649be4ba0350c",
+      "hash": "sha256-rCPytmKNjctLloB6UgK5CRrHSwV4b0ygxtJLPPp8R14="
+    },
+    "disko": {
+      "type": "github",
+      "owner": "nix-community",
+      "repo": "disko",
+      "revision": "de5708739256238fb912c62f03988815db89ec9a",
+      "hash": "sha256-CNzzBsRhq7gg4BMBuTDObiWDH/rFYHEuDRVOwCcwXw4="
+    },
+    "nixpkgs": {
+      "type": "github",
+      "owner": "NixOS",
+      "repo": "nixpkgs",
+      "revision": "65179426c83bb3f6bc14898b42ea1c6f01d374b0",
+      "hash": "sha256-xnJJk+ct+D2+wdRxj1wk36w5zV9RVESwRqcklPdt3fM="
+    },
+    "preservation": {
+      "type": "github",
+      "owner": "nix-community",
+      "repo": "preservation",
+      "revision": "93416f4614ad2dfed5b0dcf12f27e57d27a5ab11",
+      "hash": "sha256-mMI9IanU+Xw+pVogD2oT0I2kTmvz2Un/Apc5+CwUpEY="
+    }
+  }
+}
