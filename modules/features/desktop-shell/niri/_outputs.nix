@@ -19,12 +19,13 @@
 // lib.optionalAttrs (monitors.secondary != null) {
   "${monitors.secondary}" = {
     scale = 1;
-    transform = "90";
+    transform = "270";
     position = _: {
       props = {
-        x = 1080;
+        x = 5120;
         y = 120;
       };
     };
+    hot-corners.off = _: {};
   };
 }
