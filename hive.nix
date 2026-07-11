@@ -2,9 +2,11 @@ let
   api = import ./default.nix;
   inherit (api) sources;
   hostLib = import ./lib/hosts.nix {
-    inherit (api) featureLib fleetLib;
+    inherit (api) featureLib fleetLib packageLib;
   };
-  nixpkgs = import sources.nixpkgs.outPath {};
+  nixpkgs = import sources.nixpkgs.outPath {
+    overlays = [api.packageLib.overlay];
+  };
 in
   {
     meta = {

@@ -407,6 +407,11 @@
               <td>Features can expose boolean checks under <code>tests</code>; <code>lib/features.nix</code> namespaces them into the top-level unit test set.</td>
             </tr>
             <tr>
+              <td>Local package overlay</td>
+              <td>Done</td>
+              <td><code>lib/packages.nix</code> exposes repo packages through the plain API and applies the overlay to plain host builders.</td>
+            </tr>
+            <tr>
               <td>Host builders</td>
               <td>Done</td>
               <td><code>lib/hosts.nix</code> builds NixOS and Darwin configurations from the same host module resolver.</td>
@@ -602,7 +607,7 @@
             </tr>
             <tr>
               <td><code>packages</code></td>
-              <td>Planned: optional package definitions or overlay hooks owned by the feature. The current resolver does not consume this field yet.</td>
+              <td>Planned: optional package definitions or overlay hooks owned by the feature. Repo-level package exposure is implemented in <code>lib/packages.nix</code>.</td>
             </tr>
             <tr>
               <td><code>serviceSecrets</code></td>
@@ -905,8 +910,8 @@ shellcheck bin/deploy bin/check</code></pre>
               <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>gen-modules/</code>, and generated schema docs only after plain deploy, package, formatting, and CI workflows cover the same jobs.</td>
             </tr>
             <tr>
-              <td>Package and wrapper parity</td>
-              <td>Expose package sets and wrappers through plain Nix, and teach <code>lib/features.nix</code> how to consume feature-owned package metadata if that remains part of the design. The old wrapper modules under <code>modules/features/**</code> still contain <code>flake.wrappers</code>, <code>constructFiles</code>, and <code>legacyPackages</code> behavior that must either be ported or intentionally dropped.</td>
+              <td>Wrapper parity</td>
+              <td>Expose wrappers through plain Nix, and teach <code>lib/features.nix</code> how to consume feature-owned package metadata if that remains part of the design. The old wrapper modules under <code>modules/features/**</code> still contain <code>flake.wrappers</code>, <code>constructFiles</code>, and wrapper-specific behavior that must either be ported or intentionally dropped.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>
@@ -960,8 +965,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish package and wrapper parity, Darwin feature parity,
-            runtime theming, and CI wiring.
+            Next: finish wrapper parity, Darwin feature parity, runtime
+            theming, and CI wiring.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and

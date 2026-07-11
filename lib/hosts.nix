@@ -1,6 +1,7 @@
 {
   featureLib ? import ./features.nix {},
   fleetLib ? import ./fleet.nix {},
+  packageLib ? import ./packages.nix {},
 }: let
   inherit (builtins) mapAttrs;
 
@@ -13,8 +14,10 @@
     imports = featureLib.modulesFor host.platform host.features;
 
     config = {
+      nixpkgs.overlays = [packageLib.overlay];
+
       _module.args = {
-        inherit fleet fleetLib host sources;
+        inherit fleet fleetLib host packageLib sources;
         user = fleet.users.${host.owner};
       };
 
@@ -46,7 +49,7 @@
         evalConfig {
           inherit (host) system;
           specialArgs = {
-            inherit fleet fleetLib host sources;
+            inherit fleet fleetLib host packageLib sources;
             user = fleet.users.${host.owner};
           };
           modules = [
@@ -72,7 +75,7 @@
         darwin.lib.darwinSystem {
           inherit (host) system;
           specialArgs = {
-            inherit fleet fleetLib host sources;
+            inherit fleet fleetLib host packageLib sources;
             user = fleet.users.${host.owner};
           };
           modules = [

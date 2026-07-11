@@ -1,9 +1,10 @@
 let
   sources = import ./npins;
   fleetLib = import ./lib/fleet.nix {};
+  packageLib = import ./lib/packages.nix {inherit sources;};
   serviceLib = import ./lib/services.nix {inherit fleetLib;};
   featureLib = import ./lib/features.nix {inherit fleetLib;};
-  hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib;};
+  hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib packageLib;};
   unitTests = (import ./tests/fleet.nix) // featureLib.tests;
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
@@ -73,9 +74,13 @@ let
     then [target]
     else throw "unknown deploy target '${target}'";
 in {
-  inherit featureLib fleet fleetLib hostLib rawFleet serviceLib sources unitTests;
+  inherit featureLib fleet fleetLib hostLib packageLib rawFleet serviceLib sources unitTests;
 
   inherit (fleet) hosts;
+
+  overlays.default = packageLib.overlay;
+
+  inherit (packageLib) packages;
 
   deploy = {
     inherit hostNames hostsWithTag selectHostNames;
@@ -136,6 +141,15 @@ in {
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
     serviceRoutingComplete = serviceRoutingErrors == [];
     servicePortsDoNotConflict = serviceLib.portConflicts rawFleet == [];
+    localPackagesExist =
+      packageLib.packageNames
+      == [
+        "mactahoe-cursors"
+        "mactahoe-gtk-theme"
+        "mactahoe-icon-theme"
+        "misc-scripts"
+        "niri-scripts"
+      ];
     deploySelectors =
       selectHostNames "odin"
       == ["odin"]

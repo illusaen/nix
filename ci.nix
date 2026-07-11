@@ -58,11 +58,23 @@ let
     if builtins.attrNames darwinConfigurations == api.deploy.darwinHostNames
     then true
     else throw "darwinConfigurations plain API did not match fleet Darwin hosts";
+
+  assertPackages = let
+    packages = api.packages.x86_64-linux;
+  in
+    if
+      builtins.attrNames packages
+      == api.packageLib.packageNames
+      && packages.mactahoe-cursors.pname == "mactahoe-cursors"
+      && packages.niri-scripts.name == "niri-scripts"
+    then true
+    else throw "plain package API did not expose expected local packages";
 in {
   plain-eval = assert assertNoFailedChecks;
   assert assertHiveHosts;
   assert assertNixosConfigurations;
   assert assertDarwinConfigurations;
+  assert assertPackages;
     pkgs.runCommand "plain-fleet-eval-checks" {} ''
       touch $out
     '';

@@ -23,6 +23,7 @@ check serviceSecretsDeclared
 check serviceSecretRecipientsCoverRoutedHosts
 check serviceRoutingComplete
 check servicePortsDoNotConflict
+check localPackagesExist
 check deploySelectors
 check unitTests
 
