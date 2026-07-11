@@ -1,5 +1,6 @@
 let
   fleetLib = import ../lib/fleet.nix {};
+  featureLib = import ../lib/features.nix {inherit fleetLib;};
   serviceLib = import ../lib/services.nix {inherit fleetLib;};
 
   baseFleet = {
@@ -311,6 +312,51 @@ in {
         hostName = "odin";
         key = "odin:tcp:8080";
         services = ["app" "other"];
+      }
+    ];
+
+  featureServiceSecrets = let
+    requirements = featureLib.serviceSecretRequirementsFor {
+      navidrome = {
+        feature = "navidrome";
+        primary = "odin";
+        backups = ["huginn"];
+        port = 4533;
+        protocol = "http";
+      };
+      pihole = {
+        feature = "pihole";
+        primary = "huginn";
+        backups = ["odin"];
+        port = 53;
+        protocol = "tcp";
+      };
+      llama-cpp = {
+        feature = "llama-cpp";
+        primary = "odin";
+        backups = [];
+        port = 8080;
+        protocol = "http";
+      };
+    };
+  in
+    requirements
+    == [
+      {
+        secret = "shared/navidrome-env.age";
+        hostName = "odin";
+      }
+      {
+        secret = "shared/navidrome-env.age";
+        hostName = "huginn";
+      }
+      {
+        secret = "hosts/huginn/pihole-web-password.age";
+        hostName = "huginn";
+      }
+      {
+        secret = "hosts/odin/pihole-web-password.age";
+        hostName = "odin";
       }
     ];
 }

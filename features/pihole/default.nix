@@ -1,6 +1,13 @@
 {...}: {
   imports = [];
 
+  serviceSecrets = {hosts, ...}:
+    map (hostName: {
+      secret = "hosts/${hostName}/pihole-web-password.age";
+      inherit hostName;
+    })
+    hosts;
+
   modules.nixos = {
     config,
     host,

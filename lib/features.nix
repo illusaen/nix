@@ -1,5 +1,5 @@
 _: let
-  inherit (builtins) attrNames filter hasAttr map readDir;
+  inherit (builtins) attrNames concatLists filter hasAttr map readDir;
 
   featureRoot = ../features;
 
@@ -49,6 +49,24 @@ _: let
         && (features.${name}.modules.${platform} or null) == null
     )
     names;
+
+  serviceHosts = service:
+    [service.primary] ++ (service.backups or []);
+
+  serviceSecretRequirementsFor = services:
+    concatLists (
+      map (serviceName: let
+        service = services.${serviceName};
+        featureName = service.feature or serviceName;
+        feature = features.${featureName} or {};
+        mkRequirements = feature.serviceSecrets or (_: []);
+      in
+        mkRequirements {
+          inherit service serviceName;
+          hosts = serviceHosts service;
+        })
+      (attrNames services)
+    );
 in {
-  inherit close featureNames features missingFeatures missingPlatformModules modulesFor;
+  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceSecretRequirementsFor;
 }

@@ -1,5 +1,5 @@
 _: let
-  inherit (builtins) attrNames concatLists filter hasAttr map;
+  inherit (builtins) attrNames concatLists filter hasAttr;
 
   unique = values:
     builtins.foldl' (

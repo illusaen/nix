@@ -15,40 +15,10 @@ let
   serviceNames = builtins.attrNames rawFleet.services;
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
-  expectedServiceSecrets = fleetLib.unique (
-    builtins.concatLists (map (name: let
-      service = rawFleet.services.${name};
-      feature = service.feature or name;
-    in
-      if feature == "pihole"
-      then map (hostName: "hosts/${hostName}/pihole-web-password.age") (serviceHosts service)
-      else if feature == "navidrome"
-      then ["shared/navidrome-env.age"]
-      else [])
-    serviceNames)
-  );
+  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor rawFleet.services;
+  expectedServiceSecrets = fleetLib.unique (map (requirement: requirement.secret) serviceSecretRequirements);
   missingServiceSecretDeclarations =
     builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
-  serviceSecretRequirements = builtins.concatLists (map (name: let
-    service = rawFleet.services.${name};
-    feature = service.feature or name;
-  in
-    if feature == "pihole"
-    then
-      map (hostName: {
-        secret = "hosts/${hostName}/pihole-web-password.age";
-        inherit hostName;
-      })
-      (serviceHosts service)
-    else if feature == "navidrome"
-    then
-      map (hostName: {
-        secret = "shared/navidrome-env.age";
-        inherit hostName;
-      })
-      (serviceHosts service)
-    else [])
-  serviceNames);
   hostPublicKey = hostName:
     builtins.replaceStrings ["\n"] [""] (builtins.readFile fleet.hosts.${hostName}.publicKey);
   missingServiceSecretRecipients =

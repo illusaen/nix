@@ -1,5 +1,5 @@
 {fleetLib ? import ./fleet.nix {}}: let
-  inherit (builtins) attrNames filter listToAttrs map;
+  inherit (builtins) attrNames filter listToAttrs;
   inherit (fleetLib) unique;
 
   serviceForHost = hostName: serviceName: service:

@@ -1,6 +1,13 @@
 {...}: {
   imports = [];
 
+  serviceSecrets = {hosts, ...}:
+    map (hostName: {
+      secret = "shared/navidrome-env.age";
+      inherit hostName;
+    })
+    hosts;
+
   modules.nixos = {
     config,
     host,
