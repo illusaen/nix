@@ -47,6 +47,28 @@
     };
   };
 
+  themes = {
+    default = "tokyo-night-moon";
+    profiles = {
+      tokyo-night-moon = {
+        colorScheme = "dark";
+        base16Theme = ../resources/themes/tokyo-night-moon.yaml;
+        wallpaper = null;
+      };
+      catppuccin-latte = {
+        colorScheme = "light";
+        base16Theme = ../resources/themes/catppuccin-latte.yaml;
+        wallpaper = ../resources/wallpapers/light/light-silk.jpeg;
+      };
+    };
+  };
+
+  base16 = {
+    theme = ../resources/themes/tokyo-night-moon.yaml;
+    colorScheme = "dark";
+    isDark = true;
+  };
+
   wallpaper = {
     directory = ../resources/wallpapers;
     image = ../resources/wallpapers/dark/dark-silk.jpeg;

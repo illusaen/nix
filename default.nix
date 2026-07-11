@@ -59,6 +59,18 @@ let
     ++ roleErrors)
   serviceNames);
   hostNames = builtins.attrNames fleet.hosts;
+  themeNames = builtins.attrNames (fleet.themes.profiles or {});
+  themeProfilesValid =
+    builtins.hasAttr fleet.themes.default fleet.themes.profiles
+    && builtins.all (
+      name: let
+        profile = fleet.themes.profiles.${name};
+      in
+        builtins.pathExists profile.base16Theme
+        && (profile.wallpaper == null || builtins.pathExists profile.wallpaper)
+        && (profile.colorScheme == "dark" || profile.colorScheme == "light")
+    )
+    themeNames;
   hostsWithTag = tag:
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
   selectHostNames = target:
@@ -150,6 +162,7 @@ in {
         "misc-scripts"
         "niri-scripts"
       ];
+    inherit themeProfilesValid;
     deploySelectors =
       selectHostNames "odin"
       == ["odin"]

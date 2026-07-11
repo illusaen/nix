@@ -4,10 +4,12 @@ _: {
   modules.nixos = {
     fleet,
     lib,
+    pkgs,
     ...
   }: let
     inherit (fleet.fonts) sans sizes;
     inherit (fleet.theming) cursor gtk icon;
+    localThemePackage = theme: pkgs.local.${theme.packageName};
     gtkSettings = {
       gtk-font-name = "${sans.name} ${toString sizes.applications}";
       gtk-theme-name = gtk.name;
@@ -17,6 +19,12 @@ _: {
     };
     gtkIni = lib.generators.toINI {} {Settings = gtkSettings;};
   in {
+    environment.systemPackages = [
+      (localThemePackage cursor)
+      (localThemePackage gtk)
+      (localThemePackage icon)
+    ];
+
     environment.sessionVariables = {
       GTK_THEME = gtk.name;
       XCURSOR_SIZE = toString cursor.size;

@@ -47,6 +47,9 @@ let
       && nixosConfigurations.odin.config.users.users.wendy.shell.pname == "zsh"
       && builtins.elem "steam" (map (entry: entry.name) nixosConfigurations.odin.config.systemdAutostart)
       && builtins.elem "viking-rise.desktop" odinSystemPackageNames
+      && builtins.elem "mactahoe-cursors-2026-06-28" odinSystemPackageNames
+      && builtins.elem "mactahoe-gtk-theme-2026-06-28" odinSystemPackageNames
+      && builtins.elem "MacTahoe-icon-theme-2026-06-28" odinSystemPackageNames
       && nixosConfigurations.odin.config.services.llama-cpp.settings.host == "0.0.0.0"
       && nixosConfigurations.odin.config.services.openssh.enable == true
       && nixosConfigurations.odin.config.services.tailscale.enable == true

@@ -412,6 +412,11 @@
               <td><code>lib/packages.nix</code> exposes repo packages through the plain API and applies the overlay to plain host builders.</td>
             </tr>
             <tr>
+              <td>Theme fleet data</td>
+              <td>Done</td>
+              <td><code>fleet/default.nix</code> carries runtime theme profiles and the plain theming feature installs the local GTK, icon, and cursor packages.</td>
+            </tr>
+            <tr>
               <td>Host builders</td>
               <td>Done</td>
               <td><code>lib/hosts.nix</code> builds NixOS and Darwin configurations from the same host module resolver.</td>
@@ -927,7 +932,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Runtime theming</td>
-              <td>Resolve the runtime theme switcher issues currently noted in <code>TODO.md</code> and decide whether runtime-selected assets belong in feature modules, wrapper metadata, or a separate runtime tool.</td>
+              <td>Port or replace the runtime theme switcher scripts currently noted in <code>TODO.md</code>. Fleet theme profiles and local theme package installation are already present in the plain path.</td>
             </tr>
             <tr>
               <td>Docs and user workflow</td>

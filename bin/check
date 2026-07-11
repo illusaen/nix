@@ -24,6 +24,7 @@ check serviceSecretRecipientsCoverRoutedHosts
 check serviceRoutingComplete
 check servicePortsDoNotConflict
 check localPackagesExist
+check themeProfilesValid
 check deploySelectors
 check unitTests
 
