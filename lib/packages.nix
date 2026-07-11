@@ -6,7 +6,7 @@
     "aarch64-darwin"
   ],
 }: let
-  inherit (builtins) attrNames filter listToAttrs map readDir;
+  inherit (builtins) attrNames filter listToAttrs readDir;
 
   packageRoot = ../packages;
   packageNames =

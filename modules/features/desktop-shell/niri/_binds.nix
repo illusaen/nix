@@ -121,11 +121,13 @@
 
   "Mod+Up" = _: {
     props.hotkey-overlay-title = "Focus Window/Workspace ↑";
-    content.spawn-sh = "niri-workspace up";
+    # content.spawn-sh = "niri-workspace up";
+    content.focus-window-or-workspace-up = _: {};
   };
   "Mod+Down" = _: {
     props.hotkey-overlay-title = "Focus Window/Workspace ↓";
-    content.spawn-sh = "niri-workspace down";
+    # content.spawn-sh = "niri-workspace down";
+    content.focus-window-or-workspace-down = _: {};
   };
   "Mod+Left" = _: {
     content.focus-column-left = _: {};
