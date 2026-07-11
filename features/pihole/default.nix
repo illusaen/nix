@@ -1,12 +1,29 @@
-{...}: {
-  imports = [];
-
+_: let
   serviceSecrets = {hosts, ...}:
     map (hostName: {
       secret = "hosts/${hostName}/pihole-web-password.age";
       inherit hostName;
     })
     hosts;
+in {
+  imports = [];
+
+  inherit serviceSecrets;
+
+  tests.serviceSecrets =
+    serviceSecrets {
+      hosts = ["huginn" "odin"];
+    }
+    == [
+      {
+        secret = "hosts/huginn/pihole-web-password.age";
+        hostName = "huginn";
+      }
+      {
+        secret = "hosts/odin/pihole-web-password.age";
+        hostName = "odin";
+      }
+    ];
 
   modules.nixos = {
     config,

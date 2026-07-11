@@ -1,12 +1,29 @@
-{...}: {
-  imports = [];
-
+_: let
   serviceSecrets = {hosts, ...}:
     map (hostName: {
       secret = "shared/navidrome-env.age";
       inherit hostName;
     })
     hosts;
+in {
+  imports = [];
+
+  inherit serviceSecrets;
+
+  tests.serviceSecrets =
+    serviceSecrets {
+      hosts = ["odin" "huginn"];
+    }
+    == [
+      {
+        secret = "shared/navidrome-env.age";
+        hostName = "odin";
+      }
+      {
+        secret = "shared/navidrome-env.age";
+        hostName = "huginn";
+      }
+    ];
 
   modules.nixos = {
     config,

@@ -1,5 +1,5 @@
 _: let
-  inherit (builtins) attrNames concatLists filter hasAttr map readDir;
+  inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
 
   featureRoot = ../features;
 
@@ -67,6 +67,18 @@ _: let
         })
       (attrNames services)
     );
+
+  tests = listToAttrs (
+    concatLists (
+      map (featureName:
+        map (testName: {
+          name = "${featureName}.${testName}";
+          value = features.${featureName}.tests.${testName};
+        })
+        (attrNames (features.${featureName}.tests or {})))
+      featureNames
+    )
+  );
 in {
-  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceSecretRequirementsFor;
+  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceSecretRequirementsFor tests;
 }

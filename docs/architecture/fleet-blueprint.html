@@ -402,6 +402,11 @@
               <td>Service features can declare routed age secret requirements with <code>serviceSecrets</code>; top-level checks consume those declarations generically.</td>
             </tr>
             <tr>
+              <td>Feature-local tests</td>
+              <td>Done</td>
+              <td>Features can expose boolean checks under <code>tests</code>; <code>lib/features.nix</code> namespaces them into the top-level unit test set.</td>
+            </tr>
+            <tr>
               <td>Host builders</td>
               <td>Done</td>
               <td><code>lib/hosts.nix</code> builds NixOS and Darwin configurations from the same host module resolver.</td>
@@ -605,7 +610,7 @@
             </tr>
             <tr>
               <td><code>tests</code></td>
-              <td>Planned: feature-local checks imported by the CI test set. Current tests live in <code>tests/fleet.nix</code> and <code>ci.nix</code>.</td>
+              <td>Optional feature-local boolean checks imported by the top-level unit test set with namespaced keys.</td>
             </tr>
           </tbody>
         </table>
@@ -902,10 +907,6 @@ shellcheck bin/deploy bin/check</code></pre>
             <tr>
               <td>Package and wrapper parity</td>
               <td>Expose package sets and wrappers through plain Nix, and teach <code>lib/features.nix</code> how to consume feature-owned package metadata if that remains part of the design. The old wrapper modules under <code>modules/features/**</code> still contain <code>flake.wrappers</code>, <code>constructFiles</code>, and <code>legacyPackages</code> behavior that must either be ported or intentionally dropped.</td>
-            </tr>
-            <tr>
-              <td>Feature-local tests</td>
-              <td>Either implement the planned <code>tests</code> feature field or remove it from the feature contract. Today, plain tests are centralized in <code>tests/fleet.nix</code> and <code>ci.nix</code>.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>

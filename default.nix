@@ -4,7 +4,7 @@ let
   serviceLib = import ./lib/services.nix {inherit fleetLib;};
   featureLib = import ./lib/features.nix {inherit fleetLib;};
   hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib;};
-  unitTests = import ./tests/fleet.nix;
+  unitTests = (import ./tests/fleet.nix) // featureLib.tests;
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
   hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
