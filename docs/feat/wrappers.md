@@ -15,13 +15,15 @@ The plain replacements are:
   Firefox-cookie flags.
 - `features/shell-utils`: uses native NixOS options for the old git, zsh, and
   starship wrapper settings.
+- `features/desktop-shell`: renders the old Niri wrapper settings into a
+  generated `config.kdl` and installs it during user activation.
 
 The remaining active wrapper gap is desktop-shell configuration:
 
-- Niri and Noctalia used wrapper-module generated settings/config. The pinned
-  NixOS `programs.niri` module does not expose a structured `settings` option,
-  so the plain replacement needs a dedicated KDL/config generation path instead
-  of a direct module assignment.
+- Noctalia still used a wrapper-module generated config and a legacy flake
+  input. The plain replacement needs either an `npins` source plus a native
+  package/module path, or an explicit decision to drop Noctalia from the plain
+  fleet.
 
 The generated-config wrapper API from `nix-wrapper-modules`, including
 `constructFiles`, remains legacy-only. Plain modules should prefer native NixOS

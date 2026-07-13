@@ -6,8 +6,19 @@ _: {
     host,
     lib,
     pkgs,
+    sources,
+    user,
     ...
   }: let
+    base16Lib = import (sources.base16.outPath + "/lib") sources.fromYaml.outPath {
+      inherit pkgs lib;
+    };
+    kdl = import ../../lib/kdl.nix {inherit lib;};
+    scheme = (base16Lib.mkSchemeAttrs fleet.base16.theme).withHashtag;
+    monitors = {
+      main = host.monitors.main;
+      secondary = host.monitors.secondary or null;
+    };
     fontPackages = with pkgs; [
       font-awesome
       inter
@@ -29,6 +40,23 @@ _: {
       qt6.qt5compat
       weston
     ];
+    niriRules = import ../../modules/features/desktop-shell/niri/_rules.nix;
+    niriMouse = import ../../modules/features/desktop-shell/niri/_mouse.nix {
+      cursor = removeAttrs fleet.theming.cursor ["packageName"];
+    };
+    niriSettings =
+      {
+        animations = import ../../modules/features/desktop-shell/niri/_animations.nix;
+        binds = import ../../modules/features/desktop-shell/niri/_binds.nix;
+        inherit (niriMouse) cursor input;
+        layout = import ../../modules/features/desktop-shell/niri/_layout.nix {inherit scheme;};
+        outputs = import ../../modules/features/desktop-shell/niri/_outputs.nix {inherit lib monitors;};
+        recent-windows = import ../../modules/features/desktop-shell/niri/_window-switcher.nix {highlightColor = scheme.base0D;};
+        workspaces = import ../../modules/features/desktop-shell/niri/_workspaces.nix {inherit lib monitors;};
+        inherit (niriRules) layer-rules window-rules;
+      }
+      // import ../../modules/features/desktop-shell/niri/_extra.nix;
+    niriConfig = pkgs.writeText "niri-config.kdl" (kdl.renderNiri niriSettings);
   in {
     environment.systemPackages = fontPackages ++ desktopPackages;
     environment.pathsToLink = ["share/thumbnailers"];
@@ -101,6 +129,13 @@ _: {
     };
 
     security.rtkit.enable = true;
+
+    system.userActivationScripts.installNiriConfig = ''
+      if [ "$USER" = ${lib.escapeShellArg user.name} ]; then
+        mkdir -p "$HOME/.config/niri"
+        install -m 0644 ${lib.escapeShellArg niriConfig} "$HOME/.config/niri/config.kdl"
+      fi
+    '';
 
     persist.directories = [
       "/var/lib/bluetooth"
