@@ -17,20 +17,19 @@ The plain replacements are:
   starship wrapper settings.
 - `features/desktop-shell`: renders the old Niri wrapper settings into a
   generated `config.kdl` and installs it during user activation.
-
-The remaining active wrapper gap is desktop-shell configuration:
-
-- Noctalia still used a wrapper-module generated config and a legacy flake
-  input. The plain replacement needs either an `npins` source plus a native
-  package/module path, or an explicit decision to drop Noctalia from the plain
-  fleet.
+- `features/desktop-shell` imports Noctalia from the `npins` source, enables its
+  upstream NixOS module, and points the systemd user service at the active
+  runtime theme profile.
+- `features/theming` generates `noctalia/config.toml` inside every runtime theme
+  profile.
 
 The generated-config wrapper API from `nix-wrapper-modules`, including
 `constructFiles`, remains legacy-only. Plain modules should prefer native NixOS
 options, runtime theme profile files, or feature-local wrapper packages.
 
-This repo uses `nix-wrapper-modules` for portable wrapper derivations. There
-is one wrapper declaration path: the upstream `flake.wrappers` shape.
+The legacy flake path uses `nix-wrapper-modules` for portable wrapper
+derivations. There is one wrapper declaration path there: the upstream
+`flake.wrappers` shape.
 
 ## Original Shape
 
@@ -153,7 +152,7 @@ Then, in the host system module, extend the global package with host arguments:
 }
 ```
 
-Use the same pattern for generated files:
+The old Noctalia wrapper used the same pattern for generated files:
 
 ```nix
 {

@@ -149,9 +149,9 @@ pass per host.
 
 ### Keep Host-Specific Wrappers Out Of Global Package Builds
 
-Status: partially implemented.
+Status: implemented for the active plain fleet path.
 
-Host-specific wrappers now use the correct pattern:
+Legacy host-specific flake wrappers used this pattern:
 
 ```nix
 self.wrappers.niri.wrap {
@@ -163,12 +163,9 @@ self.wrappers.niri.wrap {
 }
 ```
 
-`self` is injected into host module arguments. `noctalia-wrapped` is excluded
-from `perSystem.wrappers.packages` because it is only used as a host-specific
-wrapper base.
-
-`niri` still remains exported because `niri-scripts` depends on `pkgs.local.niri`
-as a runtime input.
+The active plain path no longer depends on those host-specific wrapper package
+outputs. Niri settings are rendered directly by `features/desktop-shell`, and
+Noctalia uses its upstream NixOS module plus runtime theme profile config.
 
 ## Package Output Cleanup
 

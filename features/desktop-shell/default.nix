@@ -10,6 +10,8 @@ _: {
     user,
     ...
   }: let
+    noctaliaModule = sources.noctalia.outPath + "/nix/nixos-module.nix";
+    noctaliaPackage = pkgs.callPackage (sources.noctalia.outPath + "/nix/package.nix") {};
     base16Lib = import (sources.base16.outPath + "/lib") sources.fromYaml.outPath {
       inherit pkgs lib;
     };
@@ -58,6 +60,10 @@ _: {
       // import ../../modules/features/desktop-shell/niri/_extra.nix;
     niriConfig = pkgs.writeText "niri-config.kdl" (kdl.renderNiri niriSettings);
   in {
+    imports = [
+      noctaliaModule
+    ];
+
     environment.systemPackages = fontPackages ++ desktopPackages;
     environment.pathsToLink = ["share/thumbnailers"];
 
@@ -78,6 +84,12 @@ _: {
     programs = {
       dconf.enable = true;
       niri.enable = true;
+      noctalia = {
+        enable = true;
+        package = noctaliaPackage;
+        recommendedServices.enable = true;
+        systemd.enable = true;
+      };
       nautilus-open-any-terminal = {
         enable = true;
         terminal = "alacritty";
@@ -137,14 +149,20 @@ _: {
       fi
     '';
 
+    systemd.user.services.noctalia.environment.NOCTALIA_CONFIG_HOME = "%h/.local/state/nix-theme/current";
+
     persist.directories = [
       "/var/lib/bluetooth"
     ];
 
     nix.settings = {
-      extra-substituters = ["https://niri.cachix.org"];
+      extra-substituters = [
+        "https://niri.cachix.org"
+        "https://noctalia.cachix.org"
+      ];
       extra-trusted-public-keys = [
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+        "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       ];
     };
   };

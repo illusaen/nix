@@ -43,6 +43,13 @@
       "revision": "65179426c83bb3f6bc14898b42ea1c6f01d374b0",
       "hash": "sha256-xnJJk+ct+D2+wdRxj1wk36w5zV9RVESwRqcklPdt3fM="
     },
+    "noctalia": {
+      "type": "github",
+      "owner": "noctalia-dev",
+      "repo": "noctalia",
+      "revision": "e1e904c556efbc020d002af5f8a6b7620383f7ef",
+      "hash": "sha256-O4zq1bnVN2D7NipynZ5oZMeOabQnB2ccJZ48W+XgI3s="
+    },
     "preservation": {
       "type": "github",
       "owner": "nix-community",

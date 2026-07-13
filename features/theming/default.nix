@@ -3,6 +3,7 @@ _: {
 
   modules.nixos = {
     fleet,
+    host,
     lib,
     pkgs,
     sources,
@@ -197,6 +198,18 @@ _: {
         };
         "gtk-3.0/settings.ini" = pkgs.writeText "gtk-settings.ini" (mkGtkIni profile);
         "gtk-4.0/settings.ini" = pkgs.writeText "gtk-settings.ini" (mkGtkIni profile);
+        "noctalia/config.toml" = pkgs.replaceVars ../../modules/features/desktop-shell/noctalia/noctalia-config.toml.template {
+          mono = fonts.mono.name;
+          sans = fonts.sans.name;
+          main = host.monitors.main;
+          secondary =
+            if (host.monitors.secondary or null) != null
+            then host.monitors.secondary
+            else host.monitors.main;
+          image = selectedWallpaper;
+          imageDirectory = wallpaper.directory;
+          location = lib.last (lib.splitString "/" fleet.timeZone);
+        };
         "qt5ct/qt5ct.conf" = mkQtctConf profile;
         "qt6ct/qt6ct.conf" = mkQtctConf profile;
         "zathura/zathurarc" = mkZathurarc scheme;
@@ -208,7 +221,7 @@ _: {
       };
     in
       pkgs.runCommand "nix-theme-profile-${name}" {} ''
-        mkdir -p "$out/alacritty" "$out/bat/themes" "$out/gtk-3.0" "$out/gtk-4.0" "$out/qt5ct" "$out/qt6ct" "$out/zathura" "$out/zed/themes"
+        mkdir -p "$out/alacritty" "$out/bat/themes" "$out/gtk-3.0" "$out/gtk-4.0" "$out/noctalia" "$out/qt5ct" "$out/qt6ct" "$out/zathura" "$out/zed/themes"
         cp -rs ${lib.escapeShellArg "${localThemePackage gtk}/share/libadwaita-themes"}/* "$out/gtk-4.0/" 2>/dev/null || true
         ${mkProfileLinkCommands profileFiles}
       '';

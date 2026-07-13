@@ -916,7 +916,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Wrapper parity</td>
-              <td>Mostly done for active fleet behavior: plain features now replace git, zsh, and starship wrappers with native NixOS options; install feature-local wrappers for Alacritty, Bat, Zathura, Zed, and yt-dlp; and generate the old Niri settings as a validated <code>config.kdl</code>. Remaining active gap: Noctalia still needs a plain source/package/module path or an explicit drop decision. The standalone <code>flake.wrappers</code> output API and generic <code>constructFiles</code> wrapper mechanism are intentionally left as legacy-only unless an external consumer needs them.</td>
+              <td>Done for active fleet behavior: plain features now replace git, zsh, and starship wrappers with native NixOS options; install feature-local wrappers for Alacritty, Bat, Zathura, Zed, and yt-dlp; generate the old Niri settings as a validated <code>config.kdl</code>; and import Noctalia from <code>npins</code> with its upstream NixOS module plus runtime theme profile config. The standalone <code>flake.wrappers</code> output API and generic <code>constructFiles</code> wrapper mechanism are intentionally left as legacy-only unless an external consumer needs them.</td>
             </tr>
             <tr>
               <td>Plain package and cache workflow</td>
@@ -940,7 +940,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Docs and user workflow</td>
-              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> documents the plain feature-owned wrapper replacements and keeps the old flake wrapper pattern as legacy reference material. Remaining cleanup: remove or replace generated schema docs and document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
+              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> documents the plain feature-owned wrapper replacements and keeps the old flake wrapper pattern as legacy reference material. <code>docs/feat/plain-workflows.md</code> documents the plain commands for evaluation, deployment, formatting, cache builds, and secret editing. Remaining cleanup: remove or replace generated schema docs.</td>
             </tr>
             <tr>
               <td>Plain formatting and static checks</td>
@@ -978,8 +978,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish wrapper parity, the remaining Darwin behavior audit,
-            and documentation cleanup.
+            Next: finish the remaining Darwin behavior audit and documentation
+            cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
