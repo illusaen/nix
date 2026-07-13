@@ -1,4 +1,4 @@
-_: let
+{fleetLib ? import ./fleet.nix {}}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
 
   featureRoot = ../features;
@@ -68,6 +68,32 @@ _: let
       (attrNames services)
     );
 
+  serviceFeaturePlatformModuleErrors = hosts: services:
+    concatLists (
+      map (serviceName: let
+        service = services.${serviceName};
+        featureName = service.feature or serviceName;
+        feature = features.${featureName} or null;
+        serviceHosts = [service.primary] ++ (service.backups or []);
+      in
+        if feature == null
+        then []
+        else
+          concatLists (
+            map (hostName: let
+              host = hosts.${hostName} or null;
+              platform = host.platform or fleetLib.platformForSystem host.system;
+            in
+              if host == null
+              then []
+              else if (feature.modules.${platform} or null) == null
+              then ["service '${serviceName}' feature '${featureName}' has no ${platform} module for host '${hostName}'"]
+              else [])
+            serviceHosts
+          ))
+      (attrNames services)
+    );
+
   tests = listToAttrs (
     concatLists (
       map (featureName:
@@ -80,5 +106,5 @@ _: let
     )
   );
 in {
-  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceSecretRequirementsFor tests;
+  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceFeaturePlatformModuleErrors serviceSecretRequirementsFor tests;
 }

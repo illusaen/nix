@@ -12,5 +12,6 @@
     "defaults"
     "tailscale"
     "networking"
+    "hjem"
   ];
 }

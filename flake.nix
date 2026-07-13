@@ -51,6 +51,10 @@
     };
     gen-flake.url = "github:sini/gen-flake";
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
+    hjem = {
+      url = "github:feel-co/hjem";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     import-tree.url = "github:denful/import-tree";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";

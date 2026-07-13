@@ -1,3 +1,3 @@
 {
-  flake.moduleImports.programs-dev = ["zed" "meld" "codex" "zathura"];
+  flake.moduleImports.programs-dev = ["zed" "meld" "codex" "zathura" "vscode"];
 }

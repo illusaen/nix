@@ -1,5 +1,6 @@
 let
   fleetLib = import ../lib/fleet.nix {};
+  featureLib = import ../lib/features.nix {inherit fleetLib;};
   serviceLib = import ../lib/services.nix {inherit fleetLib;};
 
   baseFleet = {
@@ -312,5 +313,30 @@ in {
         key = "odin:tcp:8080";
         services = ["app" "other"];
       }
+    ];
+
+  routedServiceFeaturePlatformModuleErrors =
+    featureLib.serviceFeaturePlatformModuleErrors
+    (
+      baseFleet.hosts
+      // {
+        macbook = {
+          system = "aarch64-darwin";
+          owner = "wendy";
+          targetHost = "macbook.home.arpa";
+          features = ["base"];
+          preservation.enable = false;
+        };
+      }
+    )
+    {
+      app =
+        baseFleet.services.app
+        // {
+          primary = "macbook";
+        };
+    }
+    == [
+      "service 'app' feature 'llama-cpp' has no darwin module for host 'macbook'"
     ];
 }

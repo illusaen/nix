@@ -1,0 +1,20 @@
+{
+  "name": "custom",
+  "displayName": "Custom (Cosmic Tree)",
+  "version": "0.0.0",
+  "publisher": "base16",
+  "description": "Theme configured via NixOS or Home Manager.",
+  "categories": ["Themes"],
+  "engines": {
+    "vscode": "^1.43.0"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "label": "Custom",
+        "uiTheme": "vs",
+        "path": "./themes/custom.json"
+      }
+    ]
+  }
+}

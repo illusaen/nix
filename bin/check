@@ -18,6 +18,7 @@ check hostFeaturesExist
 check hostFeaturesHavePlatformModules
 check serviceFeaturesExist
 check serviceFeaturesHaveNixosModules
+check routedServiceFeaturesHavePlatformModules
 check hostPublicKeysExist
 check serviceSecretsDeclared
 check serviceSecretRecipientsCoverRoutedHosts

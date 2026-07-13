@@ -58,6 +58,8 @@ let
     ++ (map (hostName: "service '${serviceName}' unexpectedly routed to host '${hostName}'") unexpectedHosts)
     ++ roleErrors)
   serviceNames);
+  serviceFeaturePlatformModuleErrors =
+    featureLib.serviceFeaturePlatformModuleErrors rawFleet.hosts rawFleet.services;
   hostNames = builtins.attrNames fleet.hosts;
   themeNames = builtins.attrNames (fleet.themes.profiles or {});
   themeProfilesValid =
@@ -148,6 +150,7 @@ in {
       (builtins.attrNames fleet.hosts);
     serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
     serviceFeaturesHaveNixosModules = featureLib.missingPlatformModules "nixos" serviceFeatures == [];
+    routedServiceFeaturesHavePlatformModules = serviceFeaturePlatformModuleErrors == [];
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
