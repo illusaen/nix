@@ -18,9 +18,40 @@ _: let
     "zsh"
   ];
 
-  availablePackages = pkgs:
-    builtins.filter (package: package != null)
-    (map (name: pkgs.${name} or null) packageNames);
+  themeStateDir = "\${NIX_THEME_STATE_DIR:-\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme}";
+
+  wrappedAlacritty = pkgs:
+    pkgs.writeShellApplication {
+      name = "alacritty";
+      text = ''
+        exec ${pkgs.alacritty}/bin/alacritty --config-file "${themeStateDir}/current/alacritty/alacritty.toml" "$@"
+      '';
+    };
+
+  wrappedBat = pkgs:
+    pkgs.writeShellApplication {
+      name = "bat";
+      text = ''
+        export BAT_CONFIG_DIR="${themeStateDir}/current/bat"
+        exec ${pkgs.bat}/bin/bat "$@"
+      '';
+    };
+
+  shellPackages = pkgs: (builtins.filter (package: package != null) (map (
+      name:
+        if name == "alacritty"
+        then
+          if pkgs ? alacritty
+          then wrappedAlacritty pkgs
+          else null
+        else if name == "bat"
+        then
+          if pkgs ? bat
+          then wrappedBat pkgs
+          else null
+        else pkgs.${name} or null
+    )
+    packageNames));
 in {
   imports = [];
 
@@ -175,7 +206,7 @@ in {
           };
         };
 
-        environment.systemPackages = availablePackages pkgs;
+        environment.systemPackages = shellPackages pkgs;
 
         users.users.${userName}.shell = pkgs.zsh;
       }
@@ -195,7 +226,7 @@ in {
   };
 
   modules.darwin = {pkgs, ...}: {
-    environment.systemPackages = availablePackages pkgs;
+    environment.systemPackages = shellPackages pkgs;
 
     programs.direnv = {
       enable = true;

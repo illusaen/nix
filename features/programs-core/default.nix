@@ -11,6 +11,16 @@ _: {
     userName = user.name or "wendy";
     optionalPackage = name:
       lib.optional (pkgs ? ${name}) pkgs.${name};
+    wrappedYtDlp =
+      if pkgs ? yt-dlp
+      then
+        pkgs.writeShellApplication {
+          name = "yt-dlp";
+          text = ''
+            exec ${pkgs.yt-dlp}/bin/yt-dlp -t aac --cookies-from-browser firefox "$@"
+          '';
+        }
+      else null;
     autostartEntryType = lib.types.submodule ({config, ...}: {
       options = {
         package = lib.mkOption {type = lib.types.package;};
@@ -42,7 +52,7 @@ _: {
 
     config = {
       environment.systemPackages =
-        optionalPackage "yt-dlp"
+        lib.optional (wrappedYtDlp != null) wrappedYtDlp
         ++ optionalPackage "ytmdesktop";
 
       programs = {

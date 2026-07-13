@@ -1,9 +1,31 @@
 # Wrappers
 
-Status: this document describes the legacy flake wrapper model. Wrapper parity
-is still an open plain-Nix migration item; keep using this as a porting
-reference until a plain wrapper API replaces or intentionally drops these
-definitions.
+Status: most active wrapper behavior has been ported to plain feature-owned
+packages where it is still used by the current fleet. The old
+`flake.wrappers` output API is legacy reference material and is intentionally
+not recreated unless an external consumer needs standalone wrapper outputs.
+
+The plain replacements are:
+
+- `features/shell-utils`: wraps `alacritty` and `bat` so they read the active
+  runtime theme profile.
+- `features/programs-dev`: wraps `zathura` and `zed-editor` so they read the
+  active runtime theme profile and generated Zed settings/theme files.
+- `features/programs-core`: wraps `yt-dlp` with the old default audio and
+  Firefox-cookie flags.
+- `features/shell-utils`: uses native NixOS options for the old git, zsh, and
+  starship wrapper settings.
+
+The remaining active wrapper gap is desktop-shell configuration:
+
+- Niri and Noctalia used wrapper-module generated settings/config. The pinned
+  NixOS `programs.niri` module does not expose a structured `settings` option,
+  so the plain replacement needs a dedicated KDL/config generation path instead
+  of a direct module assignment.
+
+The generated-config wrapper API from `nix-wrapper-modules`, including
+`constructFiles`, remains legacy-only. Plain modules should prefer native NixOS
+options, runtime theme profile files, or feature-local wrapper packages.
 
 This repo uses `nix-wrapper-modules` for portable wrapper derivations. There
 is one wrapper declaration path: the upstream `flake.wrappers` shape.

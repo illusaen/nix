@@ -916,7 +916,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Wrapper parity</td>
-              <td>Expose wrappers through plain Nix or intentionally drop them. The legacy feature tree still defines wrappers for git, zsh, starship, alacritty, gh, bat, zathura, zed, niri, noctalia, and ytdlp, including <code>constructFiles</code> behavior that has no plain replacement yet.</td>
+              <td>Mostly done for active fleet behavior: plain features now replace git, zsh, and starship wrappers with native NixOS options, and install feature-local wrappers for Alacritty, Bat, Zathura, Zed, and yt-dlp. Remaining active gap: Niri and Noctalia need a plain KDL/config-generation path because the pinned NixOS <code>programs.niri</code> module does not expose the old wrapper-module <code>settings</code> option. The standalone <code>flake.wrappers</code> output API and generic <code>constructFiles</code> wrapper mechanism are intentionally left as legacy-only unless an external consumer needs them.</td>
             </tr>
             <tr>
               <td>Plain package and cache workflow</td>
@@ -940,7 +940,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Docs and user workflow</td>
-              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> is marked as legacy reference material until wrapper parity is decided. Remaining cleanup: remove or replace generated schema docs and document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
+              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> documents the plain feature-owned wrapper replacements and keeps the old flake wrapper pattern as legacy reference material. Remaining cleanup: remove or replace generated schema docs and document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
             </tr>
             <tr>
               <td>Plain formatting and static checks</td>
