@@ -936,7 +936,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Runtime theming</td>
-              <td>Port or replace the runtime theme switcher scripts currently noted in <code>TODO.md</code>. Fleet theme profiles and local theme package installation are already present in the plain path.</td>
+              <td>Done for the plain Linux path: <code>features/theming</code> builds runtime theme profiles and installs <code>theme-apply</code>, <code>theme-current</code>, <code>theme-cycle</code>, <code>theme-list</code>, and <code>theme-select</code>. Continue testing live desktop reload behavior during normal use.</td>
             </tr>
             <tr>
               <td>Docs and user workflow</td>
@@ -978,8 +978,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish wrapper parity, Darwin feature parity, runtime
-            theming, and documentation cleanup.
+            Next: finish wrapper parity, Darwin feature parity, and
+            documentation cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and

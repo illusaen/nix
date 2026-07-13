@@ -8,6 +8,13 @@
       "revision": "b027ee29d959fda4b60b57566d64c98a202e0feb",
       "hash": "sha256-9VnK6Oqai65puVJ4WYtCTvlJeXxMzAp/69HhQuTdl/I="
     },
+    "base16": {
+      "type": "github",
+      "owner": "SenchoPens",
+      "repo": "base16.nix",
+      "revision": "75ed5e5e3fce37df22e49125181fa37899c3ccd6",
+      "hash": "sha256-qcMhnL7aGAuFuutH4rq9fvAhCpJWVHLcHVZLtPctPlo="
+    },
     "darwin": {
       "type": "github",
       "owner": "nix-darwin",
@@ -21,6 +28,13 @@
       "repo": "disko",
       "revision": "de5708739256238fb912c62f03988815db89ec9a",
       "hash": "sha256-CNzzBsRhq7gg4BMBuTDObiWDH/rFYHEuDRVOwCcwXw4="
+    },
+    "fromYaml": {
+      "type": "github",
+      "owner": "SenchoPens",
+      "repo": "fromYaml",
+      "revision": "106af9e2f715e2d828df706c386a685698f3223b",
+      "hash": "sha256-lq95WydhbUTWig/JpqiB7oViTcHFP8Lv41IGtayokA8="
     },
     "nixpkgs": {
       "type": "github",

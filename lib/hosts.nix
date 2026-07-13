@@ -10,15 +10,16 @@
     hostName,
     host,
     sources,
-  }: {
+  }: let
+    user = fleet.users.${host.owner} // {name = host.owner;};
+  in {
     imports = featureLib.modulesFor host.platform host.features;
 
     config = {
       nixpkgs.overlays = [packageLib.overlay];
 
       _module.args = {
-        inherit fleet fleetLib host packageLib sources;
-        user = fleet.users.${host.owner};
+        inherit fleet fleetLib host packageLib sources user;
       };
 
       assertions = [
@@ -45,12 +46,13 @@
     evalConfig = import "${sources.nixpkgs.outPath}/nixos/lib/eval-config.nix";
   in
     mapAttrs (
-      hostName: host:
+      hostName: host: let
+        user = fleet.users.${host.owner} // {name = host.owner;};
+      in
         evalConfig {
           inherit (host) system;
           specialArgs = {
-            inherit fleet fleetLib host packageLib sources;
-            user = fleet.users.${host.owner};
+            inherit fleet fleetLib host packageLib sources user;
           };
           modules = [
             {
@@ -71,12 +73,13 @@
     darwin = import sources.darwin.outPath;
   in
     mapAttrs (
-      hostName: host:
+      hostName: host: let
+        user = fleet.users.${host.owner} // {name = host.owner;};
+      in
         darwin.lib.darwinSystem {
           inherit (host) system;
           specialArgs = {
-            inherit fleet fleetLib host packageLib sources;
-            user = fleet.users.${host.owner};
+            inherit fleet fleetLib host packageLib sources user;
           };
           modules = [
             {
