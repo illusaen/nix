@@ -11,9 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      NIX_CONFIG: |
-        extra-experimental-features = pipe-operators
 
     steps:
       - uses: actions/checkout@v4
@@ -21,9 +18,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
-            experimental-features = nix-command flakes
-            extra-experimental-features = pipe-operators
-            accept-flake-config = true
+            experimental-features = nix-command
             max-jobs = auto
             cores = 0
 
@@ -32,19 +27,17 @@ jobs:
           name: illusaen
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      # Optional: build specific packages exposed by your flake.
-      - name: Build bambu-studio package
-        run: |
-          nix --extra-experimental-features pipe-operators build .#legacyPackages.x86_64-linux.bambu-studio
+      - name: Build plain local packages
+        run: nix-build default.nix -A packages.x86_64-linux
 
-      - name: Build llama-cpp package
+      - name: Build plain NixOS configuration
         run: |
-          nix --extra-experimental-features pipe-operators build .#legacyPackages.x86_64-linux.llama-cpp
-
-      - name: Build noctalia package
-        run: |
-          nix --extra-experimental-features pipe-operators build .#legacyPackages.x86_64-linux.noctalia
-
-      - name: Build NixOS configuration
-        run: |
-          nix --extra-experimental-features pipe-operators build .#nixosConfigurations.odin.config.system.build.toplevel
+          nix-build --expr '
+            let
+              api = import ./default.nix;
+              configs = api.hostLib.mkNixosConfigurations {
+                inherit (api) fleet sources;
+              };
+            in
+              configs.odin.config.system.build.toplevel
+          '

@@ -1,5 +1,10 @@
 # Wrappers
 
+Status: this document describes the legacy flake wrapper model. Wrapper parity
+is still an open plain-Nix migration item; keep using this as a porting
+reference until a plain wrapper API replaces or intentionally drops these
+definitions.
+
 This repo uses `nix-wrapper-modules` for portable wrapper derivations. There
 is one wrapper declaration path: the upstream `flake.wrappers` shape.
 

@@ -1,0 +1,60 @@
+[formatter.deadnix]
+command = "deadnix"
+options = ["--edit"]
+includes = ["*.nix"]
+
+[formatter.nix]
+command = "alejandra"
+includes = ["*.nix"]
+
+[formatter.python-format]
+command = "ruff"
+options = ["format"]
+includes = ["*.py"]
+
+[formatter.python-lint]
+command = "ruff"
+options = ["check", "--fix"]
+includes = ["*.py"]
+
+[formatter.shell]
+command = "shellcheck"
+options = ["-s", "sh"]
+includes = ["bin/*"]
+
+[formatter.statix]
+command = "sh"
+options = ["-c", "for file do statix fix \"$file\"; done", "statix-fix"]
+includes = ["*.nix"]
+
+[global]
+excludes = [
+  ".git/**",
+  ".secrets/**",
+  "*.age",
+  "*.asc",
+  "*.bin",
+  "*.conf",
+  "*.dds",
+  "*.diff",
+  "*.editorconfig",
+  "*.envrc",
+  "*.gif",
+  "*.gitconfig",
+  "*.gitignore",
+  "*.ico",
+  "*.jpg",
+  "*.jwe",
+  "*.kdl",
+  "*.lock",
+  "*.org",
+  "*.png",
+  "*.pub",
+  "*.svg",
+  "*.tmpl",
+  "*.txt",
+  "*.webp",
+  "*.xml",
+  "*.zsh"
+]
+on-unmatched = "debug"

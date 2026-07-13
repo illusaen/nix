@@ -9,11 +9,13 @@ in
         agenixPackage
       ]
       ++ (with pkgs; [
+        alejandra
         colmena
         deadnix
         dix
         nil
         npins
+        ruff
         shellcheck
         statix
         treefmt

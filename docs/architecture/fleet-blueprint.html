@@ -429,7 +429,7 @@
             <tr>
               <td>CI and local checks</td>
               <td>Partially done</td>
-              <td><code>bin/check</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, and <code>.github/workflows/plain-nix.yml</code> cover plain evaluation and graph rules. Formatting, static analysis, representative system builds, and cache workflows still need plain entrypoints.</td>
+              <td><code>bin/check</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, <code>treefmt.toml</code>, and GitHub workflows cover plain evaluation, graph rules, treefmt checks, local package builds, and a representative NixOS toplevel build.</td>
             </tr>
             <tr>
               <td>Legacy flake path</td>
@@ -920,7 +920,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Plain package and cache workflow</td>
-              <td><code>lib/packages.nix</code> exposes local packages, but <code>.github/workflows/nix-cache.yml</code> still builds flake outputs such as <code>.#legacyPackages.x86_64-linux.*</code> and <code>.#nixosConfigurations.odin...</code>. Replace those with plain <code>nix-build</code> entrypoints before deleting the flake.</td>
+              <td>Done for current local packages: <code>lib/packages.nix</code> exposes the package set and <code>.github/workflows/nix-cache.yml</code> builds <code>default.nix -A packages.x86_64-linux</code> plus the plain <code>odin</code> NixOS toplevel. Add more plain build targets only when they are reintroduced outside the legacy flake package set.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>
@@ -932,7 +932,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Full CI wiring</td>
-              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, deploy planning, and hive evaluation. Add shellcheck, formatting, static analysis, Darwin evaluation, and at least one representative plain NixOS toplevel build.</td>
+              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, treefmt checks, deploy planning, and hive evaluation. <code>.github/workflows/nix-cache.yml</code> builds local packages and the plain <code>odin</code> toplevel. Add Darwin evaluation when a Darwin host returns to the plain fleet.</td>
             </tr>
             <tr>
               <td>Runtime theming</td>
@@ -940,11 +940,11 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Docs and user workflow</td>
-              <td>Update feature notes that still describe the gen-schema or flake-wrapper model, especially <code>docs/feat/service-routing.md</code>, <code>docs/feat/entity-system-modules.md</code>, <code>docs/feat/wrappers.md</code>, and <code>docs/gen/schema.md</code>. Document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
+              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> is marked as legacy reference material until wrapper parity is decided. Remaining cleanup: remove or replace generated schema docs and document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
             </tr>
             <tr>
               <td>Plain formatting and static checks</td>
-              <td>The shell includes <code>treefmt</code>, <code>statix</code>, <code>deadnix</code>, and <code>shellcheck</code>, but the old treefmt and pre-commit definitions are still flake modules. Add plain config files or scripts so these checks no longer depend on <code>modules/flake/devshell</code>.</td>
+              <td>Done for treefmt: <code>treefmt.toml</code> is checked in, <code>shell.nix</code> provides the required tools, and plain CI runs <code>treefmt --fail-on-change --no-cache</code>. Pre-commit installation can remain a devshell convenience until the legacy flake module tree is removed.</td>
             </tr>
           </tbody>
         </table>
@@ -979,8 +979,7 @@ shellcheck bin/deploy bin/check</code></pre>
           </li>
           <li>
             Next: finish wrapper parity, Darwin feature parity, runtime
-            theming, plain formatting/static checks, plain cache/build
-            workflows, and documentation cleanup.
+            theming, and documentation cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
