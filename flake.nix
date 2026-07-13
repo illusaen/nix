@@ -11,6 +11,8 @@
 
   nixConfig = {
     experimental-features = ["nix-command" "flakes" "pipe-operator" "pipe-operators"];
+    extra-substituters = ["https://colmena.cachix.org"];
+    extra-trusted-public-keys = ["colmena.cachix.org-1:7BzpDnjjH8ki2CT3f6GdOk7QAzPOl+1t3LvTLXqYcSg="];
     lazy-trees = true;
   };
 
@@ -22,6 +24,10 @@
     base16.url = "github:SenchoPens/base16.nix";
     codex-desktop-linux = {
       url = "github:ilysenko/codex-desktop-linux";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+    colmena = {
+      url = "github:zhaofengli/colmena";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     darwin = {

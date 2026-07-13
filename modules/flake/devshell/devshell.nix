@@ -9,6 +9,7 @@
   perSystem = {
     config,
     pkgs,
+    inputs',
     ...
   }: {
     devshells.default = {
@@ -30,8 +31,8 @@
         config.pre-commit.settings.enabledPackages
         ++ (with pkgs; [
           nixd
-          colmena
           dix
+          inputs'.colmena.packages.colmena
         ]);
       env = [
         {
