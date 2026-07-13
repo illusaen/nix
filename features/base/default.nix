@@ -78,5 +78,10 @@ _: {
   modules.darwin = {host, ...}: {
     system.stateVersion = 6;
     networking.computerName = host.name or host.targetHost;
+
+    homebrew = {
+      enable = true;
+      user = host.owner;
+    };
   };
 }

@@ -924,7 +924,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Darwin parity</td>
-              <td>Audit placeholder <code>modules.darwin = _: {}</code> features against the old Darwin modules. Known old behavior includes Homebrew casks and MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, plus wallpaper, networking/computer name, state version, hjem, shell utilities, and developer-tool behavior.</td>
+              <td>Partially done: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, and migrated features now declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale. Remaining audit items are wallpaper, hjem, shell utilities, developer-tool behavior, and any intentionally dropped Darwin-only legacy module behavior.</td>
             </tr>
             <tr>
               <td>Remote Darwin deployment</td>
@@ -978,8 +978,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish wrapper parity, Darwin feature parity, and
-            documentation cleanup.
+            Next: finish wrapper parity, the remaining Darwin behavior audit,
+            and documentation cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and

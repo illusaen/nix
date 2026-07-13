@@ -84,5 +84,7 @@ _: {
     };
   };
 
-  modules.darwin = _: {};
+  modules.darwin = _: {
+    homebrew.casks = ["firefox"];
+  };
 }

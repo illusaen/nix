@@ -70,20 +70,24 @@
     fleet,
     sources,
   }: let
-    darwin = import sources.darwin.outPath;
+    evalConfig = import (sources.darwin.outPath + "/eval-config.nix");
+    nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
   in
     mapAttrs (
       hostName: host: let
         user = fleet.users.${host.owner} // {name = host.owner;};
       in
-        darwin.lib.darwinSystem {
-          inherit (host) system;
+        evalConfig {
+          lib = nixpkgsLib;
           specialArgs = {
             inherit fleet fleetLib host packageLib sources user;
           };
           modules = [
             {
               nixpkgs.hostPlatform.system = host.system;
+              nixpkgs.source = sources.nixpkgs.outPath;
+              nixpkgs.flake.source = sources.nixpkgs.outPath;
+              system.checks.verifyNixPath = false;
             }
             (mkHostModule {
               inherit fleet hostName host sources;
