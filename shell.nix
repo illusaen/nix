@@ -11,6 +11,7 @@ in
       ++ (with pkgs; [
         colmena
         deadnix
+        dix
         nil
         npins
         shellcheck

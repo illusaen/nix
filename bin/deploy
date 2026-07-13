@@ -96,6 +96,73 @@ target_host_for() {
   eval_expr "let api = import ./default.nix; in api.hosts.\"$1\".targetHost"
 }
 
+is_local_target() {
+  host="$1"
+  target_host="$(target_host_for "$host")"
+  short_hostname="$(hostname 2>/dev/null || true)"
+  fqdn_hostname="$(hostname -f 2>/dev/null || true)"
+
+  case "$target_host" in
+    localhost|127.0.0.1|::1)
+      return 0
+      ;;
+  esac
+
+  if [ "$target_host" = "$host" ]; then
+    return 0
+  fi
+
+  if [ -n "$short_hostname" ] && [ "$target_host" = "$short_hostname" ]; then
+    return 0
+  fi
+
+  if [ -n "$fqdn_hostname" ] && [ "$target_host" = "$fqdn_hostname" ]; then
+    return 0
+  fi
+
+  return 1
+}
+
+current_system_path() {
+  readlink -f /run/current-system 2>/dev/null || printf '%s\n' /run/current-system
+}
+
+diff_system_build() {
+  host="$1"
+  old_path="$2"
+  new_path="$3"
+
+  if ! is_local_target "$host"; then
+    printf 'skipping dix diff for remote target: %s (%s)\n' "$host" "$(target_host_for "$host")"
+    return 0
+  fi
+
+  if ! command -v dix >/dev/null 2>&1; then
+    printf 'skipping dix diff because dix is not in PATH\n' >&2
+    return 0
+  fi
+
+  if [ ! -e "$old_path" ]; then
+    printf 'skipping dix diff because old system path does not exist: %s\n' "$old_path" >&2
+    return 0
+  fi
+
+  if [ ! -e "$new_path" ]; then
+    printf 'skipping dix diff because new system path does not exist: %s\n' "$new_path" >&2
+    return 0
+  fi
+
+  printf 'dix diff for %s: %s -> %s\n' "$host" "$old_path" "$new_path"
+  if ! dix "$old_path" "$new_path"; then
+    printf 'dix diff failed for %s\n' "$host" >&2
+  fi
+}
+
+build_nixos_toplevel() {
+  host="$1"
+  nix-build --no-out-link --expr "let api = import ./default.nix; configs = api.hostLib.mkNixosConfigurations { inherit (api) fleet sources; }; in configs.\"$host\".config.system.build.toplevel"
+}
+
 plan_host() {
   host="$1"
   platform="$(platform_for "$host")"
@@ -114,9 +181,13 @@ deploy_nixos() {
       ;;
     build)
       colmena_cmd -f hive.nix build --eval-node-limit 1 --on "$host"
+      result="$(build_nixos_toplevel "$host")"
+      diff_system_build "$host" "$(current_system_path)" "$result"
       ;;
     apply)
+      old_system="$(current_system_path)"
       colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host"
+      diff_system_build "$host" "$old_system" /run/current-system
       ;;
   esac
 }
@@ -129,9 +200,13 @@ deploy_darwin() {
       plan_host "$host"
       ;;
     dry-run|build)
-      nix-build darwin.nix -A "$attr"
+      result="$(nix-build darwin.nix -A "$attr")"
+      if [ "$mode" = build ]; then
+        diff_system_build "$host" "$(current_system_path)" "$result"
+      fi
       ;;
     apply)
+      old_system="$(current_system_path)"
       result="$(nix-build darwin.nix -A "$attr")"
       if [ -x "$result/activate-user" ]; then
         "$result/activate-user"
@@ -141,6 +216,7 @@ deploy_darwin() {
         exit 1
       fi
       "$result/activate"
+      diff_system_build "$host" "$old_system" "$result"
       ;;
   esac
 }

@@ -31,6 +31,7 @@
         ++ (with pkgs; [
           nixd
           colmena
+          dix
         ]);
       env = [
         {
