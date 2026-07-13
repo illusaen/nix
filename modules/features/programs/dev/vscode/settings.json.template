@@ -28,6 +28,9 @@
   "explorer.confirmDragAndDrop": false,
   "explorer.decorations.badges": false,
   "extensions.autoCheckUpdates": false,
+  "extensions.supportAgentsWindow": {
+   "vira.vsc-vira-theme": true,
+  },
   "files.associations": {
     "*.css": "tailwindcss"
   },
@@ -84,7 +87,7 @@
   "update.mode": "none",
   "window.titleBarStyle": "custom",
   "window.zoomLevel": @zoomLevel@,
-  "workbench.colorTheme": "Dracula Theme",
+  "workbench.colorTheme": "Vira Graphene",
   "workbench.iconTheme": "vs-seti",
   "workbench.panel.defaultLocation": "right",
   "workbench.startupEditor": "none"

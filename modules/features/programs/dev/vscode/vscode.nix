@@ -116,7 +116,7 @@ in {
           monoFontName = "${fonts.mono.name},Maple Mono NF CN";
           serifFontName = "Monaspace Xenon Frozen";
           sansFontName = fonts.sans.name;
-          zoomLevel = 0;
+          zoomLevel = 1;
         };
       }
 

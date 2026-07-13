@@ -389,7 +389,7 @@
             <tr>
               <td>Feature API</td>
               <td>Mostly done</td>
-              <td><code>features/</code> contains the migrated feature wrappers. Some Darwin modules are placeholders and legacy module files still exist.</td>
+              <td><code>features/</code> contains migrated plain features for the active Linux fleet. Several Darwin modules are placeholders, and the legacy <code>modules/features/**</code> tree still contains behavior that needs a port-or-drop decision.</td>
             </tr>
             <tr>
               <td>Service routing</td>
@@ -424,17 +424,17 @@
             <tr>
               <td>Deployment entrypoints</td>
               <td>Partially done</td>
-              <td><code>hive.nix</code>, <code>darwin.nix</code>, and <code>bin/deploy</code> exist. Darwin apply currently builds and activates locally; remote Darwin activation still needs design and implementation.</td>
+              <td><code>hive.nix</code>, <code>darwin.nix</code>, and <code>bin/deploy</code> exist. Darwin planning, build, and dry-run modes are present; apply still builds and activates locally, so remote Darwin activation remains a design and implementation gap.</td>
             </tr>
             <tr>
               <td>CI and local checks</td>
               <td>Partially done</td>
-              <td><code>bin/check</code>, <code>tests/fleet.nix</code>, and <code>ci.nix</code> cover plain evaluation and graph rules, but repository CI still needs to be wired to these entrypoints.</td>
+              <td><code>bin/check</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, and <code>.github/workflows/plain-nix.yml</code> cover plain evaluation and graph rules. Formatting, static analysis, representative system builds, and cache workflows still need plain entrypoints.</td>
             </tr>
             <tr>
               <td>Legacy flake path</td>
               <td>Still present</td>
-              <td><code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, and <code>gen-modules/</code> remain until plain workflows reach parity.</td>
+              <td><code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, <code>gen-modules/</code>, and generated schema docs remain until plain workflows reach parity.</td>
             </tr>
           </tbody>
         </table>
@@ -898,8 +898,8 @@ shellcheck bin/deploy bin/check</code></pre>
       <section>
         <h2>Known Migration Gaps</h2>
         <p>
-          These are the missing pieces from the initial plan after comparing it
-          with the current repository state.
+          These are the missing pieces from the initial plan after comparing
+          the blueprint with the current repository state.
         </p>
 
         <table>
@@ -912,23 +912,27 @@ shellcheck bin/deploy bin/check</code></pre>
           <tbody>
             <tr>
               <td>Legacy architecture removal</td>
-              <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>gen-modules/</code>, and generated schema docs only after plain deploy, package, formatting, and CI workflows cover the same jobs.</td>
+              <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, <code>gen-modules/</code>, and generated schema docs only after plain deploy, package, wrapper, formatting, CI, cache, and system-build workflows cover the same jobs.</td>
             </tr>
             <tr>
               <td>Wrapper parity</td>
-              <td>Expose wrappers through plain Nix, and teach <code>lib/features.nix</code> how to consume feature-owned package metadata if that remains part of the design. The old wrapper modules under <code>modules/features/**</code> still contain <code>flake.wrappers</code>, <code>constructFiles</code>, and wrapper-specific behavior that must either be ported or intentionally dropped.</td>
+              <td>Expose wrappers through plain Nix or intentionally drop them. The legacy feature tree still defines wrappers for git, zsh, starship, alacritty, gh, bat, zathura, zed, niri, noctalia, and ytdlp, including <code>constructFiles</code> behavior that has no plain replacement yet.</td>
+            </tr>
+            <tr>
+              <td>Plain package and cache workflow</td>
+              <td><code>lib/packages.nix</code> exposes local packages, but <code>.github/workflows/nix-cache.yml</code> still builds flake outputs such as <code>.#legacyPackages.x86_64-linux.*</code> and <code>.#nixosConfigurations.odin...</code>. Replace those with plain <code>nix-build</code> entrypoints before deleting the flake.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>
-              <td>Audit placeholder <code>modules.darwin = _: {}</code> features against the old Darwin modules, especially Homebrew casks, MAS apps, wallpaper, networking, tailscale, Firefox, creative apps, and developer tools.</td>
+              <td>Audit placeholder <code>modules.darwin = _: {}</code> features against the old Darwin modules. Known old behavior includes Homebrew casks and MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, plus wallpaper, networking/computer name, state version, hjem, shell utilities, and developer-tool behavior.</td>
             </tr>
             <tr>
               <td>Remote Darwin deployment</td>
-              <td>Define whether Darwin targets are local-only or SSH targets. If SSH is required, <code>bin/deploy</code> must use <code>targetHost</code>, copy the built activation package or build remotely, and support dry-run/build-only modes without activation.</td>
+              <td>Define whether Darwin targets are local-only or SSH targets. If SSH is required, <code>bin/deploy</code> must use <code>targetHost</code>, copy the built activation package or build remotely, and run activation on the target. Build and dry-run paths already exist locally.</td>
             </tr>
             <tr>
               <td>Full CI wiring</td>
-              <td>Wire repository CI to <code>bin/check</code>, <code>nix-build ci.nix -A plain-eval</code>, shellcheck, formatting, static analysis, and at least one representative NixOS toplevel build.</td>
+              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, deploy planning, and hive evaluation. Add shellcheck, formatting, static analysis, Darwin evaluation, and at least one representative plain NixOS toplevel build.</td>
             </tr>
             <tr>
               <td>Runtime theming</td>
@@ -936,7 +940,11 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Docs and user workflow</td>
-              <td>Update feature notes that still describe the gen-schema or flake-wrapper model, and document the plain commands for evaluation, deployment, formatting, and secret editing.</td>
+              <td>Update feature notes that still describe the gen-schema or flake-wrapper model, especially <code>docs/feat/service-routing.md</code>, <code>docs/feat/entity-system-modules.md</code>, <code>docs/feat/wrappers.md</code>, and <code>docs/gen/schema.md</code>. Document the plain commands for evaluation, deployment, formatting, cache builds, and secret editing.</td>
+            </tr>
+            <tr>
+              <td>Plain formatting and static checks</td>
+              <td>The shell includes <code>treefmt</code>, <code>statix</code>, <code>deadnix</code>, and <code>shellcheck</code>, but the old treefmt and pre-commit definitions are still flake modules. Add plain config files or scripts so these checks no longer depend on <code>modules/flake/devshell</code>.</td>
             </tr>
           </tbody>
         </table>
@@ -971,7 +979,8 @@ shellcheck bin/deploy bin/check</code></pre>
           </li>
           <li>
             Next: finish wrapper parity, Darwin feature parity, runtime
-            theming, and CI wiring.
+            theming, plain formatting/static checks, plain cache/build
+            workflows, and documentation cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
