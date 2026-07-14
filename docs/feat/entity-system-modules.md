@@ -70,6 +70,21 @@ If a host enables `"base"`, and `base` imports `"ssh"`, the resolver imports
 both features for that host. Cycles and missing features are checked by
 `lib/features.nix` and `default.nix`.
 
+`imports` can also include local paths. String entries are feature dependencies;
+path entries are feature fragments that are merged into the current feature:
+
+```nix
+{
+  imports = [
+    "ssh"
+    ./networking.nix
+  ];
+}
+```
+
+Use path imports for split files that should not become host-selectable feature
+names.
+
 ## Host Context
 
 Feature modules receive resolved host context through module arguments:

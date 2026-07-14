@@ -21,8 +21,6 @@ let
     ];
   };
 in {
-  imports = [];
-
   modules.nixos = {
     fleet,
     pkgs,
@@ -46,6 +44,7 @@ in {
     security.sudo.extraConfig = ''
       Defaults lecture = never
     '';
+    security.sudo-rs.enable = true;
   };
 
   modules.darwin = {fleet, ...}: {

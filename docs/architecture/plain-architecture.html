@@ -528,12 +528,15 @@
           Every directory under <code>features/</code> may expose imports,
           platform modules, feature-local tests, and service secret metadata. The
           resolver discovers features from the filesystem and does not require a
-          central registry.
+          central registry. Feature imports can mix string feature dependencies
+          with local file paths for splitting a large feature into smaller
+          fragments.
         </p>
 
-        <pre><code>_: {
+        <pre><code>{
   imports = [
-    "other-feature"
+    "other-feature"  # Feature dependency.
+    ./networking.nix # Local feature fragment.
   ];
 
   serviceSecrets = { service, serviceName, hosts }: [
@@ -555,10 +558,19 @@
           <div class="box">
             <h3>Feature Dependencies</h3>
             <p>
-              <code>imports</code> lists other feature names. The closure is
-              stable and duplicate-safe: once a feature is seen it is not added
-              twice. Host feature lists stay small because shared behavior can be
-              implied by one parent feature.
+              String entries in <code>imports</code> list other feature names.
+              The closure is stable and duplicate-safe: once a feature is seen it
+              is not added twice. Host feature lists stay small because shared
+              behavior can be implied by one parent feature.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Local Fragments</h3>
+            <p>
+              Path entries in <code>imports</code> are imported relative to the
+              feature file and merged into the same feature. This is useful for
+              files such as <code>features/base/networking.nix</code> that should
+              contribute modules without becoming host-selectable features.
             </p>
           </div>
           <div class="box">

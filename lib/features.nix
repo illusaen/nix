@@ -1,5 +1,6 @@
 {fleetLib ? import ./fleet.nix {}}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
+  inherit (fleetLib) unique;
 
   featureRoot = ../features;
 
@@ -7,12 +8,56 @@
     filter (name: (readDir featureRoot).${name} == "directory")
     (attrNames (readDir featureRoot));
 
-  loadFeature = name: let
-    feature = import (featureRoot + "/${name}");
-  in
+  callFeature = feature:
     if builtins.isFunction feature
     then feature {}
     else feature;
+
+  loadFeatureFile = path: callFeature (import path);
+
+  featureImportEntries = feature:
+    filter builtins.isString (feature.imports or []);
+
+  localImportEntries = feature:
+    filter (entry: !builtins.isString entry) (feature.imports or []);
+
+  modulesForPlatform = fragments: platform:
+    concatLists (
+      map (fragment: let
+        module = (fragment.modules or {}).${platform} or null;
+      in
+        if module == null
+        then []
+        else if builtins.isList module
+        then module
+        else [module])
+      fragments
+    );
+
+  mergeFeatures = fragments: let
+    merged = builtins.foldl' (acc: fragment: acc // builtins.removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
+    platformNames = unique (concatLists (map (fragment: attrNames (fragment.modules or {})) fragments));
+  in
+    merged
+    // {
+      imports = concatLists (map featureImportEntries fragments);
+      modules = listToAttrs (
+        map (platform: {
+          name = platform;
+          value = modulesForPlatform fragments platform;
+        })
+        platformNames
+      );
+      tests = builtins.foldl' (acc: fragment: acc // (fragment.tests or {})) {} fragments;
+    };
+
+  loadFeaturePath = path: let
+    feature = loadFeatureFile path;
+    localFeatures = map loadFeaturePath (localImportEntries feature);
+  in
+    mergeFeatures (localFeatures ++ [feature]);
+
+  loadFeature = name: loadFeaturePath (featureRoot + "/${name}");
 
   features = builtins.listToAttrs (
     map (name: {
@@ -42,8 +87,13 @@
     go [] names;
 
   modulesFor = platform: names:
-    map (name: features.${name}.modules.${platform})
-    (filter (name: (features.${name}.modules.${platform} or null) != null) (close names));
+    concatLists (
+      map (
+        name:
+          features.${name}.modules.${platform} or []
+      )
+      (filter (name: (features.${name}.modules.${platform} or []) != []) (close names))
+    );
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
 

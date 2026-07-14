@@ -158,9 +158,28 @@ diff_system_build() {
   fi
 }
 
-build_nixos_toplevel() {
+store_path_from_colmena_log() {
   host="$1"
-  nix-build --no-out-link --expr "let api = import ./default.nix; configs = api.hostLib.mkNixosConfigurations { inherit (api) fleet sources; }; in configs.\"$host\".config.system.build.toplevel"
+  log_file="$2"
+
+  paths="$(
+    awk '
+        {
+          line = $0
+          while (match(line, /\/nix\/store\/[A-Za-z0-9._+-]+-[^[:space:]"<>(),]+/)) {
+            print substr(line, RSTART, RLENGTH)
+            line = substr(line, RSTART + RLENGTH)
+          }
+        }
+      ' "$log_file"
+  )"
+
+  result="$(printf '%s\n' "$paths" | grep "/nixos-system-$host-" | tail -n 1 || true)"
+  if [ -z "$result" ]; then
+    result="$(printf '%s\n' "$paths" | tail -n 1)"
+  fi
+
+  printf '%s\n' "$result"
 }
 
 plan_host() {
@@ -180,9 +199,27 @@ deploy_nixos() {
       colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
       ;;
     build)
-      colmena_cmd -f hive.nix build --eval-node-limit 1 --on "$host"
-      result="$(build_nixos_toplevel "$host")"
-      diff_system_build "$host" "$(current_system_path)" "$result"
+      colmena_log="$(mktemp "${TMPDIR:-/tmp}/colmena-build-${host}.XXXXXX")"
+      status_file="$(mktemp "${TMPDIR:-/tmp}/colmena-build-status-${host}.XXXXXX")"
+      set +e
+      {
+        colmena_cmd -f hive.nix build --eval-node-limit 1 --on "$host" 2>&1
+        printf '%s\n' "$?" >"$status_file"
+      } | tee "$colmena_log"
+      set -e
+      status="$(cat "$status_file")"
+      rm -f "$status_file"
+      if [ "$status" -ne 0 ]; then
+        rm -f "$colmena_log"
+        return "$status"
+      fi
+      result="$(store_path_from_colmena_log "$host" "$colmena_log")"
+      rm -f "$colmena_log"
+      if [ -z "$result" ]; then
+        printf 'skipping dix diff because Colmena output did not include a system store path for %s\n' "$host" >&2
+      else
+        diff_system_build "$host" "$(current_system_path)" "$result"
+      fi
       ;;
     apply)
       old_system="$(current_system_path)"
