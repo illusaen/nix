@@ -43,7 +43,11 @@ in {
     };
   };
 
-  perSystem = {system, ...}: let
+  perSystem = {
+    inputs',
+    system,
+    ...
+  }: let
     pkgs = import inputs.nixpkgs-unstable {
       inherit system;
       config.allowUnfree = true;
@@ -54,6 +58,8 @@ in {
     pkgsDirectory = rootPath + /packages;
 
     # Placing long building packages into packages for gh workflow to build and cache
+    packages.colmena = inputs'.colmena.packages.colmena;
+
     legacyPackages = {
       llama-cpp = pkgs.llama-cpp.override {cudaSupport = true;};
       inherit (pkgs) bambu-studio;

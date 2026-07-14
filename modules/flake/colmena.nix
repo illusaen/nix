@@ -1,9 +1,32 @@
 {
   inputs,
   genValues,
+  lib,
   self,
   ...
-}: {
+}: let
+  inherit (genValues) fleet;
+  nixosHosts = lib.filterAttrs (_name: host: host.class == "nixos") fleet.hosts;
+
+  mkDeployment = name: host: {
+    deployment = {
+      targetHost = "${name}.${fleet.domain}";
+      targetUser = "root";
+      buildOnTarget = false;
+      tags = [host.tags.role];
+    };
+  };
+
+  mkNode = name: host: {
+    imports = self.nixosConfigurations.${name}._module.args.modules;
+    _module.args = {
+      inherit fleet self;
+      inherit (host) owner;
+      host = self.nixosConfigurations.${name}._module.specialArgs.host or host;
+      user = host.owner;
+    };
+  };
+in {
   flake-file.inputs.colmena = {
     url = "github:zhaofengli/colmena";
     inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -22,14 +45,7 @@
         config.allowUnfree = true;
       };
     }
-    // (genValues.fleet.hosts
-      |> builtins.mapAttrs (h: v: {
-        deployment = {
-          targetHost = "${h}.${genValues.fleet.domain}";
-          targetUser = "root";
-          buildOnTarget = false;
-          tags = [v.tags.role];
-        };
-        imports = [self.nixosConfigurations.${h}.config.system.build.toplevel];
-      })));
+    // builtins.mapAttrs (name: host:
+      mkNode name host // mkDeployment name host)
+    nixosHosts);
 }
