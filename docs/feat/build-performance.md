@@ -169,29 +169,26 @@ Noctalia uses its upstream NixOS module plus runtime theme profile config.
 
 ## Package Output Cleanup
 
-`packages.x86_64-linux` currently includes both local packages and selected
-heavy upstream packages:
-
-- `bambu-studio`
-- `llama-cpp` with CUDA
-- `noctalia`
-- wrapper packages, except host-only wrapper bases
-
-Exporting a package does not mean `nix flake check` builds it by default, but it
-does make it easy for CI or cache jobs to build more than a host rebuild needs.
+The plain package output is intentionally limited to hand-maintained local
+packages under `packages/`. Heavy upstream packages are built through the host
+configuration or explicit cache workflow targets instead of being exported from
+the local package set.
 
 Implemented:
 
-- `llama-cpp` service now uses `pkgs.local.llama-cpp`, so the CUDA override is
-  defined once.
+- `llama-cpp` service now uses one feature-local CUDA-enabled override for both
+  `environment.systemPackages` and `services.llama-cpp.package`.
 - `noctalia-wrapped` is no longer exported as a default package.
 - `niri` still remains exported because `niri-scripts` uses it.
+- `.github/workflows/nix-cache.yml` explicitly builds the configured
+  `odin.config.services.llama-cpp.package` so Cachix has a named CUDA
+  `llama-cpp` target before the full `odin` toplevel build.
 
 Still recommended:
 
 - Keep hand-maintained local packages in `packages`.
-- Move cache-only upstream packages behind an explicit cache workflow or a
-  documented package group.
+- Add more explicit cache workflow targets when a large upstream dependency is
+  important enough to cache outside the full host toplevel.
 
 ## Check Output Cleanup
 

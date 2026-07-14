@@ -10,6 +10,16 @@
     service = host.services.llama-cpp;
     enabled = service.role == "primary" || service.role == "backup";
     iniFormat = pkgs.formats.ini {};
+    llamaCpp =
+      (pkgs.llama-cpp.override {
+        cudaSupport = true;
+      }).overrideAttrs (old: {
+        passthru =
+          (old.passthru or {})
+          // {
+            cudaSupport = true;
+          };
+      });
   in {
     config = lib.mkIf enabled {
       assertions = [
@@ -19,12 +29,12 @@
         }
       ];
 
-      environment.systemPackages = [pkgs.llama-cpp];
+      environment.systemPackages = [llamaCpp];
 
       services.llama-cpp = {
         enable = true;
         openFirewall = true;
-        package = pkgs.llama-cpp;
+        package = llamaCpp;
         settings.host = "0.0.0.0";
         settings.port = service.port;
         settings.models-preset = iniFormat.generate "llama-cpp-models.ini" {

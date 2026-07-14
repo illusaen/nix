@@ -14,7 +14,7 @@ let
         system = "aarch64-darwin";
         owner = "wendy";
         targetHost = "test-darwin.local";
-        privateKey = "/etc/ssh/ssh_host_ed25519_key";
+        privateKey = "/etc/ssh/host_ed25519";
         hostId = "00000000";
         tags = ["darwin" "desktop" "feature:dev"];
         features = [
@@ -67,7 +67,7 @@ let
       && nixosConfigurations.odin.config.programs.direnv.enable == true
       && nixosConfigurations.odin.config.programs.git.enable == true
       && odinGitConfig.user.email == "jaewchen@gmail.com"
-      && odinGitConfig.core.sshCommand == "ssh -i /etc/ssh/ssh_host_ed25519_key"
+      && odinGitConfig.core.sshCommand == "ssh -i /etc/ssh/host_ed25519"
       && nixosConfigurations.odin.config.hjem.users.wendy.enable == true
       && nixosConfigurations.odin.config.hjem.users.wendy.files ? ".vscode/extensions"
       && nixosConfigurations.odin.config.hjem.users.wendy.xdg.config.files ? "gh/hosts.yml"
@@ -96,6 +96,7 @@ let
       && odinHasPackageMatching "vscode-.*"
       && builtins.elem "sync-vscode-profiles" odinSystemPackageNames
       && nixosConfigurations.odin.config.services.llama-cpp.settings.host == "0.0.0.0"
+      && nixosConfigurations.odin.config.services.llama-cpp.package.cudaSupport == true
       && nixosConfigurations.odin.config.services.openssh.enable == true
       && nixosConfigurations.odin.config.services.tailscale.enable == true
       && builtins.elem "192.168.1.164" nixosConfigurations.odin.config.programs.ssh.knownHosts.huginn.hostNames
@@ -125,7 +126,7 @@ let
       && darwinParityConfig.programs.zsh.enable == true
       && darwinParityConfig.environment.shellAliases.gst == "git status"
       && builtins.match ".*STARSHIP_CONFIG.*" darwinParityConfig.programs.zsh.interactiveShellInit != null
-      && builtins.match ".*sshCommand = \"ssh -i /etc/ssh/ssh_host_ed25519_key\".*" darwinParityConfig.environment.etc.gitconfig.text != null
+      && builtins.match ".*sshCommand = \"ssh -i /etc/ssh/host_ed25519\".*" darwinParityConfig.environment.etc.gitconfig.text != null
     then true
     else throw "synthetic Darwin parity configuration did not evaluate as expected";
 

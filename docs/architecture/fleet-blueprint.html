@@ -924,7 +924,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Plain package and cache workflow</td>
-              <td>Done for current local packages: <code>lib/packages.nix</code> exposes the package set and <code>.github/workflows/nix-cache.yml</code> builds <code>default.nix -A packages.x86_64-linux</code> plus the plain <code>odin</code> NixOS toplevel. Add more plain build targets only when they are reintroduced outside the legacy flake package set.</td>
+              <td>Done for current local packages and explicit heavy service targets: <code>lib/packages.nix</code> exposes the local package set, and <code>.github/workflows/nix-cache.yml</code> builds <code>default.nix -A packages.x86_64-linux</code>, the configured CUDA <code>llama-cpp</code> service package, and the plain <code>odin</code> NixOS toplevel. Add more plain build targets when a large upstream dependency needs a named cache target outside the full host build.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>

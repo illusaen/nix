@@ -60,6 +60,15 @@ nix-build --expr '
       inherit (api) fleet sources;
     };
   in
+    configs.odin.config.services.llama-cpp.package
+'
+nix-build --expr '
+  let
+    api = import ./default.nix;
+    configs = api.hostLib.mkNixosConfigurations {
+      inherit (api) fleet sources;
+    };
+  in
     configs.odin.config.system.build.toplevel
 '
 ```

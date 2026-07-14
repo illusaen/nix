@@ -30,6 +30,18 @@ jobs:
       - name: Build plain local packages
         run: nix-build default.nix -A packages.x86_64-linux
 
+      - name: Build CUDA llama-cpp service package
+        run: |
+          nix-build --expr '
+            let
+              api = import ./default.nix;
+              configs = api.hostLib.mkNixosConfigurations {
+                inherit (api) fleet sources;
+              };
+            in
+              configs.odin.config.services.llama-cpp.package
+          '
+
       - name: Build plain NixOS configuration
         run: |
           nix-build --expr '

@@ -278,7 +278,7 @@ in {
   routedImplicitServiceFeature = let
     fleet = testFleet {
       services = {
-        app = builtins.removeAttrs baseFleet.services.app ["feature"];
+        app = removeAttrs baseFleet.services.app ["feature"];
       };
     };
     routed = serviceLib.routeHosts fleet;
@@ -289,7 +289,7 @@ in {
     routedFleet.odin.platform
     == "nixos"
     && routedFleet.odin.name == "odin"
-    && routedFleet.odin.privateKey == "/etc/ssh/ssh_host_ed25519_key"
+    && routedFleet.odin.privateKey == "/etc/ssh/host_ed25519"
     && toString routedFleet.odin.publicKey == toString (../secrets/hosts + "/odin/host_ed25519.pub")
     && routedFleet.odin.preservation.enable == false;
 
