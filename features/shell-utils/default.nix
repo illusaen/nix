@@ -1,4 +1,4 @@
-_: let
+let
   packageNames = [
     "alacritty"
     "bat"

@@ -1,4 +1,4 @@
-_: {
+{
   imports = ["nix-settings" "secrets" "shell-utils" "ssh" "tailscale"];
 
   modules.nixos = {

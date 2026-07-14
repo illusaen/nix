@@ -1,4 +1,4 @@
-_: let
+let
   commonNixSettings = {
     abort-on-warn = true;
     accept-flake-config = true;

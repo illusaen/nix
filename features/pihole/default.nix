@@ -1,4 +1,4 @@
-_: let
+let
   serviceSecrets = {hosts, ...}:
     map (hostName: {
       secret = "hosts/${hostName}/pihole-web-password.age";

@@ -1,4 +1,4 @@
-_: let
+let
   serviceSecrets = {hosts, ...}:
     map (hostName: {
       secret = "shared/navidrome-env.age";

@@ -7,7 +7,12 @@
     filter (name: (readDir featureRoot).${name} == "directory")
     (attrNames (readDir featureRoot));
 
-  loadFeature = name: import (featureRoot + "/${name}") {};
+  loadFeature = name: let
+    feature = import (featureRoot + "/${name}");
+  in
+    if builtins.isFunction feature
+    then feature {}
+    else feature;
 
   features = builtins.listToAttrs (
     map (name: {
