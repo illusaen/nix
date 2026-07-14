@@ -924,7 +924,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Darwin parity</td>
-              <td>Partially done: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, and migrated features now declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale. Remaining audit items are wallpaper, hjem, shell utilities, developer-tool behavior, and any intentionally dropped Darwin-only legacy module behavior.</td>
+              <td>Partially done and now covered by a synthetic Darwin eval check in <code>ci.nix</code>: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, migrated features declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, wallpaper activation is ported, and shell utility behavior now includes git config, zsh aliases/init, direnv, and starship config. Remaining audit items are <code>hjem</code> reintroduction through <code>npins</code>, any intentionally dropped Darwin-only legacy module behavior, and validation against a real Darwin host once one returns to <code>fleet/hosts.nix</code>.</td>
             </tr>
             <tr>
               <td>Remote Darwin deployment</td>

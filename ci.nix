@@ -6,6 +6,34 @@ let
   nixosConfigurations = api.hostLib.mkNixosConfigurations {
     inherit (api) fleet sources;
   };
+  darwinParityFleet =
+    api.fleet
+    // {
+      hosts.test-darwin = {
+        platform = "darwin";
+        system = "aarch64-darwin";
+        owner = "wendy";
+        targetHost = "test-darwin.local";
+        privateKey = "/etc/ssh/ssh_host_ed25519_key";
+        hostId = "00000000";
+        tags = ["darwin" "desktop" "feature:dev"];
+        features = [
+          "base"
+          "wendy"
+          "desktop-shell"
+          "programs-core"
+          "programs-creative"
+          "programs-dev"
+          "programs-gaming"
+          "theming"
+        ];
+      };
+    };
+  darwinParityConfig =
+    (api.hostLib.mkDarwinConfigurations {
+      fleet = darwinParityFleet;
+      inherit (api) sources;
+    }).test-darwin.config;
 
   failedChecks =
     builtins.filter (name: api.checks.${name} != true)
@@ -62,6 +90,28 @@ let
     then true
     else throw "darwinConfigurations plain API did not match fleet Darwin hosts";
 
+  assertDarwinParity = let
+    caskNames = map (entry: entry.name) darwinParityConfig.homebrew.casks;
+  in
+    if
+      darwinParityConfig.networking.computerName
+      == "test-darwin.local"
+      && darwinParityConfig.homebrew.enable == true
+      && darwinParityConfig.homebrew.user == "wendy"
+      && builtins.elem "firefox" caskNames
+      && builtins.elem "codex-app" caskNames
+      && builtins.elem "bambu-studio" caskNames
+      && builtins.elem "steam" caskNames
+      && darwinParityConfig.homebrew.masApps.Tailscale == 1475387142
+      && darwinParityConfig.homebrew.masApps."Pixelmator Pro" == 1289583905
+      && darwinParityConfig.programs.direnv.enable == true
+      && darwinParityConfig.programs.zsh.enable == true
+      && darwinParityConfig.environment.shellAliases.gst == "git status"
+      && builtins.match ".*STARSHIP_CONFIG.*" darwinParityConfig.programs.zsh.interactiveShellInit != null
+      && builtins.match ".*sshCommand = \"ssh -i /etc/ssh/ssh_host_ed25519_key\".*" darwinParityConfig.environment.etc.gitconfig.text != null
+    then true
+    else throw "synthetic Darwin parity configuration did not evaluate as expected";
+
   assertPackages = let
     packages = api.packages.x86_64-linux;
   in
@@ -77,6 +127,7 @@ in {
   assert assertHiveHosts;
   assert assertNixosConfigurations;
   assert assertDarwinConfigurations;
+  assert assertDarwinParity;
   assert assertPackages;
     pkgs.runCommand "plain-fleet-eval-checks" {} ''
       touch $out
