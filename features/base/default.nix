@@ -6,6 +6,7 @@ _: {
     fleetLib,
     host,
     lib,
+    sources,
     user,
     ...
   }: let
@@ -25,23 +26,15 @@ _: {
         linkConfig.RequiredForOnline = "routable";
       };
   in {
+    imports = [
+      (import "${sources.hjem.outPath}/modules/nixos").default
+    ];
+
     system.stateVersion = "26.11";
 
-    nixpkgs.config.allowUnfreePredicate = pkg:
-      builtins.elem (lib.getName pkg) [
-        "1password"
-        "1password-cli"
-        "1password-gui"
-        "1password-gui-beta"
-        "bambu-studio"
-        "nvidia-kernel-modules"
-        "nvidia-settings"
-        "nvidia-x11"
-        "steam"
-        "steam-original"
-        "steam-run"
-        "steam-unwrapped"
-      ];
+    hjem.users.${userName}.enable = true;
+
+    nixpkgs.config.allowUnfree = true;
 
     networking = {
       hostName = host.name or null;

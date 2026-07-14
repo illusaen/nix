@@ -2,6 +2,7 @@ _: {
   imports = [];
 
   modules.nixos = {
+    config,
     fleet,
     host,
     lib,
@@ -24,6 +25,7 @@ _: {
     fontPackages = with pkgs; [
       font-awesome
       inter
+      maple-mono.NF-CN-unhinted
       material-symbols
       monaspace
       noto-fonts-color-emoji
@@ -40,8 +42,15 @@ _: {
       ++ lib.optional (pkgs ? swaylock) pkgs.swaylock;
     sddmExtraPackages = with pkgs; [
       qt6.qt5compat
+      sddmTheme
       weston
     ];
+    sddmTheme = pkgs.where-is-my-sddm-theme.override {
+      themeConfig.General = {
+        background = toString fleet.wallpaper.image;
+        passwordCursorColor = scheme.base0D;
+      };
+    };
     niriRules = import ../../modules/features/desktop-shell/niri/_rules.nix;
     niriMouse = import ../../modules/features/desktop-shell/niri/_mouse.nix {
       cursor = removeAttrs fleet.theming.cursor ["packageName"];
@@ -66,14 +75,39 @@ _: {
 
     environment.systemPackages = fontPackages ++ desktopPackages;
     environment.pathsToLink = ["share/thumbnailers"];
+    nixpkgs.overlays = [
+      (_final: prev: {
+        nautilus = prev.nautilus.overrideAttrs (nprev: {
+          buildInputs =
+            nprev.buildInputs
+            ++ (with prev.gst_all_1; [
+              gst-plugins-good
+              gst-plugins-bad
+            ]);
+        });
+      })
+    ];
 
     fonts = {
       packages = fontPackages;
       fontconfig.defaultFonts = {
-        monospace = [fleet.fonts.mono.name];
+        monospace = [fleet.fonts.mono.name "Maple Mono NF CN"];
+        serif = [fleet.fonts.sans.name];
         sansSerif = [fleet.fonts.sans.name];
         emoji = [fleet.fonts.emoji.name];
       };
+      fontconfig.aliases = let
+        fontNames =
+          map (font: font.name)
+          (builtins.attrValues (removeAttrs fleet.fonts ["sizes"]));
+      in
+        builtins.listToAttrs (
+          map (name:
+            lib.nameValuePair name {
+              default = ["Font Awesome 7 Free"];
+            })
+          fontNames
+        );
     };
 
     hardware = {
@@ -112,12 +146,27 @@ _: {
           enable = true;
           enableHidpi = true;
           extraPackages = sddmExtraPackages;
+          theme = "${sddmTheme}/share/sddm/themes/where_is_my_sddm_theme";
           wayland = {
             enable = true;
             compositor = "weston";
             compositorCommand = let
               westonIni = (pkgs.formats.ini {}).generate "weston.ini" (
-                lib.optionalAttrs ((host.monitors.secondary or null) != null) {
+                {
+                  libinput = {
+                    enable-tap = config.services.libinput.mouse.tapping;
+                    left-handed = config.services.libinput.mouse.leftHanded;
+                  };
+                  keyboard = let
+                    xcfg = config.services.xserver;
+                  in {
+                    keymap_model = xcfg.xkb.model;
+                    keymap_layout = xcfg.xkb.layout;
+                    keymap_variant = xcfg.xkb.variant;
+                    keymap_options = xcfg.xkb.options;
+                  };
+                }
+                // lib.optionalAttrs ((host.monitors.secondary or null) != null) {
                   output = {
                     name = host.monitors.secondary;
                     mode = "off";

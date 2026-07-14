@@ -36,6 +36,21 @@
       "revision": "106af9e2f715e2d828df706c386a685698f3223b",
       "hash": "sha256-lq95WydhbUTWig/JpqiB7oViTcHFP8Lv41IGtayokA8="
     },
+    "firefox-addons": {
+      "type": "gitlab",
+      "owner": "rycee",
+      "repo": "nur-expressions",
+      "revision": "d84e72970b14f90170b1b7fb09adc59cbf40eb3b",
+      "hash": "sha256-MedB3zphmF3ie1tQDYLJbpIdDByYD9Sf9gkjC7et+h4=",
+      "dir": "pkgs/firefox-addons"
+    },
+    "hjem": {
+      "type": "github",
+      "owner": "feel-co",
+      "repo": "hjem",
+      "revision": "dd0ba9e22fb46581f843e6121de33ca7a4a80224",
+      "hash": "sha256-so1hIImuLtTKTVUokJ/6C2D2b2D4znCx+/PAjMSAnpw="
+    },
     "nixpkgs": {
       "type": "github",
       "owner": "NixOS",
@@ -56,6 +71,13 @@
       "repo": "preservation",
       "revision": "93416f4614ad2dfed5b0dcf12f27e57d27a5ab11",
       "hash": "sha256-mMI9IanU+Xw+pVogD2oT0I2kTmvz2Un/Apc5+CwUpEY="
+    },
+    "shimmer": {
+      "type": "github",
+      "owner": "nuclearcodecat",
+      "repo": "shimmer",
+      "revision": "c346a3744bcbe49cce33ec2b82754ed0621ebbb7",
+      "hash": "sha256-z3yEiKFkuQNOzdaAt7vGsB3V/7XgcaFN48uihjSFoz8="
     }
   }
 }

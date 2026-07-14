@@ -388,8 +388,8 @@
             </tr>
             <tr>
               <td>Feature API</td>
-              <td>Mostly done</td>
-              <td><code>features/</code> contains migrated plain features for the active Linux fleet. Several Darwin modules are placeholders, and the legacy <code>modules/features/**</code> tree still contains behavior that needs a port-or-drop decision.</td>
+              <td>Done for active Linux</td>
+              <td><code>features/</code> contains migrated plain features for the active Linux fleet, including the remaining non-Darwin behavior from <code>modules/features/**</code>. The Codex desktop Linux service is intentionally deferred; Darwin remains a separate parity and validation track.</td>
             </tr>
             <tr>
               <td>Service routing</td>
@@ -924,7 +924,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Darwin parity</td>
-              <td>Partially done and now covered by a synthetic Darwin eval check in <code>ci.nix</code>: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, migrated features declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, wallpaper activation is ported, and shell utility behavior now includes git config, zsh aliases/init, direnv, and starship config. Remaining audit items are <code>hjem</code> reintroduction through <code>npins</code>, any intentionally dropped Darwin-only legacy module behavior, and validation against a real Darwin host once one returns to <code>fleet/hosts.nix</code>.</td>
+              <td>Partially done and now covered by a synthetic Darwin eval check in <code>ci.nix</code>: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, migrated features declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, wallpaper activation is ported, and shell utility behavior now includes git config, zsh aliases/init, direnv, and starship config. Remaining items are intentionally dropped Darwin-only legacy module behavior, optional Darwin <code>hjem</code> integration if it becomes useful, and validation against a real Darwin host once one returns to <code>fleet/hosts.nix</code>.</td>
             </tr>
             <tr>
               <td>Remote Darwin deployment</td>
@@ -978,8 +978,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish the remaining Darwin behavior audit and documentation
-            cleanup.
+            Next: finish real-host Darwin validation, remote Darwin activation
+            design, and generated schema cleanup.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
@@ -1022,10 +1022,11 @@ shellcheck bin/deploy bin/check</code></pre>
           package overlays.
         </div>
         <div class="note warn">
-          <strong>Feature parity is the main removal blocker.</strong> The
-          plain features cover the active Linux fleet, but the old flake module
-          tree still contains package, wrapper, and Darwin behaviors that need a
-          deliberate port-or-drop decision before deletion.
+          <strong>Removal is now blocked by non-Linux cleanup.</strong> The
+          plain features cover the active Linux fleet. Before deleting the old
+          flake module tree, finish Darwin validation/remote activation choices,
+          generated schema removal, and any explicit decision to revive or keep
+          deferring the Codex desktop Linux service.
         </div>
       </section>
     </main>

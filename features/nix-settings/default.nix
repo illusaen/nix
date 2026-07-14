@@ -22,8 +22,24 @@ _: let
 in {
   imports = [];
 
-  modules.nixos = {fleet, ...}: {
+  modules.nixos = {
+    fleet,
+    pkgs,
+    ...
+  }: {
+    nix.package = pkgs.lixPackageSets.latest.lix;
     nix.settings = commonNixSettings;
+    nixpkgs.overlays = [
+      (_final: prev: {
+        inherit
+          (prev.lixPackageSets.latest)
+          nixpkgs-review
+          nix-eval-jobs
+          nix-fast-build
+          colmena
+          ;
+      })
+    ];
     time.timeZone = fleet.timeZone;
 
     security.sudo.extraConfig = ''

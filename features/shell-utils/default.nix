@@ -96,7 +96,50 @@ _: let
     whichstore = "nix_store_for_command";
   };
 
-  mkZshInit = _pkgs: ''
+  mkZshInit = pkgs: ''
+    eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd n)"
+    source <(${pkgs.fzf}/bin/fzf --zsh)
+
+    WORDCHARS=''${WORDCHARS:s#/#}
+
+    bindkey '^[b' backward-word
+    bindkey '^[f' forward-word
+    bindkey '^[[1;5D' backward-word
+    bindkey '^[[1;5C' forward-word
+    bindkey '^W' backward-kill-word
+
+    zmodload zsh/terminfo
+    [[ -n "''${terminfo[khome]}" ]] && bindkey "''${terminfo[khome]}" beginning-of-line
+    [[ -n "''${terminfo[kend]}" ]] && bindkey "''${terminfo[kend]}" end-of-line
+    [[ -n "''${terminfo[kdch1]}" ]] && bindkey "''${terminfo[kdch1]}" delete-char
+    bindkey '^[[H' beginning-of-line
+    bindkey '^[[F' end-of-line
+    bindkey '^[[1~' beginning-of-line
+    bindkey '^[[4~' end-of-line
+    bindkey '^[[7~' beginning-of-line
+    bindkey '^[[8~' end-of-line
+    bindkey '^[[3~' delete-char
+
+    dot_cd_accept_line() {
+      emulate -L zsh
+
+      if [[ "$BUFFER" =~ '^[[:space:]]*(\.{2,})[[:space:]]*$' ]]; then
+        local cmd="$match[1]"
+        local levels=$((''${#cmd} - 1))
+        local target="$PWD"
+
+        while (( levels > 0 )) && [[ "$target" != "/" ]]; do
+          target="''${target:h}"
+          ((levels--))
+        done
+
+        BUFFER="cd -- ''${(q)target}"
+      fi
+
+      zle .accept-line
+    }
+    zle -N accept-line dot_cd_accept_line
+
     git_commit_with_message() {
       git commit -m "$1"
     }
@@ -139,20 +182,23 @@ _: let
       echo "Error: no supported editor found (zed, nvim, or vim)." >&2
       return 1
     }
+
+    autoload -Uz add-zsh-hook
+    cd_ls_hook() {
+      emulate -L zsh
+      local file_count=( *(ND) )
+      if (( $#file_count <= 50 )); then
+        eza --icons=always --group-directories-first
+      else
+        echo "Large directory ($#file_count files). Skipped auto-ls."
+      fi
+    }
+    add-zsh-hook chpwd cd_ls_hook
   '';
 
   mkDarwinZshInit = pkgs: ''
     export STARSHIP_CONFIG=/etc/starship.toml
     eval "$(${pkgs.starship}/bin/starship init zsh)"
-    source <(${pkgs.fzf}/bin/fzf --zsh)
-
-    WORDCHARS=''${WORDCHARS:s#/#}
-
-    bindkey '^[b' backward-word
-    bindkey '^[f' forward-word
-    bindkey '^[[1;5D' backward-word
-    bindkey '^[[1;5C' forward-word
-    bindkey '^W' backward-kill-word
 
     ${mkZshInit pkgs}
   '';
@@ -203,6 +249,16 @@ in {
     userName = user.name or "wendy";
     historyFile = ".local/state/.zsh_history";
     gitConfig = mkGitConfig {inherit host user userName;};
+    ghConfig = pkgs.writeText "gh-config.yml" ''
+      version: "1"
+    '';
+    ghHosts = pkgs.writeText "gh-hosts.yml" ''
+      github.com:
+        git_protocol: ssh
+        users:
+          ${user.identity.accountName or userName}:
+        user: ${user.identity.accountName or userName}
+    '';
   in {
     config = lib.mkMerge [
       {
@@ -236,6 +292,11 @@ in {
         };
 
         environment.systemPackages = shellPackages pkgs;
+
+        hjem.users.${userName}.xdg.config.files = {
+          "gh/config.yml".source = ghConfig;
+          "gh/hosts.yml".source = ghHosts;
+        };
 
         users.users.${userName}.shell = pkgs.zsh;
       }

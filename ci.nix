@@ -55,6 +55,7 @@ let
   assertNixosConfigurations = let
     odinGitConfig = builtins.head nixosConfigurations.odin.config.programs.git.config;
     odinSystemPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.environment.systemPackages;
+    odinHasPackageMatching = pattern: builtins.any (name: builtins.match pattern name != null) odinSystemPackageNames;
   in
     if
       builtins.attrNames nixosConfigurations
@@ -67,17 +68,30 @@ let
       && nixosConfigurations.odin.config.programs.git.enable == true
       && odinGitConfig.user.email == "jaewchen@gmail.com"
       && odinGitConfig.core.sshCommand == "ssh -i /etc/ssh/ssh_host_ed25519_key"
+      && nixosConfigurations.odin.config.hjem.users.wendy.enable == true
+      && nixosConfigurations.odin.config.hjem.users.wendy.files ? ".vscode/extensions"
+      && nixosConfigurations.odin.config.hjem.users.wendy.xdg.config.files ? "gh/hosts.yml"
+      && nixosConfigurations.odin.config.hardware.facter.reportPath != null
+      && nixosConfigurations.odin.config.nix.package.pname == "lix"
       && nixosConfigurations.odin.config.programs.nix-ld.enable == true
+      && nixosConfigurations.odin.config.programs.firefox.languagePacks == ["en-US" "zh-CN"]
+      && nixosConfigurations.odin.config.programs.firefox.policies.ExtensionSettings ? "uBlock0@raymondhill.net"
       && nixosConfigurations.odin.config.programs.starship.enable == true
       && nixosConfigurations.odin.config.programs.steam.enable == true
       && nixosConfigurations.odin.config.programs.zsh.enable == true
       && nixosConfigurations.odin.config.programs.zsh.shellAliases.gst == "git status"
+      && builtins.match ".*dot_cd_accept_line.*" nixosConfigurations.odin.config.programs.zsh.interactiveShellInit != null
+      && builtins.match ".*BETA" nixosConfigurations.odin.config.programs._1password-gui.package.name != null
+      && builtins.match ".*/where_is_my_sddm_theme" nixosConfigurations.odin.config.services.displayManager.sddm.theme != null
       && nixosConfigurations.odin.config.users.users.wendy.shell.pname == "zsh"
       && builtins.elem "steam" (map (entry: entry.name) nixosConfigurations.odin.config.systemdAutostart)
       && builtins.elem "viking-rise.desktop" odinSystemPackageNames
       && builtins.elem "mactahoe-cursors-2026-06-28" odinSystemPackageNames
       && builtins.elem "mactahoe-gtk-theme-2026-06-28" odinSystemPackageNames
       && builtins.elem "MacTahoe-icon-theme-2026-06-28" odinSystemPackageNames
+      && odinHasPackageMatching ".*MapleMono.*"
+      && odinHasPackageMatching "vscode-.*"
+      && builtins.elem "sync-vscode-profiles" odinSystemPackageNames
       && nixosConfigurations.odin.config.services.llama-cpp.settings.host == "0.0.0.0"
       && nixosConfigurations.odin.config.services.openssh.enable == true
       && nixosConfigurations.odin.config.services.tailscale.enable == true
