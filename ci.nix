@@ -85,10 +85,13 @@ let
       && builtins.match ".*/where_is_my_sddm_theme" nixosConfigurations.odin.config.services.displayManager.sddm.theme != null
       && nixosConfigurations.odin.config.users.users.wendy.shell.pname == "zsh"
       && builtins.elem "steam" (map (entry: entry.name) nixosConfigurations.odin.config.systemdAutostart)
+      && builtins.elem "tailscale-systray" (map (entry: entry.name) nixosConfigurations.odin.config.systemdAutostart)
       && builtins.elem "viking-rise.desktop" odinSystemPackageNames
       && builtins.elem "mactahoe-cursors-2026-06-28" odinSystemPackageNames
       && builtins.elem "mactahoe-gtk-theme-2026-06-28" odinSystemPackageNames
       && builtins.elem "MacTahoe-icon-theme-2026-06-28" odinSystemPackageNames
+      && builtins.elem "misc-scripts" odinSystemPackageNames
+      && builtins.elem "niri-scripts" odinSystemPackageNames
       && odinHasPackageMatching ".*MapleMono.*"
       && odinHasPackageMatching "vscode-.*"
       && builtins.elem "sync-vscode-profiles" odinSystemPackageNames

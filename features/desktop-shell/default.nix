@@ -6,6 +6,7 @@ _: {
     fleet,
     host,
     lib,
+    options,
     pkgs,
     sources,
     user,
@@ -34,6 +35,8 @@ _: {
       [
         ddcutil
         libheif
+        local.misc-scripts
+        local.niri-scripts
         nautilus
         pavucontrol
         playerctl
@@ -190,6 +193,16 @@ _: {
     };
 
     security.rtkit.enable = true;
+
+    systemdAutostart = lib.mkIf (options ? systemdAutostart) [
+      (let
+        inherit (config.services.tailscale) package;
+      in {
+        inherit package;
+        name = "tailscale-systray";
+        exec = "${lib.getExe package} systray";
+      })
+    ];
 
     system.userActivationScripts.installNiriConfig = ''
       if [ "$USER" = ${lib.escapeShellArg user.name} ]; then

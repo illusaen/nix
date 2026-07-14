@@ -1,5 +1,6 @@
 _: let
   commonNixSettings = {
+    abort-on-warn = true;
     accept-flake-config = true;
     auto-optimise-store = true;
     experimental-features = ["nix-command" "flakes"];
