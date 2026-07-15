@@ -28,9 +28,14 @@ For each host, `lib/features.nix` computes the recursive feature closure from
 module is imported:
 
 ```text
+modules.generic -> shared NixOS and Darwin hosts
 modules.nixos   -> NixOS hosts
 modules.darwin  -> Darwin hosts
 ```
+
+`modules.generic` is prepended to the selected platform list. Use it only for
+options that exist on both module systems, such as shared `nix.settings` or
+other repo-local options imported on both platforms.
 
 The host platform is derived from `system`:
 

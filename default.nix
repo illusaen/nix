@@ -135,8 +135,8 @@ in {
     featureClosure =
       featureLib.close ["base"]
       == ["base" "shell-utils"]
-      && builtins.length featureLib.features.base.modules.nixos == 6
-      && builtins.length featureLib.features.base.modules.darwin == 6;
+      && builtins.length featureLib.features.base.modules.nixos == 7
+      && builtins.length featureLib.features.base.modules.darwin == 7;
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
     hostFeaturesHavePlatformModules =
       builtins.all (

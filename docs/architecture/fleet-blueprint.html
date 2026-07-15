@@ -576,6 +576,10 @@
 {
   imports = [ "secrets" ];
 
+  modules.generic = { host, ... }: {
+    # Shared options valid on NixOS and nix-darwin
+  };
+
   modules.nixos = { host, ... }: {
     services.navidrome = {
       enable = true;
@@ -605,6 +609,10 @@
             <tr>
               <td><code>imports</code></td>
               <td>Feature names this feature depends on.</td>
+            </tr>
+            <tr>
+              <td><code>modules.generic</code></td>
+              <td>Shared module prepended to both NixOS and Darwin host module lists.</td>
             </tr>
             <tr>
               <td><code>modules.nixos</code></td>

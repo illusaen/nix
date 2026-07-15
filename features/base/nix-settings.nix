@@ -21,13 +21,13 @@ let
     ];
   };
 in {
-  modules.nixos = {
-    fleet,
-    pkgs,
-    ...
-  }: {
-    nix.package = pkgs.lixPackageSets.latest.lix;
+  modules.generic = {fleet, ...}: {
     nix.settings = commonNixSettings;
+    time.timeZone = fleet.timeZone;
+  };
+
+  modules.nixos = {pkgs, ...}: {
+    nix.package = pkgs.lixPackageSets.latest.lix;
     nixpkgs.overlays = [
       (_final: prev: {
         inherit
@@ -39,16 +39,10 @@ in {
           ;
       })
     ];
-    time.timeZone = fleet.timeZone;
 
     security.sudo.extraConfig = ''
       Defaults lecture = never
     '';
     security.sudo-rs.enable = true;
-  };
-
-  modules.darwin = {fleet, ...}: {
-    nix.settings = commonNixSettings;
-    time.timeZone = fleet.timeZone;
   };
 }

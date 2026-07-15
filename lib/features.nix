@@ -21,22 +21,31 @@
   localImportEntries = feature:
     filter (entry: !builtins.isString entry) (feature.imports or []);
 
+  moduleList = modules: platform: let
+    module = modules.${platform} or null;
+  in
+    if module == null
+    then []
+    else if builtins.isList module
+    then module
+    else [module];
+
   modulesForPlatform = fragments: platform:
     concatLists (
       map (fragment: let
-        module = (fragment.modules or {}).${platform} or null;
+        modules = fragment.modules or {};
       in
-        if module == null
-        then []
-        else if builtins.isList module
-        then module
-        else [module])
+        moduleList modules "generic" ++ moduleList modules platform)
       fragments
     );
 
   mergeFeatures = fragments: let
     merged = builtins.foldl' (acc: fragment: acc // builtins.removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
-    platformNames = unique (concatLists (map (fragment: attrNames (fragment.modules or {})) fragments));
+    modulePlatformNames = concatLists (map (fragment: attrNames (fragment.modules or {})) fragments);
+    platformNames =
+      if builtins.elem "generic" modulePlatformNames
+      then unique (["nixos" "darwin"] ++ filter (platform: platform != "generic") modulePlatformNames)
+      else unique modulePlatformNames;
   in
     merged
     // {

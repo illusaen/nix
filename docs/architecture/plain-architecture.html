@@ -517,7 +517,7 @@
           <li><code>fleet/default.nix</code> returns raw fleet data.</li>
           <li><code>fleetLib.assertValid</code> rejects malformed hosts, users, groups, services, duplicate addresses, and missing host keys.</li>
           <li><code>serviceLib.routeHosts</code> normalizes hosts, injects routed services, and adds service feature names to host feature lists.</li>
-          <li><code>featureLib.modulesFor</code> closes feature imports and returns the platform-specific module list.</li>
+          <li><code>featureLib.modulesFor</code> closes feature imports and returns the generic plus platform-specific module list.</li>
           <li><code>hostLib</code> calls either NixOS <code>eval-config.nix</code> or nix-darwin <code>eval-config.nix</code>.</li>
         </ol>
       </section>
@@ -544,6 +544,10 @@
   ];
 
   tests.someInvariant = true;
+
+  modules.generic = { fleet, host, user, sources, pkgs, lib, ... }: {
+    # Shared options valid on NixOS and nix-darwin
+  };
 
   modules.nixos = { fleet, host, user, sources, pkgs, lib, ... }: {
     # NixOS options
@@ -576,10 +580,11 @@
           <div class="box">
             <h3>Platform Modules</h3>
             <p>
-              <code>modules.nixos</code> and <code>modules.darwin</code> are
-              imported only for matching hosts. A feature can intentionally
-              support only one platform; direct host references to unsupported
-              features are caught by checks.
+              <code>modules.generic</code> is prepended for every supported
+              platform, while <code>modules.nixos</code> and
+              <code>modules.darwin</code> are imported only for matching hosts.
+              A feature can intentionally support only one platform; direct host
+              references to unsupported features are caught by checks.
             </p>
           </div>
         </div>
