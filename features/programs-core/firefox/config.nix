@@ -12,6 +12,7 @@
       display: none !important;
     }
   '';
+  userContent = "";
   searchEngines = [
     {
       Name = "NixOS Packages";

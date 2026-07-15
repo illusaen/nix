@@ -60,6 +60,7 @@ let
       builtins.attrNames nixosConfigurations
       == expectedHiveHosts
       && nixosConfigurations.odin.config.networking.hostName == "odin"
+      && nixosConfigurations.odin.config.networking.hostId == "abf835ae"
       && nixosConfigurations.odin.config.nix.settings."auto-optimise-store" == true
       && builtins.elem "@wheel" nixosConfigurations.odin.config.nix.settings."trusted-users"
       && builtins.elem "https://illusaen.cachix.org" nixosConfigurations.odin.config.nix.settings."extra-substituters"

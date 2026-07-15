@@ -10,7 +10,7 @@ let
     chrome = "${ff}/default.default/chrome";
     shimmer = sources.shimmer.outPath;
   in {
-    "${ff}/profiles.ini".source = lib.generators.toINI {} {
+    "${ff}/profiles.ini".text = lib.generators.toINI {} {
       General = {
         StartWithLastProfile = 1;
         Version = 2;
@@ -24,16 +24,18 @@ let
     };
     "${chrome}/shimmerChrome.css".source = "${shimmer}/userChrome.css";
     "${chrome}/shimmerContent.css".source = "${shimmer}/userContent.css";
-    "${chrome}/userChrome.css".source =
-      pkgs.writeText "firefox-userChrome.css" ''
+    "${chrome}/userChrome.css".source = pkgs.writeText "firefox-userChrome.css" (
+      ''
         @import url("shimmerChrome.css");
       ''
-      + userChrome;
-    "${chrome}/userContent.css".source =
-      pkgs.writeText "firefox-userContent.css" ''
+      + userChrome
+    );
+    "${chrome}/userContent.css".source = pkgs.writeText "firefox-userContent.css" (
+      ''
         @import url("shimmerContent.css");
       ''
-      + userContent;
+      + userContent
+    );
   };
 in {
   modules.nixos = {

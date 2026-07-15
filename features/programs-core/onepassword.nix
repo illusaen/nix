@@ -17,10 +17,12 @@
       ".config/1Password"
     ];
 
-    systemdAutostart = {
-      name = "one-password";
-      package = pkgs._1password-gui-beta;
-    };
+    systemdAutostart = [
+      {
+        name = "one-password";
+        package = pkgs._1password-gui-beta;
+      }
+    ];
   };
 
   modules.darwin = {pkgs, ...}: {

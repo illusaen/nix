@@ -41,7 +41,15 @@
     };
   };
 
-  modules.darwin = {host, ...}: {
+  modules.darwin = {
+    host,
+    sources,
+    ...
+  }: {
+    imports = [
+      (import "${sources.hjem.outPath}/modules/nix-darwin").default
+    ];
+
     system.stateVersion = 6;
 
     homebrew = {

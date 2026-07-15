@@ -13,8 +13,10 @@
       ".config/YouTube Music Desktop App"
     ];
 
-    systemdAutostart = {
-      package = pkgs.ytmdesktop;
-    };
+    systemdAutostart = [
+      {
+        package = pkgs.ytmdesktop;
+      }
+    ];
   };
 }

@@ -133,13 +133,10 @@ in {
       && (serviceLib.servicesForHost "huginn" rawFleet.services).pihole.role == "primary"
       && (serviceLib.servicesForHost "muninn" rawFleet.services).pihole.role == "backup";
     featureClosure =
-      featureLib.close ["nix-settings"]
-      == ["nix-settings"]
-      && builtins.elem "nix-settings" (featureLib.close ["base"])
-      && builtins.elem "secrets" (featureLib.close ["base"])
-      && builtins.elem "shell-utils" (featureLib.close ["base"])
-      && builtins.elem "ssh" (featureLib.close ["base"])
-      && builtins.elem "tailscale" (featureLib.close ["base"]);
+      featureLib.close ["base"]
+      == ["base" "shell-utils"]
+      && builtins.length featureLib.features.base.modules.nixos == 6
+      && builtins.length featureLib.features.base.modules.darwin == 6;
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
     hostFeaturesHavePlatformModules =
       builtins.all (
