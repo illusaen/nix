@@ -1,6 +1,4 @@
 {
-  imports = [];
-
   modules.nixos = {
     fleet,
     host,

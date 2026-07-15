@@ -1,6 +1,4 @@
 {
-  imports = [];
-
   modules.nixos = {config, ...}: {
     services.xserver.videoDrivers = ["nvidia"];
 

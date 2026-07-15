@@ -1,9 +1,9 @@
 {
   imports = [
-    "secrets"
     "shell-utils"
-    "ssh"
-    "tailscale"
+    ./secrets.nix
+    ./ssh.nix
+    ./tailscale.nix
     ./networking.nix
     ./nix-settings.nix
   ];

@@ -1,5 +1,5 @@
 {
-  imports = [./noctalia.nix ./niri.nix ./nautilus.nix ./audio.nix ./fonts.nix];
+  imports = [./noctalia.nix ./niri ./nautilus.nix ./audio.nix ./fonts.nix ./sddm.nix ./autostart.nix];
 
   modules.nixos = {
     config,

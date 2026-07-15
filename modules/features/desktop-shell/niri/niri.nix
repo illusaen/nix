@@ -47,10 +47,10 @@
       let
         scheme = (fleet.base16.scheme pkgs).withHashtag;
         inherit (fleet.theming) cursor;
-        animations = import ./_animations.nix;
-        extra = import ./_extra.nix;
-        rules = import ./_rules.nix;
-        binds = import ./_binds.nix;
+        animations = import ./_animations.nix; ##
+        extra = import ./_extra.nix; ##
+        rules = import ./_rules.nix; ##
+        binds = import ./_binds.nix; ##
         mouse = import ./_mouse.nix {
           cursor = removeAttrs cursor ["packageName"];
         };

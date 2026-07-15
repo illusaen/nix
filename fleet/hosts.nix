@@ -9,7 +9,6 @@
     features = [
       "base"
       "boot"
-      "wendy"
       "desktop-shell"
       "programs-core"
       "theming"
@@ -46,7 +45,6 @@
     features = [
       "base"
       "boot"
-      "wendy"
       "services"
       "preservation"
     ];
@@ -72,7 +70,6 @@
     features = [
       "base"
       "boot"
-      "wendy"
       "services"
       "preservation"
     ];

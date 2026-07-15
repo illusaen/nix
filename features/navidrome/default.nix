@@ -6,8 +6,6 @@ let
     })
     hosts;
 in {
-  imports = [];
-
   inherit serviceSecrets;
 
   tests.serviceSecrets =

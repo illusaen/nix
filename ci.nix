@@ -19,7 +19,6 @@ let
         tags = ["darwin" "desktop" "feature:dev"];
         features = [
           "base"
-          "wendy"
           "desktop-shell"
           "programs-core"
           "programs-creative"
