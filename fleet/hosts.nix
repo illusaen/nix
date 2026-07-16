@@ -45,18 +45,17 @@
     features = [
       "base"
       "boot"
-      "services"
       "preservation"
     ];
 
-    networkInterfaces.eno1 = {
-      ipv4 = "192.168.1.164/24";
+    networkInterfaces.enp1s0 = {
+      ipv4 = "192.168.1.161/24";
       ipv6 = "fe80::fa06:591c:fca0:664e/64";
     };
 
     preservation = {
       enable = true;
-      disk = "nvme0n1";
+      disk = "sda";
     };
   };
 
@@ -70,13 +69,11 @@
     features = [
       "base"
       "boot"
-      "services"
       "preservation"
     ];
 
     networkInterfaces.eno1 = {
       ipv4 = "192.168.1.163/24";
-      ipv6 = "fe80::fa06:591c:fca0:664e/64";
     };
 
     preservation = {

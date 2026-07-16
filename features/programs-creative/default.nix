@@ -10,7 +10,7 @@
     xdg.mime.defaultApplications."image/*" = "com.github.weclaw1.ImageRoll.desktop";
   };
 
-  modules.darwin = _: {
+  modules.darwin = {
     homebrew = {
       casks = ["bambu-studio"];
       masApps."Pixelmator Pro" = 1289583905;

@@ -2,15 +2,13 @@
   llama-cpp = {
     feature = "llama-cpp";
     primary = "odin";
-    backups = [];
     port = 8080;
     protocol = "http";
   };
 
   navidrome = {
     feature = "navidrome";
-    primary = "odin";
-    backups = [];
+    primary = "huginn";
     port = 4533;
     protocol = "http";
   };
