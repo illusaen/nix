@@ -714,8 +714,8 @@ in
 let
   api = import ./default.nix;
 in
-  api.hostLib.mkDarwinConfigurations {
-    inherit (api) fleet sources;
+  api.evalLib.mkDarwinConfigurations {
+    inherit (api) fleet;
   }</code></pre>
           </div>
         </div>

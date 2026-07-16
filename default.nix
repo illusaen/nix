@@ -29,8 +29,8 @@ let
     inherit fleet fleetLib;
     lib = nixpkgsLib;
   };
-  hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
-  serviceFeatures = fleetLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
+  hostFeatures = nixpkgsLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
+  serviceFeatures = nixpkgsLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
   declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
   secretDeclarations = import ./secrets/secrets.nix;
   missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
@@ -38,7 +38,7 @@ let
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
   serviceSecretRequirements = featureLib.serviceSecretRequirementsFor rawFleet.services;
-  expectedServiceSecrets = fleetLib.unique (map (requirement: requirement.secret) serviceSecretRequirements);
+  expectedServiceSecrets = nixpkgsLib.unique (map (requirement: requirement.secret) serviceSecretRequirements);
   missingServiceSecretDeclarations =
     builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
   hostPublicKey = hostName:
@@ -95,7 +95,7 @@ let
     )
     themeNames;
 in {
-  inherit deployLib evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
+  inherit evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
 
   inherit (fleet) hosts;
 

@@ -112,10 +112,6 @@
   in {
     environment.systemPackages = [pkgs.vscode syncVscodeProfiles];
 
-    persistUser.directories = [
-      ".config/Code/User/globalStorage"
-    ];
-
     hjem.users.${user.name}.files = vscodeGeneratedFiles;
   };
 
@@ -124,5 +120,9 @@
       echo "Syncing vscode profiles."
       syncVscodeProfiles
     '';
+
+    persistUser.directories = [
+      ".config/Code/User/globalStorage"
+    ];
   };
 }

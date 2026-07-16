@@ -23,7 +23,7 @@
     then [target]
     else throw "unknown deploy target '${target}'";
 in {
-  inherit darwinHosts hostNames hostsWithTag nixosHosts selectHostNames;
+  inherit darwinHosts hostNames nixosHosts selectHostNames;
   nixosHostNames = builtins.attrNames nixosHosts;
   darwinHostNames = builtins.attrNames darwinHosts;
 }

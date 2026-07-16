@@ -135,5 +135,5 @@
     )
     fleet.hosts;
 in {
-  inherit derivedHostFeatures normalizeHost portConflicts routeHosts routedFeatureNames servicesForHost tagFeatureNames;
+  inherit portConflicts routeHosts servicesForHost;
 }

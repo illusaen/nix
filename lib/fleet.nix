@@ -170,5 +170,5 @@
   platformHosts = platform: hosts:
     lib.filterAttrs (_name: host: host.platform == platform) hosts;
 in {
-  inherit assertValid duplicates hostAddressEntries platformForSystem platformHosts unique userPosixGroups validate;
+  inherit assertValid platformForSystem platformHosts userPosixGroups validate;
 }

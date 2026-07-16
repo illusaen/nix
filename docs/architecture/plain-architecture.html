@@ -937,8 +937,8 @@ treefmt --verbose</code></pre>
             <pre><code>nix-instantiate --eval --strict --json --expr '
 let
   api = import ./default.nix;
-  cfg = (api.hostLib.mkNixosConfigurations {
-    inherit (api) fleet sources;
+  cfg = (api.evalLib.mkNixosConfigurations {
+    inherit (api) fleet;
   }).odin.config;
 in {
   hostName = cfg.networking.hostName;
@@ -1001,7 +1001,7 @@ in {
           <li>Use <code>imports</code> in feature files for logical feature dependencies, not direct host imports.</li>
           <li>Use <code>serviceSecrets</code> for service-owned secret declarations.</li>
           <li>Put repo packages in <code>packages/*/package.nix</code>; consume them through <code>pkgs.local</code>.</li>
-          <li>Prefer targeted evals through <code>api.hostLib.mkNixosConfigurations</code> when debugging host behavior.</li>
+          <li>Prefer targeted evals through <code>api.evalLib.mkNixosConfigurations</code> when debugging host behavior.</li>
         </ul>
       </section>
     </main>

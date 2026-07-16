@@ -35,9 +35,7 @@ jobs:
           nix-build --expr '
             let
               api = import ./default.nix;
-              configs = api.hostLib.mkNixosConfigurations {
-                inherit (api) fleet sources;
-              };
+              configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
             in
               configs.odin.config.services.llama-cpp.package
           '
@@ -47,9 +45,7 @@ jobs:
           nix-build --expr '
             let
               api = import ./default.nix;
-              configs = api.hostLib.mkNixosConfigurations {
-                inherit (api) fleet sources;
-              };
+              configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
             in
               configs.odin.config.system.build.toplevel
           '

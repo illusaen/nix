@@ -67,5 +67,5 @@
     systems
   );
 in {
-  inherit overlay packageNames packages packagesFor;
+  inherit overlay packageNames packages;
 }

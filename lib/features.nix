@@ -3,7 +3,7 @@
   fleetLib ? import ./fleet.nix {inherit lib;},
 }: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
-  inherit (fleetLib) unique;
+  inherit (lib) unique;
 
   featureRoot = ../features;
 
@@ -164,5 +164,5 @@
     )
   );
 in {
-  inherit close featureNames features missingFeatures missingPlatformModules modulesFor serviceFeaturePlatformModuleErrors serviceSecretRequirementsFor tests;
+  inherit close features missingFeatures missingPlatformModules modulesFor serviceFeaturePlatformModuleErrors serviceSecretRequirementsFor tests;
 }
