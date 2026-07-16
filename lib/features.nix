@@ -1,4 +1,7 @@
-{fleetLib ? import ./fleet.nix {}}: let
+{
+  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
+  fleetLib ? import ./fleet.nix {inherit lib;},
+}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
   inherit (fleetLib) unique;
 
@@ -68,13 +71,7 @@
 
   loadFeature = name: loadFeaturePath (featureRoot + "/${name}");
 
-  features = builtins.listToAttrs (
-    map (name: {
-      inherit name;
-      value = loadFeature name;
-    })
-    featureNames
-  );
+  features = listToAttrs (map (name: lib.nameValuePair name (loadFeature name)) featureNames);
 
   close = names: let
     go = seen: pending:
@@ -146,7 +143,7 @@
           concatLists (
             map (hostName: let
               host = hosts.${hostName} or null;
-              platform = host.platform or fleetLib.platformForSystem host.system;
+              platform = host.platform or (fleetLib.platformForSystem host.system);
             in
               if host == null
               then []
@@ -161,10 +158,7 @@
   tests = listToAttrs (
     concatLists (
       map (featureName:
-        map (testName: {
-          name = "${featureName}.${testName}";
-          value = features.${featureName}.tests.${testName};
-        })
+        map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
         (attrNames (features.${featureName}.tests or {})))
       featureNames
     )

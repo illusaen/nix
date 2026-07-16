@@ -1,5 +1,6 @@
 {
   sources ? import ../npins,
+  lib ? import (sources.nixpkgs.outPath + "/lib"),
   systems ? [
     "x86_64-linux"
     "aarch64-linux"
@@ -18,14 +19,9 @@
     )
     (attrNames (readDir packageRoot));
 
-  optionalAttrs = condition: attrs:
-    if condition
-    then attrs
-    else {};
-
   overlay = final: _prev: let
     packageArgs = name:
-      optionalAttrs (name == "niri-scripts") {
+      lib.optionalAttrs (name == "niri-scripts") {
         local = localPackages;
       };
 
@@ -39,7 +35,7 @@
 
     localPackages =
       repoPackages
-      // optionalAttrs (final ? niri) {
+      // lib.optionalAttrs (final ? niri) {
         inherit (final) niri;
       };
   in

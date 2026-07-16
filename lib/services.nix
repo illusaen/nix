@@ -1,6 +1,9 @@
-{fleetLib ? import ./fleet.nix {}}: let
+{
+  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
+  fleetLib ? import ./fleet.nix {inherit lib;},
+}: let
   inherit (builtins) attrNames concatLists filter listToAttrs;
-  inherit (fleetLib) unique;
+  inherit (lib) optionals unique;
 
   serviceForHost = hostName: serviceName: service:
     if service.primary == hostName
@@ -49,32 +52,12 @@
   in
     unique (
       ["base"]
-      ++ (
-        if isLinux
-        then ["boot"]
-        else []
-      )
-      ++ (
-        if isDesktop
-        then ["programs-core" "theming"]
-        else []
-      )
-      ++ (
-        if isLinux && isDesktop
-        then ["desktop-shell"]
-        else []
-      )
-      ++ (
-        if builtins.elem "gpu:nvidia" tags
-        then ["nvidia"]
-        else []
-      )
+      ++ optionals isLinux ["boot"]
+      ++ optionals isDesktop ["programs-core" "theming"]
+      ++ optionals (isLinux && isDesktop) ["desktop-shell"]
+      ++ optionals (builtins.elem "gpu:nvidia" tags) ["nvidia"]
       ++ tagFeatureNames tags
-      ++ (
-        if host.preservation.enable or false
-        then ["preservation"]
-        else []
-      )
+      ++ optionals (host.preservation.enable or false) ["preservation"]
     );
 
   transportProtocol = protocol:

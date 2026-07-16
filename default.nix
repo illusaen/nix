@@ -1,10 +1,23 @@
 let
   sources = import ./npins;
-  fleetLib = import ./lib/fleet.nix {};
-  packageLib = import ./lib/packages.nix {inherit sources;};
-  serviceLib = import ./lib/services.nix {inherit fleetLib;};
-  featureLib = import ./lib/features.nix {inherit fleetLib;};
-  hostLib = import ./lib/hosts.nix {inherit featureLib fleetLib packageLib;};
+  nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
+  fleetLib = import ./lib/fleet.nix {lib = nixpkgsLib;};
+  packageLib = import ./lib/packages.nix {
+    inherit sources;
+    lib = nixpkgsLib;
+  };
+  serviceLib = import ./lib/services.nix {
+    inherit fleetLib;
+    lib = nixpkgsLib;
+  };
+  featureLib = import ./lib/features.nix {
+    inherit fleetLib;
+    lib = nixpkgsLib;
+  };
+  hostLib = import ./lib/hosts.nix {
+    inherit featureLib fleetLib packageLib;
+    lib = nixpkgsLib;
+  };
   unitTests = (import ./tests/fleet.nix) // featureLib.tests;
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
@@ -88,7 +101,7 @@ let
     then [target]
     else throw "unknown deploy target '${target}'";
 in {
-  inherit featureLib fleet fleetLib hostLib packageLib rawFleet serviceLib sources unitTests;
+  inherit featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
 
   inherit (fleet) hosts;
 

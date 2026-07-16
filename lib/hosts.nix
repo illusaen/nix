@@ -1,9 +1,10 @@
 {
-  featureLib ? import ./features.nix {},
-  fleetLib ? import ./fleet.nix {},
-  packageLib ? import ./packages.nix {},
+  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
+  fleetLib ? import ./fleet.nix {inherit lib;},
+  featureLib ? import ./features.nix {inherit fleetLib lib;},
+  packageLib ? import ./packages.nix {inherit lib;},
 }: let
-  inherit (builtins) mapAttrs;
+  inherit (lib) mapAttrs;
 
   mkHostModule = {
     fleet,

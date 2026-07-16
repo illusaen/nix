@@ -1,14 +1,6 @@
-_: let
+{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames concatLists filter hasAttr;
-
-  unique = values:
-    builtins.foldl' (
-      seen: value:
-        if builtins.elem value seen
-        then seen
-        else seen ++ [value]
-    ) []
-    values;
+  inherit (lib) unique;
 
   require = condition: message:
     if condition
@@ -176,13 +168,7 @@ _: let
     else throw "fleet validation failed:\n${builtins.concatStringsSep "\n" (map (error: "- ${error}") errors)}";
 
   platformHosts = platform: hosts:
-    builtins.listToAttrs (
-      map (name: {
-        inherit name;
-        value = hosts.${name};
-      })
-      (filter (name: hosts.${name}.platform == platform) (attrNames hosts))
-    );
+    lib.filterAttrs (_name: host: host.platform == platform) hosts;
 in {
   inherit assertValid duplicates hostAddressEntries platformForSystem platformHosts unique userPosixGroups validate;
 }

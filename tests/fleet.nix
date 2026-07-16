@@ -1,7 +1,15 @@
 let
-  fleetLib = import ../lib/fleet.nix {};
-  featureLib = import ../lib/features.nix {inherit fleetLib;};
-  serviceLib = import ../lib/services.nix {inherit fleetLib;};
+  sources = import ../npins;
+  nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
+  fleetLib = import ../lib/fleet.nix {lib = nixpkgsLib;};
+  featureLib = import ../lib/features.nix {
+    inherit fleetLib;
+    lib = nixpkgsLib;
+  };
+  serviceLib = import ../lib/services.nix {
+    inherit fleetLib;
+    lib = nixpkgsLib;
+  };
 
   baseFleet = {
     users.wendy.groups = ["system-access"];
