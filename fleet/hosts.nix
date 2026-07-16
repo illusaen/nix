@@ -26,7 +26,7 @@
   huginn = {
     system = "x86_64-linux";
     owner = "wendy";
-    targetHost = "huginn.home.arpa";
+    targetHost = "192.168.1.161";
     hostId = "99901a95";
 
     tags = ["server"];

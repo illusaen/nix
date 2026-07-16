@@ -28,7 +28,8 @@
       persist.files = [
         {
           file = host.privateKey;
-          mode = "0600";
+          mode = "0640";
+          group = "wheel";
         }
       ];
     };
