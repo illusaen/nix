@@ -1,12 +1,12 @@
 {lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
-  inherit (lib) unique;
+  inherit (lib) pipe unique;
 
   featureRoot = ../features;
 
-  featureNames =
-    filter (name: (readDir featureRoot).${name} == "directory")
-    (attrNames (readDir featureRoot));
+  featureNames = pipe (attrNames (readDir featureRoot)) [
+    (filter (name: (readDir featureRoot).${name} == "directory"))
+  ];
 
   callFeature = feature:
     if builtins.isFunction feature
@@ -31,25 +31,36 @@
     else [module];
 
   modulesForPlatform = fragments: platform:
-    concatLists (
-      map (fragment: let
+    pipe fragments [
+      (map (fragment: let
         modules = fragment.modules or {};
       in
-        moduleList modules "generic" ++ moduleList modules platform)
-      fragments
-    );
+        moduleList modules "generic" ++ moduleList modules platform))
+      concatLists
+    ];
 
   mergeFeatures = fragments: let
     merged = builtins.foldl' (acc: fragment: acc // removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
-    modulePlatformNames = concatLists (map (fragment: attrNames (fragment.modules or {})) fragments);
+    modulePlatformNames = pipe fragments [
+      (map (fragment: attrNames (fragment.modules or {})))
+      concatLists
+    ];
     platformNames =
       if builtins.elem "generic" modulePlatformNames
-      then unique (["nixos" "darwin"] ++ filter (platform: platform != "generic") modulePlatformNames)
+      then
+        pipe modulePlatformNames [
+          (filter (platform: platform != "generic"))
+          (platforms: ["nixos" "darwin"] ++ platforms)
+          unique
+        ]
       else unique modulePlatformNames;
   in
     merged
     // {
-      imports = concatLists (map featureImportEntries fragments);
+      imports = pipe fragments [
+        (map featureImportEntries)
+        concatLists
+      ];
       modules = listToAttrs (
         map (platform: {
           name = platform;
@@ -71,14 +82,13 @@
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
 in rec {
-  tests = listToAttrs (
-    concatLists (
-      map (featureName:
-        map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
-        (attrNames (features.${featureName}.tests or {})))
-      featureNames
-    )
-  );
+  tests = pipe featureNames [
+    (map (featureName:
+      map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
+      (attrNames (features.${featureName}.tests or {}))))
+    concatLists
+    listToAttrs
+  ];
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
 
@@ -112,17 +122,18 @@ in rec {
     go [] names;
 
   modulesFor = platform: names:
-    concatLists (
-      map (
+    pipe (close names) [
+      (filter (name: (features.${name}.modules.${platform} or []) != []))
+      (map (
         name:
           features.${name}.modules.${platform} or []
-      )
-      (filter (name: (features.${name}.modules.${platform} or []) != []) (close names))
-    );
+      ))
+      concatLists
+    ];
 
   serviceSecretRequirementsFor = services:
-    concatLists (
-      map (serviceName: let
+    pipe (attrNames services) [
+      (map (serviceName: let
         service = services.${serviceName};
         featureName = service.feature or serviceName;
         feature = features.${featureName} or {};
@@ -131,13 +142,13 @@ in rec {
         mkRequirements {
           inherit service serviceName;
           hosts = serviceHosts service;
-        })
-      (attrNames services)
-    );
+        }))
+      concatLists
+    ];
 
   serviceFeaturePlatformModuleErrors = hosts: services:
-    concatLists (
-      map (serviceName: let
+    pipe (attrNames services) [
+      (map (serviceName: let
         service = services.${serviceName};
         featureName = service.feature or serviceName;
         feature = features.${featureName} or null;
@@ -157,7 +168,7 @@ in rec {
               then ["service '${serviceName}' feature '${featureName}' has no ${platform} module for host '${hostName}'"]
               else [])
             serviceHosts
-          ))
-      (attrNames services)
-    );
+          )))
+      concatLists
+    ];
 }

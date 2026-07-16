@@ -25,12 +25,20 @@ let
   rawFleet = import ./fleet;
   typedFleet = evalFleet rawFleet;
   fleet = fleetLib.assertValid (typedFleet // {hosts = serviceLib.routeHosts typedFleet;});
+  inherit (nixpkgsLib) pipe;
   deployLib = import ./lib/deploy.nix {
     inherit fleet fleetLib;
     lib = nixpkgsLib;
   };
-  hostFeatures = nixpkgsLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
-  serviceFeatures = nixpkgsLib.unique (map (name: fleet.services.${name}.feature) (builtins.attrNames fleet.services));
+  hostFeatures = pipe (builtins.attrNames fleet.hosts) [
+    (map (name: fleet.hosts.${name}.features))
+    builtins.concatLists
+    nixpkgsLib.unique
+  ];
+  serviceFeatures = pipe (builtins.attrNames fleet.services) [
+    (map (name: fleet.services.${name}.feature))
+    nixpkgsLib.unique
+  ];
   declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
   secretDeclarations = import ./secrets/secrets.nix;
   missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
@@ -38,7 +46,10 @@ let
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
   serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
-  expectedServiceSecrets = nixpkgsLib.unique (map (requirement: requirement.secret) serviceSecretRequirements);
+  expectedServiceSecrets = pipe serviceSecretRequirements [
+    (map (requirement: requirement.secret))
+    nixpkgsLib.unique
+  ];
   missingServiceSecretDeclarations =
     builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
   hostPublicKey = hostName:
@@ -50,35 +61,40 @@ let
         || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
     )
     serviceSecretRequirements;
-  serviceRoutingErrors = builtins.concatLists (map (serviceName: let
-    service = typedFleet.services.${serviceName};
-    expectedHosts = serviceHosts service;
-    unexpectedHosts =
-      builtins.filter (
-        hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services && !(builtins.elem hostName expectedHosts)
-      )
-      hostNames;
-    missingHosts =
-      builtins.filter (
-        hostName: !(builtins.hasAttr serviceName fleet.hosts.${hostName}.services)
-      )
-      expectedHosts;
-    roleErrors = builtins.concatLists (map (hostName: let
-      routed = fleet.hosts.${hostName}.services.${serviceName};
-      expectedRole =
-        if hostName == service.primary
-        then "primary"
-        else "backup";
+  serviceRoutingErrors = pipe serviceNames [
+    (map (serviceName: let
+      service = typedFleet.services.${serviceName};
+      expectedHosts = serviceHosts service;
+      unexpectedHosts = pipe hostNames [
+        (builtins.filter (
+          hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services && !(builtins.elem hostName expectedHosts)
+        ))
+      ];
+      missingHosts = pipe expectedHosts [
+        (builtins.filter (
+          hostName: !(builtins.hasAttr serviceName fleet.hosts.${hostName}.services)
+        ))
+      ];
+      roleErrors = pipe expectedHosts [
+        (builtins.filter (hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services))
+        (map (hostName: let
+          routed = fleet.hosts.${hostName}.services.${serviceName};
+          expectedRole =
+            if hostName == service.primary
+            then "primary"
+            else "backup";
+        in
+          if routed.role == expectedRole
+          then []
+          else ["service '${serviceName}' is '${routed.role}' on '${hostName}', expected '${expectedRole}'"]))
+        builtins.concatLists
+      ];
     in
-      if routed.role == expectedRole
-      then []
-      else ["service '${serviceName}' is '${routed.role}' on '${hostName}', expected '${expectedRole}'"])
-    (builtins.filter (hostName: builtins.hasAttr serviceName fleet.hosts.${hostName}.services) expectedHosts));
-  in
-    (map (hostName: "service '${serviceName}' is missing from routed host '${hostName}'") missingHosts)
-    ++ (map (hostName: "service '${serviceName}' unexpectedly routed to host '${hostName}'") unexpectedHosts)
-    ++ roleErrors)
-  serviceNames);
+      (map (hostName: "service '${serviceName}' is missing from routed host '${hostName}'") missingHosts)
+      ++ (map (hostName: "service '${serviceName}' unexpectedly routed to host '${hostName}'") unexpectedHosts)
+      ++ roleErrors))
+    builtins.concatLists
+  ];
   serviceFeaturePlatformModuleErrors =
     featureLib.serviceFeaturePlatformModuleErrors typedFleet.hosts typedFleet.services;
   inherit (deployLib) hostNames;

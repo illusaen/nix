@@ -1,6 +1,6 @@
 {lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames concatLists filter listToAttrs;
-  inherit (lib) optionals unique;
+  inherit (lib) optionals pipe unique;
 
   serviceForHost = hostName: serviceName: service:
     if service.primary == hostName
@@ -20,26 +20,28 @@
     else [];
 
   servicesForHost = hostName: services:
-    listToAttrs (
-      builtins.concatLists (
-        map (serviceName: serviceForHost hostName serviceName services.${serviceName})
-        (attrNames services)
-      )
-    );
+    pipe (attrNames services) [
+      (map (serviceName: serviceForHost hostName serviceName services.${serviceName}))
+      concatLists
+      listToAttrs
+    ];
 
   routedFeatureNames = routedServices:
-    unique (map (name: routedServices.${name}.feature) (attrNames routedServices));
+    pipe (attrNames routedServices) [
+      (map (name: routedServices.${name}.feature))
+      unique
+    ];
 
   tagFeatureNames = tags:
-    concatLists (
-      map (tag: let
+    pipe tags [
+      (map (tag: let
         match = builtins.match "feature:(.+)" tag;
       in
         if match == null
         then []
-        else ["programs-${builtins.head match}"])
-      tags
-    );
+        else ["programs-${builtins.head match}"]))
+      concatLists
+    ];
 
   derivedHostFeatures = host: let
     tags = host.tags or [];
@@ -76,25 +78,29 @@
 
   portConflictsForHost = hostName: services: let
     entries = servicePortEntriesForHost hostName services;
-    keys = unique (map (entry: entry.key) entries);
-    duplicateKeys =
-      filter (
+    duplicateKeys = pipe entries [
+      (map (entry: entry.key))
+      unique
+      (filter (
         key:
           builtins.length (filter (entry: entry.key == key) entries) > 1
-      )
-      keys;
+      ))
+    ];
   in
     map (key: {
       inherit hostName key;
-      services = map (entry: entry.serviceName) (filter (entry: entry.key == key) entries);
+      services = pipe entries [
+        (filter (entry: entry.key == key))
+        (map (entry: entry.serviceName))
+      ];
     })
     duplicateKeys;
 
   portConflicts = fleet:
-    builtins.concatLists (
-      map (hostName: portConflictsForHost hostName fleet.services)
-      (attrNames fleet.hosts)
-    );
+    pipe (attrNames fleet.hosts) [
+      (map (hostName: portConflictsForHost hostName fleet.services))
+      concatLists
+    ];
 
   routeHosts = fleet:
     builtins.mapAttrs (
