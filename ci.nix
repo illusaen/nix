@@ -3,8 +3,8 @@ let
   pkgs = import api.sources.nixpkgs.outPath {};
   hive = import ./hive.nix;
   darwinConfigurations = import ./darwin.nix;
-  nixosConfigurations = api.hostLib.mkNixosConfigurations {
-    inherit (api) fleet sources;
+  nixosConfigurations = api.evalLib.mkNixosConfigurations {
+    inherit (api) fleet;
   };
   darwinParityFleet = let
     raw =
@@ -30,10 +30,7 @@ let
       hosts = api.serviceLib.routeHosts raw;
     };
   darwinParityConfig =
-    (api.hostLib.mkDarwinConfigurations {
-      fleet = darwinParityFleet;
-      inherit (api) sources;
-    }).test-darwin.config;
+    (api.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 
   failedChecks =
     builtins.filter (name: api.checks.${name} != true)

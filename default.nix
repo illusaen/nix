@@ -18,9 +18,17 @@ let
     inherit featureLib fleetLib packageLib;
     lib = nixpkgsLib;
   };
+  evalLib = import ./lib/eval-configurations.nix {
+    inherit featureLib fleetLib hostLib packageLib sources;
+    lib = nixpkgsLib;
+  };
   unitTests = (import ./tests/fleet.nix) // featureLib.tests;
   rawFleet = import ./fleet;
   fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
+  deployLib = import ./lib/deploy.nix {
+    inherit fleet fleetLib;
+    lib = nixpkgsLib;
+  };
   hostFeatures = fleetLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
   serviceFeatures = fleetLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
   declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
@@ -73,7 +81,7 @@ let
   serviceNames);
   serviceFeaturePlatformModuleErrors =
     featureLib.serviceFeaturePlatformModuleErrors rawFleet.hosts rawFleet.services;
-  hostNames = builtins.attrNames fleet.hosts;
+  inherit (deployLib) hostNames;
   themeNames = builtins.attrNames (fleet.themes.profiles or {});
   themeProfilesValid =
     builtins.hasAttr fleet.themes.default fleet.themes.profiles
@@ -86,22 +94,8 @@ let
         && (profile.colorScheme == "dark" || profile.colorScheme == "light")
     )
     themeNames;
-  hostsWithTag = tag:
-    builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
-  selectHostNames = target:
-    if target == "@all"
-    then hostNames
-    else if target == "@nixos"
-    then builtins.attrNames (fleetLib.platformHosts "nixos" fleet.hosts)
-    else if target == "@darwin"
-    then builtins.attrNames (fleetLib.platformHosts "darwin" fleet.hosts)
-    else if builtins.substring 0 1 target == "@"
-    then hostsWithTag (builtins.substring 1 (builtins.stringLength target) target)
-    else if builtins.hasAttr target fleet.hosts
-    then [target]
-    else throw "unknown deploy target '${target}'";
 in {
-  inherit featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
+  inherit deployLib evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
 
   inherit (fleet) hosts;
 
@@ -109,13 +103,7 @@ in {
 
   inherit (packageLib) packages;
 
-  deploy = {
-    inherit hostNames hostsWithTag selectHostNames;
-    nixosHosts = fleetLib.platformHosts "nixos" fleet.hosts;
-    darwinHosts = fleetLib.platformHosts "darwin" fleet.hosts;
-    nixosHostNames = builtins.attrNames (fleetLib.platformHosts "nixos" fleet.hosts);
-    darwinHostNames = builtins.attrNames (fleetLib.platformHosts "darwin" fleet.hosts);
-  };
+  deploy = deployLib;
 
   debug = {
     secrets = {
@@ -177,12 +165,12 @@ in {
       ];
     inherit themeProfilesValid;
     deploySelectors =
-      selectHostNames "odin"
+      deployLib.selectHostNames "odin"
       == ["odin"]
-      && selectHostNames "@all" == ["huginn" "muninn" "odin"]
-      && selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
-      && selectHostNames "@darwin" == []
-      && selectHostNames "@server" == ["huginn" "muninn"];
+      && deployLib.selectHostNames "@all" == ["huginn" "muninn" "odin"]
+      && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
+      && deployLib.selectHostNames "@darwin" == []
+      && deployLib.selectHostNames "@server" == ["huginn" "muninn"];
     unitTests = builtins.all (name: unitTests.${name} == true) (builtins.attrNames unitTests);
   };
 }

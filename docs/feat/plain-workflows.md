@@ -56,18 +56,14 @@ nix-build default.nix -A packages.x86_64-linux
 nix-build --expr '
   let
     api = import ./default.nix;
-    configs = api.hostLib.mkNixosConfigurations {
-      inherit (api) fleet sources;
-    };
+    configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
   in
     configs.odin.config.services.llama-cpp.package
 '
 nix-build --expr '
   let
     api = import ./default.nix;
-    configs = api.hostLib.mkNixosConfigurations {
-      inherit (api) fleet sources;
-    };
+    configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
   in
     configs.odin.config.system.build.toplevel
 '
