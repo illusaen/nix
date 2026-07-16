@@ -1,5 +1,5 @@
 {
-  imports = [./noctalia.nix ./niri ./nautilus.nix ./audio.nix ./fonts.nix ./sddm.nix ./autostart.nix];
+  imports = [./niri ./audio.nix ./autostart.nix ./fonts.nix ./nautilus.nix ./noctalia.nix ./sddm.nix];
 
   modules.nixos = {
     config,
@@ -25,13 +25,11 @@
     programs.dconf.enable = true;
 
     systemdAutostart = lib.mkIf (options ? systemdAutostart) [
-      (let
+      rec {
         inherit (config.services.tailscale) package;
-      in {
-        inherit package;
         name = "tailscale-systray";
         exec = "${lib.getExe package} systray";
-      })
+      }
     ];
   };
 

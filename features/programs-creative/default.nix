@@ -1,6 +1,4 @@
 {
-  imports = [];
-
   modules.nixos = {pkgs, ...}: {
     environment.systemPackages = with pkgs; [
       inkscape

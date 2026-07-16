@@ -1,23 +1,4 @@
 let
-  packageNames = [
-    "alacritty"
-    "bat"
-    "coreutils"
-    "difftastic"
-    "eza"
-    "fd"
-    "fzf"
-    "gh"
-    "git"
-    "lsof"
-    "ripgrep"
-    "starship"
-    "vim"
-    "wget"
-    "zoxide"
-    "zsh"
-  ];
-
   themeStateDir = "\${NIX_THEME_STATE_DIR:-\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme}";
 
   mkGitConfig = {
@@ -202,41 +183,54 @@ let
 
     ${mkZshInit pkgs}
   '';
-
-  wrappedAlacritty = pkgs:
-    pkgs.writeShellApplication {
-      name = "alacritty";
-      text = ''
-        exec ${pkgs.alacritty}/bin/alacritty --config-file "${themeStateDir}/current/alacritty/alacritty.toml" "$@"
-      '';
-    };
-
-  wrappedBat = pkgs:
-    pkgs.writeShellApplication {
-      name = "bat";
-      text = ''
-        export BAT_CONFIG_DIR="${themeStateDir}/current/bat"
-        exec ${pkgs.bat}/bin/bat "$@"
-      '';
-    };
-
-  shellPackages = pkgs: (builtins.filter (package: package != null) (map (
-      name:
-        if name == "alacritty"
-        then
-          if pkgs ? alacritty
-          then wrappedAlacritty pkgs
-          else null
-        else if name == "bat"
-        then
-          if pkgs ? bat
-          then wrappedBat pkgs
-          else null
-        else pkgs.${name} or null
-    )
-    packageNames));
 in {
-  imports = [];
+  # imports = [./starship.nix ./zsh.nix];
+
+  modules.generic = {pkgs, ...}: {
+    programs.direnv = {
+      enable = true;
+      silent = true;
+      nix-direnv.enable = true;
+      settings = {
+        hide_env_diff = true;
+        whitelist.prefix = ["~/Projects"];
+      };
+    };
+
+    environment.systemPackages = with pkgs; [
+      coreutils
+      difftastic
+      eza
+      fd
+      fzf
+      gh
+      git
+      ripgrep
+      starship
+      vim
+      wget
+      zoxide
+      zsh
+
+      (
+        writeShellApplication {
+          name = "bat";
+          text = ''
+            export BAT_CONFIG_DIR="${themeStateDir}/current/bat"
+            exec ${bat}/bin/bat "$@"
+          '';
+        }
+      )
+      (
+        writeShellApplication {
+          name = "alacritty";
+          text = ''
+            exec ${alacritty}/bin/alacritty --config-file "${themeStateDir}/current/alacritty/alacritty.toml" "$@"
+          '';
+        }
+      )
+    ];
+  };
 
   modules.nixos = {
     host,
@@ -263,16 +257,6 @@ in {
     config = lib.mkMerge [
       {
         programs = {
-          direnv = {
-            enable = true;
-            silent = true;
-            nix-direnv.enable = true;
-            settings = {
-              hide_env_diff = true;
-              whitelist.prefix = ["~/Projects"];
-            };
-          };
-
           git = {
             enable = true;
             config = gitConfig;
@@ -290,8 +274,6 @@ in {
             interactiveShellInit = mkZshInit pkgs;
           };
         };
-
-        environment.systemPackages = shellPackages pkgs;
 
         hjem.users.${userName}.xdg.config.files = {
           "gh/config.yml".source = ghConfig;
@@ -330,20 +312,9 @@ in {
       etc.gitconfig.text = lib.generators.toGitINI gitConfig;
       etc."starship.toml".source = starshipConfig;
       shellAliases = zshAliases;
-      systemPackages = shellPackages pkgs;
     };
 
     programs = {
-      direnv = {
-        enable = true;
-        silent = true;
-        nix-direnv.enable = true;
-        settings = {
-          hide_env_diff = true;
-          whitelist.prefix = ["~/Projects"];
-        };
-      };
-
       zsh = {
         enable = true;
         histFile = "$HOME/.local/state/.zsh_history";

@@ -1,24 +1,26 @@
 {
   imports = [
     "shell-utils"
+    ./networking.nix
+    ./nix-settings.nix
     ./secrets.nix
     ./ssh.nix
     ./tailscale.nix
-    ./networking.nix
-    ./nix-settings.nix
   ];
+
+  modules.generic = {user, ...}: {
+    hjem.users.${user.name}.enable = true;
+  };
 
   modules.nixos = {
     fleet,
     fleetLib,
-    host,
     lib,
     sources,
     user,
     ...
   }: let
-    userName = user.name or host.owner;
-    posixGroups = fleetLib.userPosixGroups fleet userName;
+    posixGroups = fleetLib.userPosixGroups fleet user.name;
     extraGroups = lib.unique (posixGroups ++ lib.optional (user.system.isAdmin or false) "wheel");
   in {
     imports = [
@@ -27,14 +29,12 @@
 
     system.stateVersion = "26.11";
 
-    hjem.users.${userName}.enable = true;
-
     nixpkgs.config.allowUnfree = true;
 
-    users.users.${userName} = {
+    users.users.${user.name} = {
       isNormalUser = true;
       uid = lib.mkIf ((user.system.uid or null) != null) user.system.uid;
-      description = user.identity.displayName or userName;
+      description = user.identity.displayName or user.name;
       inherit extraGroups;
       openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
       password = "arst";

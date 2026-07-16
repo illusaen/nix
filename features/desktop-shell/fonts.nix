@@ -1,10 +1,5 @@
 {
-  modules.nixos = {
-    fleet,
-    lib,
-    pkgs,
-    ...
-  }: let
+  modules.generic = {pkgs, ...}: let
     fontPackages = with pkgs; [
       font-awesome
       inter
@@ -14,17 +9,22 @@
       noto-fonts-color-emoji
     ];
   in {
-    environment.systemPackages = fontPackages;
+    fonts.packages = fontPackages;
+  };
 
-    fonts = {
-      packages = fontPackages;
-      fontconfig.defaultFonts = {
+  modules.nixos = {
+    fleet,
+    lib,
+    ...
+  }: {
+    fonts.fontconfig = {
+      defaultFonts = {
         monospace = [fleet.fonts.mono.name "Maple Mono NF CN"];
         serif = [fleet.fonts.sans.name];
         sansSerif = [fleet.fonts.sans.name];
         emoji = [fleet.fonts.emoji.name];
       };
-      fontconfig.aliases = let
+      aliases = let
         fontNames =
           map (font: font.name)
           (builtins.attrValues (removeAttrs fleet.fonts ["sizes"]));

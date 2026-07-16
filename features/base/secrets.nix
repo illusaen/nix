@@ -1,41 +1,8 @@
 {
-  modules.nixos = {
-    host,
-    lib,
-    options,
+  modules.generic = {
     pkgs,
     sources,
-    ...
-  }: let
-    agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
-  in {
-    imports = [
-      "${sources.agenix.outPath}/modules/age.nix"
-    ];
-
-    config =
-      {
-        age.identityPaths = [host.privateKey];
-
-        environment.systemPackages = [
-          agenixPackage
-          pkgs.age
-        ];
-      }
-      // lib.optionalAttrs (options ? persist) {
-        persist.files = [
-          {
-            file = host.privateKey;
-            mode = "0600";
-          }
-        ];
-      };
-  };
-
-  modules.darwin = {
     host,
-    pkgs,
-    sources,
     ...
   }: let
     agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
@@ -49,5 +16,21 @@
       agenixPackage
       pkgs.age
     ];
+  };
+
+  modules.nixos = {
+    host,
+    lib,
+    options,
+    ...
+  }: {
+    config = lib.mkIf (options ? persist) {
+      persist.files = [
+        {
+          file = host.privateKey;
+          mode = "0600";
+        }
+      ];
+    };
   };
 }

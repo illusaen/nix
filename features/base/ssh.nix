@@ -52,6 +52,4 @@
     services.openssh.enable = true;
     programs.ssh.knownHosts = fleetKnownHosts // githubKnownHosts;
   };
-
-  modules.darwin = _: {};
 }

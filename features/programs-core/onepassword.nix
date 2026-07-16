@@ -1,17 +1,20 @@
 {
-  modules.nixos = {
-    pkgs,
-    user,
-    ...
-  }: {
+  modules.generic = {pkgs, ...}: {
     programs = {
       _1password.enable = true;
       _1password-gui = {
         enable = true;
         package = pkgs._1password-gui-beta;
-        polkitPolicyOwners = [user.name];
       };
     };
+  };
+
+  modules.nixos = {
+    pkgs,
+    user,
+    ...
+  }: {
+    programs._1password-gui.polkitPolicyOwners = [user.name];
 
     persistUser.directories = [
       ".config/1Password"
@@ -23,15 +26,5 @@
         package = pkgs._1password-gui-beta;
       }
     ];
-  };
-
-  modules.darwin = {pkgs, ...}: {
-    programs = {
-      _1password.enable = true;
-      _1password-gui = {
-        enable = true;
-        package = pkgs._1password-gui-beta;
-      };
-    };
   };
 }

@@ -54,7 +54,9 @@ let
   assertNixosConfigurations = let
     odinGitConfig = builtins.head nixosConfigurations.odin.config.programs.git.config;
     odinSystemPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.environment.systemPackages;
+    odinFontPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.fonts.packages;
     odinHasPackageMatching = pattern: builtins.any (name: builtins.match pattern name != null) odinSystemPackageNames;
+    odinHasFontPackageMatching = pattern: builtins.any (name: builtins.match pattern name != null) odinFontPackageNames;
   in
     if
       builtins.attrNames nixosConfigurations
@@ -92,7 +94,7 @@ let
       && builtins.elem "MacTahoe-icon-theme-2026-06-28" odinSystemPackageNames
       && builtins.elem "misc-scripts" odinSystemPackageNames
       && builtins.elem "niri-scripts" odinSystemPackageNames
-      && odinHasPackageMatching ".*MapleMono.*"
+      && odinHasFontPackageMatching ".*MapleMono.*"
       && odinHasPackageMatching "vscode-.*"
       && builtins.elem "sync-vscode-profiles" odinSystemPackageNames
       && nixosConfigurations.odin.config.services.llama-cpp.settings.host == "0.0.0.0"
