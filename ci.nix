@@ -48,9 +48,13 @@ let
     else throw "plain fleet checks failed: ${builtins.concatStringsSep ", " failedChecks}";
 
   assertHiveHosts =
-    if actualHiveHosts == expectedHiveHosts
+    if
+      actualHiveHosts
+      == expectedHiveHosts
+      && hive.huginn.deployment.targetUser == api.hosts.huginn.owner
+      && hive.huginn.deployment.targetHost == api.hosts.huginn.targetHost
     then true
-    else throw "hive hosts mismatch: expected ${builtins.toJSON expectedHiveHosts}, got ${builtins.toJSON actualHiveHosts}";
+    else throw "hive hosts or deployment settings did not match the fleet";
 
   assertNixosConfigurations = let
     odinSystemPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.environment.systemPackages;
@@ -69,6 +73,8 @@ let
       && nixosConfigurations.odin.config.networking.hostId == "abf835ae"
       && nixosConfigurations.odin.config.nix.settings."auto-optimise-store" == true
       && builtins.elem "@wheel" nixosConfigurations.odin.config.nix.settings."trusted-users"
+      && nixosConfigurations.odin.config.security.sudo-rs.enable == true
+      && nixosConfigurations.odin.config.security.sudo-rs.wheelNeedsPassword == false
       && builtins.elem "https://illusaen.cachix.org" nixosConfigurations.odin.config.nix.settings."extra-substituters"
       && nixosConfigurations.odin.config.programs.direnv.enable == true
       && builtins.elem "git" odinSystemPackageNames

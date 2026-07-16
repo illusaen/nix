@@ -1,5 +1,8 @@
 {
   flake.modules.nixos.security = {
-    security.sudo-rs.enable = true;
+    security.sudo-rs = {
+      enable = true;
+      wheelNeedsPassword = false;
+    };
   };
 }

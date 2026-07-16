@@ -11,7 +11,7 @@
   mkDeployment = name: host: {
     deployment = {
       targetHost = "${name}.${fleet.domain}";
-      targetUser = "root";
+      targetUser = host.owner.name or host.owner;
       buildOnTarget = false;
       tags = [host.tags.role];
     };

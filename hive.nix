@@ -29,7 +29,7 @@ in
 
       deployment = {
         inherit (host) targetHost;
-        targetUser = "root";
+        targetUser = host.owner;
         buildOnTarget = false;
       };
 
