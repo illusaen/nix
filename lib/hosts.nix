@@ -3,7 +3,7 @@
   fleetLib ? import ./fleet.nix {inherit lib;},
   featureLib ? import ./features.nix {inherit fleetLib lib;},
   packageLib ? import ./packages.nix {inherit lib;},
-}: let
+}: {
   mkHostModule = {
     fleet,
     hostName,
@@ -37,6 +37,4 @@
       ];
     };
   };
-in {
-  inherit mkHostModule;
 }

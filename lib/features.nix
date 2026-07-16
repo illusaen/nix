@@ -2,7 +2,7 @@
   lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
   fleetLib ? import ./fleet.nix {inherit lib;},
 }: let
-  inherit (builtins) attrNames concatLists filter hasAttr listToAttrs map readDir;
+  inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
   inherit (lib) unique;
 
   featureRoot = ../features;
@@ -43,7 +43,7 @@
     );
 
   mergeFeatures = fragments: let
-    merged = builtins.foldl' (acc: fragment: acc // builtins.removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
+    merged = builtins.foldl' (acc: fragment: acc // removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
     modulePlatformNames = concatLists (map (fragment: attrNames (fragment.modules or {})) fragments);
     platformNames =
       if builtins.elem "generic" modulePlatformNames
@@ -70,6 +70,28 @@
     mergeFeatures (localFeatures ++ [feature]);
 
   loadFeature = name: loadFeaturePath (featureRoot + "/${name}");
+
+  serviceHosts = service:
+    [service.primary] ++ (service.backups or []);
+in rec {
+  tests = listToAttrs (
+    concatLists (
+      map (featureName:
+        map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
+        (attrNames (features.${featureName}.tests or {})))
+      featureNames
+    )
+  );
+
+  missingFeatures = names: filter (name: !(hasAttr name features)) names;
+
+  missingPlatformModules = platform: names:
+    filter (
+      name:
+        hasAttr name features
+        && (features.${name}.modules.${platform} or null) == null
+    )
+    names;
 
   features = listToAttrs (map (name: lib.nameValuePair name (loadFeature name)) featureNames);
 
@@ -100,19 +122,6 @@
       )
       (filter (name: (features.${name}.modules.${platform} or []) != []) (close names))
     );
-
-  missingFeatures = names: filter (name: !(hasAttr name features)) names;
-
-  missingPlatformModules = platform: names:
-    filter (
-      name:
-        hasAttr name features
-        && (features.${name}.modules.${platform} or null) == null
-    )
-    names;
-
-  serviceHosts = service:
-    [service.primary] ++ (service.backups or []);
 
   serviceSecretRequirementsFor = services:
     concatLists (
@@ -154,15 +163,4 @@
           ))
       (attrNames services)
     );
-
-  tests = listToAttrs (
-    concatLists (
-      map (featureName:
-        map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
-        (attrNames (features.${featureName}.tests or {})))
-      featureNames
-    )
-  );
-in {
-  inherit close features missingFeatures missingPlatformModules modulesFor serviceFeaturePlatformModuleErrors serviceSecretRequirementsFor tests;
 }

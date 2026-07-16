@@ -15,7 +15,7 @@
     inherit fleet fleetLib host packageLib sources;
     user = ownerUser fleet host;
   };
-
+in {
   mkNixosConfigurations = {fleet}: let
     evalConfig = import "${sources.nixpkgs.outPath}/nixos/lib/eval-config.nix";
   in
@@ -61,6 +61,4 @@
         }
     )
     (fleetLib.platformHosts "darwin" fleet.hosts);
-in {
-  inherit mkDarwinConfigurations mkNixosConfigurations;
 }

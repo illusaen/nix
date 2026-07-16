@@ -7,13 +7,6 @@
     then []
     else [message];
 
-  platformForSystem = system:
-    if builtins.match ".*-linux" system != null
-    then "nixos"
-    else if builtins.match ".*-darwin" system != null
-    then "darwin"
-    else null;
-
   duplicates = values: let
     uniqueValues = unique values;
   in
@@ -22,6 +15,13 @@
         builtins.length (filter (candidate: candidate == value) values) > 1
     )
     uniqueValues;
+
+  platformForSystem = system:
+    if builtins.match ".*-linux" system != null
+    then "nixos"
+    else if builtins.match ".*-darwin" system != null
+    then "darwin"
+    else null;
 
   hostInterfaceAddresses = host:
     concatLists (
@@ -137,6 +137,8 @@
     concatLists (map (uid:
       require false "uid '${toString uid}' is used by multiple users")
     duplicateUids);
+in rec {
+  inherit platformForSystem;
 
   userPosixGroups = fleet: userName: let
     user = fleet.users.${userName};
@@ -151,15 +153,6 @@
     )
     (attrNames fleet.groups);
 
-  validate = fleet:
-    concatLists (map (name: validateUser fleet name fleet.users.${name}) (attrNames fleet.users))
-    ++ concatLists (map (name: validateGroup fleet name fleet.groups.${name}) (attrNames fleet.groups))
-    ++ concatLists (map (name: validateHost fleet name fleet.hosts.${name}) (attrNames fleet.hosts))
-    ++ concatLists (map (name: validateService fleet name fleet.services.${name}) (attrNames fleet.services))
-    ++ validateSecretHostKeys fleet
-    ++ validateUniqueHostValues fleet
-    ++ validateUniqueUserValues fleet;
-
   assertValid = fleet: let
     errors = validate fleet;
   in
@@ -169,6 +162,13 @@
 
   platformHosts = platform: hosts:
     lib.filterAttrs (_name: host: host.platform == platform) hosts;
-in {
-  inherit assertValid platformForSystem platformHosts userPosixGroups validate;
+
+  validate = fleet:
+    concatLists (map (name: validateUser fleet name fleet.users.${name}) (attrNames fleet.users))
+    ++ concatLists (map (name: validateGroup fleet name fleet.groups.${name}) (attrNames fleet.groups))
+    ++ concatLists (map (name: validateHost fleet name fleet.hosts.${name}) (attrNames fleet.hosts))
+    ++ concatLists (map (name: validateService fleet name fleet.services.${name}) (attrNames fleet.services))
+    ++ validateSecretHostKeys fleet
+    ++ validateUniqueHostValues fleet
+    ++ validateUniqueUserValues fleet;
 }
