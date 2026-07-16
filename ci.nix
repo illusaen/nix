@@ -8,13 +8,12 @@ let
   };
   darwinParityFleet = let
     raw =
-      api.fleet
+      api.rawFleet
       // {
         hosts =
-          api.fleet.hosts
+          api.rawFleet.hosts
           // {
             test-darwin = {
-              platform = "darwin";
               system = "aarch64-darwin";
               owner = "wendy";
               targetHost = "test-darwin.local";
@@ -24,10 +23,11 @@ let
             };
           };
       };
+    typed = api.evalFleet raw;
   in
-    raw
+    typed
     // {
-      hosts = api.serviceLib.routeHosts raw;
+      hosts = api.serviceLib.routeHosts typed;
     };
   darwinParityConfig =
     (api.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;

@@ -1,7 +1,4 @@
-{
-  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
-  fleetLib ? import ./fleet.nix {inherit lib;},
-}: let
+{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
   inherit (lib) unique;
 
@@ -152,7 +149,7 @@ in rec {
           concatLists (
             map (hostName: let
               host = hosts.${hostName} or null;
-              platform = host.platform or (fleetLib.platformForSystem host.system);
+              inherit (host) platform;
             in
               if host == null
               then []

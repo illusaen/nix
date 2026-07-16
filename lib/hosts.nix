@@ -1,7 +1,7 @@
 {
   lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
   fleetLib ? import ./fleet.nix {inherit lib;},
-  featureLib ? import ./features.nix {inherit fleetLib lib;},
+  featureLib ? import ./features.nix {inherit lib;},
   packageLib ? import ./packages.nix {inherit lib;},
 }: {
   mkHostModule = {

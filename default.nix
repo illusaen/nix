@@ -7,11 +7,9 @@ let
     lib = nixpkgsLib;
   };
   serviceLib = import ./lib/services.nix {
-    inherit fleetLib;
     lib = nixpkgsLib;
   };
   featureLib = import ./lib/features.nix {
-    inherit fleetLib;
     lib = nixpkgsLib;
   };
   hostLib = import ./lib/hosts.nix {

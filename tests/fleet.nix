@@ -3,11 +3,9 @@ let
   nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
   fleetLib = import ../lib/fleet.nix {lib = nixpkgsLib;};
   featureLib = import ../lib/features.nix {
-    inherit fleetLib;
     lib = nixpkgsLib;
   };
   serviceLib = import ../lib/services.nix {
-    inherit fleetLib;
     lib = nixpkgsLib;
   };
   evalFleet = import ../lib/eval-fleet.nix {lib = nixpkgsLib;};
@@ -76,7 +74,10 @@ let
   testFleet = patch:
     baseFleet // patch;
 
-  routedFleet = serviceLib.routeHosts baseFleet;
+  routeFleet = fleet:
+    serviceLib.routeHosts (evalFleet fleet);
+
+  routedFleet = routeFleet baseFleet;
 in {
   platformForSystem =
     fleetLib.platformForSystem "x86_64-linux"
@@ -286,7 +287,7 @@ in {
           };
         };
     };
-    routed = serviceLib.routeHosts fleet;
+    routed = routeFleet fleet;
   in
     builtins.elem "programs-core" routed.odin.features
     && builtins.elem "theming" routed.odin.features
@@ -306,7 +307,7 @@ in {
         preservation.enable = false;
       };
     };
-    routed = serviceLib.routeHosts fleet;
+    routed = routeFleet fleet;
   in
     builtins.elem "base" routed.macbook.features
     && builtins.elem "programs-core" routed.macbook.features
@@ -325,7 +326,7 @@ in {
           };
       };
     };
-    routed = serviceLib.routeHosts fleet;
+    routed = routeFleet fleet;
   in
     routed.huginn.services.app.role
     == "backup"
@@ -337,11 +338,11 @@ in {
         app = removeAttrs baseFleet.services.app ["feature"];
       };
     };
-    routed = serviceLib.routeHosts fleet;
+    routed = routeFleet fleet;
   in
     builtins.elem "app" routed.odin.features;
 
-  normalizedHostDefaults =
+  routedHostKeepsEvaluatedDefaults =
     routedFleet.odin.platform
     == "nixos"
     && routedFleet.odin.name == "odin"
@@ -387,18 +388,19 @@ in {
 
   routedServiceFeaturePlatformModuleErrors =
     featureLib.serviceFeaturePlatformModuleErrors
-    (
-      baseFleet.hosts
-      // {
-        macbook = {
-          system = "aarch64-darwin";
-          owner = "wendy";
-          targetHost = "macbook.home.arpa";
-          features = ["base"];
-          preservation.enable = false;
+    (evalFleet (testFleet {
+      hosts =
+        baseFleet.hosts
+        // {
+          macbook = {
+            system = "aarch64-darwin";
+            owner = "wendy";
+            targetHost = "macbook.home.arpa";
+            features = ["base"];
+            preservation.enable = false;
+          };
         };
-      }
-    )
+    })).hosts
     {
       app =
         baseFleet.services.app

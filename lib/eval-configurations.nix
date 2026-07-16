@@ -2,7 +2,7 @@
   lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
   sources ? import ../npins,
   fleetLib ? import ./fleet.nix {inherit lib;},
-  featureLib ? import ./features.nix {inherit fleetLib lib;},
+  featureLib ? import ./features.nix {inherit lib;},
   packageLib ? import ./packages.nix {inherit sources lib;},
   hostLib ? import ./hosts.nix {inherit featureLib fleetLib packageLib lib;},
 }: let

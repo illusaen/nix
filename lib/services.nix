@@ -1,7 +1,4 @@
-{
-  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
-  fleetLib ? import ./fleet.nix {inherit lib;},
-}: let
+{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames concatLists filter listToAttrs;
   inherit (lib) optionals unique;
 
@@ -31,7 +28,7 @@
     );
 
   routedFeatureNames = routedServices:
-    unique (map (name: routedServices.${name}.feature or name) (attrNames routedServices));
+    unique (map (name: routedServices.${name}.feature) (attrNames routedServices));
 
   tagFeatureNames = tags:
     concatLists (
@@ -46,8 +43,7 @@
 
   derivedHostFeatures = host: let
     tags = host.tags or [];
-    platform = host.platform or (fleetLib.platformForSystem host.system);
-    isLinux = platform == "nixos";
+    isLinux = host.platform == "nixos";
     isDesktop = builtins.elem "desktop" tags;
   in
     unique (
@@ -100,37 +96,15 @@
       (attrNames fleet.hosts)
     );
 
-  normalizeHost = hostName: host: let
-    preservation =
-      if host.preservation.enable or false
-      then
-        {
-          rootSnapshot = "zroot/local/root@blank";
-          homeSnapshot = "zroot/local/home@blank";
-          persistMount = "/persist";
-        }
-        // host.preservation
-      else host.preservation or {enable = false;};
-  in
-    host
-    // {
-      name = hostName;
-      platform = fleetLib.platformForSystem host.system;
-      privateKey = host.privateKey or "/etc/ssh/host_ed25519";
-      publicKey = host.publicKey or (../secrets/hosts + "/${hostName}/host_ed25519.pub");
-      inherit preservation;
-    };
-
   routeHosts = fleet:
     builtins.mapAttrs (
       hostName: host: let
-        normalizedHost = normalizeHost hostName host;
         services = servicesForHost hostName fleet.services;
       in
-        normalizedHost
+        host
         // {
           inherit services;
-          features = unique (derivedHostFeatures normalizedHost ++ (normalizedHost.features or []) ++ routedFeatureNames services);
+          features = unique (derivedHostFeatures host ++ host.features ++ routedFeatureNames services);
         }
     )
     fleet.hosts;
