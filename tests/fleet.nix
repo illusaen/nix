@@ -10,8 +10,11 @@ let
     inherit fleetLib;
     lib = nixpkgsLib;
   };
+  evalFleet = import ../lib/eval-fleet.nix {lib = nixpkgsLib;};
 
   baseFleet = {
+    domain = "home.arpa";
+    timeZone = "America/Chicago";
     users.wendy.groups = ["system-access"];
     groups = {
       system-access = {
@@ -345,6 +348,20 @@ in {
     && routedFleet.odin.privateKey == "/etc/ssh/host_ed25519"
     && toString routedFleet.odin.publicKey == toString (../secrets/hosts + "/odin/host_ed25519.pub")
     && routedFleet.odin.preservation.enable == false;
+
+  evaluatedFleetDefaults = let
+    evaluated = evalFleet baseFleet;
+  in
+    evaluated.hosts.odin.platform
+    == "nixos"
+    && evaluated.hosts.odin.name == "odin"
+    && evaluated.hosts.odin.privateKey == "/etc/ssh/host_ed25519"
+    && toString evaluated.hosts.odin.publicKey == toString (../secrets/hosts + "/odin/host_ed25519.pub")
+    && evaluated.hosts.odin.preservation.rootSnapshot == "zroot/local/root@blank"
+    && evaluated.hosts.odin.networkInterfaces.eno1.ipv6 == null
+    && evaluated.users.wendy.system.isAdmin == false
+    && evaluated.services.app.backups == []
+    && evaluated.services.app.feature == "llama-cpp";
 
   servicePortConflicts =
     serviceLib.portConflicts (testFleet {

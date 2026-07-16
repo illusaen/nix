@@ -23,8 +23,8 @@
     lib,
     options,
     ...
-  }: {
-    config = lib.mkIf (options ? persist) {
+  }:
+    lib.mkIf (options ? persist) {
       persist.files = [
         {
           file = host.privateKey;
@@ -33,5 +33,4 @@
         }
       ];
     };
-  };
 }

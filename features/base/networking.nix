@@ -11,7 +11,9 @@
     mkNetwork = name: interface:
       lib.nameValuePair "10-${name}" {
         matchConfig.Name = name;
-        address = lib.optional (interface ? ipv4) interface.ipv4 ++ lib.optional (interface ? ipv6) interface.ipv6;
+        address =
+          lib.optional ((interface.ipv4 or null) != null) interface.ipv4
+          ++ lib.optional ((interface.ipv6 or null) != null) interface.ipv6;
         routes = [
           {Gateway = "192.168.1.1";}
           {Gateway = "fe80::1";}

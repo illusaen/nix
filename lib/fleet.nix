@@ -30,7 +30,7 @@
           interface = host.networkInterfaces.${interfaceName};
         in
           (
-            if interface ? ipv4
+            if (interface.ipv4 or null) != null
             then [
               {
                 address = interface.ipv4;
@@ -40,7 +40,7 @@
             else []
           )
           ++ (
-            if interface ? ipv6
+            if (interface.ipv6 or null) != null
             then [
               {
                 address = interface.ipv6;

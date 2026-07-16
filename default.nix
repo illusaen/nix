@@ -23,21 +23,23 @@ let
     lib = nixpkgsLib;
   };
   unitTests = (import ./tests/fleet.nix) // featureLib.tests;
+  evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
   rawFleet = import ./fleet;
-  fleet = fleetLib.assertValid (rawFleet // {hosts = serviceLib.routeHosts rawFleet;});
+  typedFleet = evalFleet rawFleet;
+  fleet = fleetLib.assertValid (typedFleet // {hosts = serviceLib.routeHosts typedFleet;});
   deployLib = import ./lib/deploy.nix {
     inherit fleet fleetLib;
     lib = nixpkgsLib;
   };
   hostFeatures = nixpkgsLib.unique (builtins.concatLists (map (name: fleet.hosts.${name}.features or []) (builtins.attrNames fleet.hosts)));
-  serviceFeatures = nixpkgsLib.unique (map (name: fleet.services.${name}.feature or name) (builtins.attrNames fleet.services));
+  serviceFeatures = nixpkgsLib.unique (map (name: fleet.services.${name}.feature) (builtins.attrNames fleet.services));
   declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
   secretDeclarations = import ./secrets/secrets.nix;
   missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
-  serviceNames = builtins.attrNames rawFleet.services;
+  serviceNames = builtins.attrNames typedFleet.services;
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
-  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor rawFleet.services;
+  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
   expectedServiceSecrets = nixpkgsLib.unique (map (requirement: requirement.secret) serviceSecretRequirements);
   missingServiceSecretDeclarations =
     builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
@@ -51,7 +53,7 @@ let
     )
     serviceSecretRequirements;
   serviceRoutingErrors = builtins.concatLists (map (serviceName: let
-    service = rawFleet.services.${serviceName};
+    service = typedFleet.services.${serviceName};
     expectedHosts = serviceHosts service;
     unexpectedHosts =
       builtins.filter (
@@ -80,7 +82,7 @@ let
     ++ roleErrors)
   serviceNames);
   serviceFeaturePlatformModuleErrors =
-    featureLib.serviceFeaturePlatformModuleErrors rawFleet.hosts rawFleet.services;
+    featureLib.serviceFeaturePlatformModuleErrors typedFleet.hosts typedFleet.services;
   inherit (deployLib) hostNames;
   themeNames = builtins.attrNames (fleet.themes.profiles or {});
   themeProfilesValid =
@@ -95,7 +97,7 @@ let
     )
     themeNames;
 in {
-  inherit evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources unitTests;
+  inherit evalFleet evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources typedFleet unitTests;
 
   inherit (fleet) hosts;
 
@@ -127,12 +129,12 @@ in {
   };
 
   checks = {
-    fleet = fleetLib.validate rawFleet == [];
+    fleet = fleetLib.validate typedFleet == [];
     routedServices =
-      (serviceLib.servicesForHost "huginn" rawFleet.services).navidrome.role
+      (serviceLib.servicesForHost "huginn" typedFleet.services).navidrome.role
       == "primary"
-      && (serviceLib.servicesForHost "huginn" rawFleet.services).pihole.role == "primary"
-      && (serviceLib.servicesForHost "muninn" rawFleet.services).pihole.role == "backup";
+      && (serviceLib.servicesForHost "huginn" typedFleet.services).pihole.role == "primary"
+      && (serviceLib.servicesForHost "muninn" typedFleet.services).pihole.role == "backup";
     featureClosure =
       featureLib.close ["base"]
       == ["base" "shell-utils"]
@@ -153,7 +155,7 @@ in {
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
     serviceRoutingComplete = serviceRoutingErrors == [];
-    servicePortsDoNotConflict = serviceLib.portConflicts rawFleet == [];
+    servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
     localPackagesExist =
       packageLib.packageNames
       == [

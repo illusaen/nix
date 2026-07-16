@@ -12,7 +12,7 @@
           interfaceName: let
             interface = knownHost.networkInterfaces.${interfaceName};
           in
-            lib.optional (interface ? ipv4) (stripCidr interface.ipv4)
+            lib.optional ((interface.ipv4 or null) != null) (stripCidr interface.ipv4)
         )
         (builtins.attrNames (knownHost.networkInterfaces or {}))
       );
