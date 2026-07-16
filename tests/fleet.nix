@@ -259,6 +259,51 @@ in {
     && routedFleet.odin.services.app.port == 8080
     && builtins.elem "llama-cpp" routedFleet.odin.features;
 
+  derivedLinuxBaseFeatures =
+    builtins.elem "base" routedFleet.odin.features
+    && builtins.elem "boot" routedFleet.odin.features;
+
+  derivedDesktopFeatures = let
+    fleet = testFleet {
+      hosts.odin =
+        baseFleet.hosts.odin
+        // {
+          tags = ["desktop" "gpu:nvidia" "feature:creative" "feature:dev"];
+          preservation = {
+            enable = true;
+            disk = "nvme0n1";
+          };
+        };
+    };
+    routed = serviceLib.routeHosts fleet;
+  in
+    builtins.elem "programs-core" routed.odin.features
+    && builtins.elem "theming" routed.odin.features
+    && builtins.elem "desktop-shell" routed.odin.features
+    && builtins.elem "nvidia" routed.odin.features
+    && builtins.elem "programs-creative" routed.odin.features
+    && builtins.elem "programs-dev" routed.odin.features
+    && builtins.elem "preservation" routed.odin.features;
+
+  derivedDarwinDesktopFeatures = let
+    fleet = testFleet {
+      hosts.macbook = {
+        system = "aarch64-darwin";
+        owner = "wendy";
+        targetHost = "macbook.home.arpa";
+        tags = ["desktop" "feature:dev"];
+        preservation.enable = false;
+      };
+    };
+    routed = serviceLib.routeHosts fleet;
+  in
+    builtins.elem "base" routed.macbook.features
+    && builtins.elem "programs-core" routed.macbook.features
+    && builtins.elem "theming" routed.macbook.features
+    && builtins.elem "programs-dev" routed.macbook.features
+    && !(builtins.elem "boot" routed.macbook.features)
+    && !(builtins.elem "desktop-shell" routed.macbook.features);
+
   routedBackupService = let
     fleet = testFleet {
       services = {

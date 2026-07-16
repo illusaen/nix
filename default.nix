@@ -128,7 +128,7 @@ in {
   checks = {
     fleet = fleetLib.validate rawFleet == [];
     routedServices =
-      (serviceLib.servicesForHost "odin" rawFleet.services).navidrome.role
+      (serviceLib.servicesForHost "huginn" rawFleet.services).navidrome.role
       == "primary"
       && (serviceLib.servicesForHost "huginn" rawFleet.services).pihole.role == "primary"
       && (serviceLib.servicesForHost "muninn" rawFleet.services).pihole.role == "backup";

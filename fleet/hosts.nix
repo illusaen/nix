@@ -6,18 +6,6 @@
     hostId = "abf835ae";
 
     tags = ["desktop" "gpu:nvidia" "feature:creative" "feature:dev" "feature:gaming"];
-    features = [
-      "base"
-      "boot"
-      "desktop-shell"
-      "programs-core"
-      "theming"
-      "programs-creative"
-      "programs-dev"
-      "programs-gaming"
-      "nvidia"
-      "preservation"
-    ];
 
     networkInterfaces.eno1 = {
       ipv4 = "192.168.1.162/24";
@@ -39,14 +27,9 @@
     system = "x86_64-linux";
     owner = "wendy";
     targetHost = "huginn.home.arpa";
-    hostId = "d0924987";
+    hostId = "99901a95";
 
     tags = ["server"];
-    features = [
-      "base"
-      "boot"
-      "preservation"
-    ];
 
     networkInterfaces.enp1s0 = {
       ipv4 = "192.168.1.161/24";
@@ -66,11 +49,6 @@
     hostId = "f687c689";
 
     tags = ["server"];
-    features = [
-      "base"
-      "boot"
-      "preservation"
-    ];
 
     networkInterfaces.eno1 = {
       ipv4 = "192.168.1.163/24";

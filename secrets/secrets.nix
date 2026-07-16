@@ -16,5 +16,5 @@ let
 in {
   "hosts/huginn/pihole-web-password.age".publicKeys = admins ++ [hosts.huginn];
   "hosts/muninn/pihole-web-password.age".publicKeys = admins ++ [hosts.muninn];
-  "shared/navidrome-env.age".publicKeys = admins ++ [hosts.odin];
+  "shared/navidrome-env.age".publicKeys = admins ++ [hosts.huginn];
 }

@@ -521,13 +521,7 @@
     system = "x86_64-linux";
     owner = "wendy";
     targetHost = "odin.home.arpa";
-    tags = [ "desktop" "gpu:nvidia" ];
-    features = [
-      "base"
-      "desktop-shell"
-      "programs-core"
-      "theming"
-    ];
+    tags = [ "desktop" "gpu:nvidia" "feature:dev" ];
     monitors.main = "DP-2";
     preservation = {
       enable = true;
@@ -679,7 +673,9 @@ routeServices = { hosts, services }:
     host // {
       services = servicesForHost hostName services;
       features = unique (
-        host.features ++ routedServiceFeatureNames hostName services
+        derivedHostFeatures host
+        ++ (host.features or [])
+        ++ routedServiceFeatureNames hostName services
       );
     });</code></pre>
 

@@ -6,27 +6,28 @@ let
   nixosConfigurations = api.hostLib.mkNixosConfigurations {
     inherit (api) fleet sources;
   };
-  darwinParityFleet =
-    api.fleet
-    // {
-      hosts.test-darwin = {
-        platform = "darwin";
-        system = "aarch64-darwin";
-        owner = "wendy";
-        targetHost = "test-darwin.local";
-        privateKey = "/etc/ssh/host_ed25519";
-        hostId = "00000000";
-        tags = ["darwin" "desktop" "feature:dev"];
-        features = [
-          "base"
-          "desktop-shell"
-          "programs-core"
-          "programs-creative"
-          "programs-dev"
-          "programs-gaming"
-          "theming"
-        ];
+  darwinParityFleet = let
+    raw =
+      api.fleet
+      // {
+        hosts =
+          api.fleet.hosts
+          // {
+            test-darwin = {
+              platform = "darwin";
+              system = "aarch64-darwin";
+              owner = "wendy";
+              targetHost = "test-darwin.local";
+              privateKey = "/etc/ssh/host_ed25519";
+              hostId = "00000000";
+              tags = ["darwin" "desktop" "feature:creative" "feature:dev" "feature:gaming"];
+            };
+          };
       };
+  in
+    raw
+    // {
+      hosts = api.serviceLib.routeHosts raw;
     };
   darwinParityConfig =
     (api.hostLib.mkDarwinConfigurations {
@@ -104,7 +105,7 @@ let
       && nixosConfigurations.odin.config.services.llama-cpp.package.cudaSupport == true
       && nixosConfigurations.odin.config.services.openssh.enable == true
       && nixosConfigurations.odin.config.services.tailscale.enable == true
-      && builtins.elem "192.168.1.164" nixosConfigurations.odin.config.programs.ssh.knownHosts.huginn.hostNames
+      && builtins.elem "192.168.1.161" nixosConfigurations.odin.config.programs.ssh.knownHosts.huginn.hostNames
     then true
     else throw "nixosConfigurations plain API did not evaluate as expected";
 
@@ -122,7 +123,7 @@ let
   in
     if
       darwinParityConfig.networking.computerName
-      == "test-darwin.local"
+      == "test-darwin"
       && darwinParityConfig.homebrew.enable == true
       && darwinParityConfig.homebrew.user == "wendy"
       && builtins.elem "firefox" caskNames

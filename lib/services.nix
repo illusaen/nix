@@ -1,5 +1,5 @@
 {fleetLib ? import ./fleet.nix {}}: let
-  inherit (builtins) attrNames filter listToAttrs;
+  inherit (builtins) attrNames concatLists filter listToAttrs;
   inherit (fleetLib) unique;
 
   serviceForHost = hostName: serviceName: service:
@@ -29,6 +29,53 @@
 
   routedFeatureNames = routedServices:
     unique (map (name: routedServices.${name}.feature or name) (attrNames routedServices));
+
+  tagFeatureNames = tags:
+    concatLists (
+      map (tag: let
+        match = builtins.match "feature:(.+)" tag;
+      in
+        if match == null
+        then []
+        else ["programs-${builtins.head match}"])
+      tags
+    );
+
+  derivedHostFeatures = host: let
+    tags = host.tags or [];
+    platform = host.platform or (fleetLib.platformForSystem host.system);
+    isLinux = platform == "nixos";
+    isDesktop = builtins.elem "desktop" tags;
+  in
+    unique (
+      ["base"]
+      ++ (
+        if isLinux
+        then ["boot"]
+        else []
+      )
+      ++ (
+        if isDesktop
+        then ["programs-core" "theming"]
+        else []
+      )
+      ++ (
+        if isLinux && isDesktop
+        then ["desktop-shell"]
+        else []
+      )
+      ++ (
+        if builtins.elem "gpu:nvidia" tags
+        then ["nvidia"]
+        else []
+      )
+      ++ tagFeatureNames tags
+      ++ (
+        if host.preservation.enable or false
+        then ["preservation"]
+        else []
+      )
+    );
 
   transportProtocol = protocol:
     if protocol == "http" || protocol == "https"
@@ -100,10 +147,10 @@
         normalizedHost
         // {
           inherit services;
-          features = unique ((normalizedHost.features or []) ++ routedFeatureNames services);
+          features = unique (derivedHostFeatures normalizedHost ++ (normalizedHost.features or []) ++ routedFeatureNames services);
         }
     )
     fleet.hosts;
 in {
-  inherit normalizeHost portConflicts routeHosts routedFeatureNames servicesForHost;
+  inherit derivedHostFeatures normalizeHost portConflicts routeHosts routedFeatureNames servicesForHost tagFeatureNames;
 }

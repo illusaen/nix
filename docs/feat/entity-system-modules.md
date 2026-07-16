@@ -1,27 +1,39 @@
 # Entity System Modules
 
-Hosts contribute to final NixOS or Darwin systems by listing feature names in
-`fleet/hosts.nix`. The fleet registry is plain Nix data; the resolver turns that
-data into platform-specific module imports.
+Hosts contribute to final NixOS or Darwin systems through derived feature names
+and optional manual feature names in `fleet/hosts.nix`. The fleet registry is
+plain Nix data; the resolver turns that data into platform-specific module
+imports.
 
 ## Host Features
 
-Use `fleet.hosts.<name>.features` when a behavior belongs to a host:
+Most host features are derived by `lib/services.nix` from host system, tags,
+preservation settings, and routed services:
 
 ```nix
 {
   odin = {
     system = "x86_64-linux";
     owner = "wendy";
-    features = [
-      "base"
-      "boot"
-      "desktop-shell"
-      "programs-core"
-    ];
+    tags = [ "desktop" "gpu:nvidia" "feature:creative" "feature:dev" ];
+    preservation.enable = true;
   };
 }
 ```
+
+Derived feature rules:
+
+- all hosts get `base`
+- Linux hosts get `boot`
+- hosts tagged `desktop` get `programs-core` and `theming`
+- Linux hosts tagged `desktop` also get `desktop-shell`
+- hosts tagged `gpu:nvidia` get `nvidia`
+- tags shaped `feature:<name>` get `programs-<name>`
+- hosts with `preservation.enable = true` get `preservation`
+- routed service primaries/backups get the service feature name
+
+Use `fleet.hosts.<name>.features` only for manual extras that cannot be derived
+from these rules.
 
 For each host, `lib/features.nix` computes the recursive feature closure from
 `features/<name>/default.nix` imports. The selected platform controls which
