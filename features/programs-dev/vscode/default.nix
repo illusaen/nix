@@ -1,18 +1,15 @@
 {
-  imports = [];
-
-  modules.nixos = {
+  modules.generic = {
     fleet,
     lib,
     pkgs,
     user,
     ...
   }: let
-    userName = user.name or "wendy";
-    extensions = import ../../modules/features/programs/dev/vscode/_extensions.nix {inherit pkgs;};
+    extensions = import ./_extensions.nix {inherit pkgs;};
     vscodeProfiles =
-      lib.mapAttrs (_name: extensionList: {
-        location = _name;
+      lib.mapAttrs (name: extensionList: {
+        location = name;
         icon = "globe";
         useDefaultFlags = {
           settings = true;
@@ -92,7 +89,7 @@
             password-store = "gnome-libsecret";
           };
         };
-        "${vscodeUserDir}/settings.json".source = pkgs.replaceVars ../../modules/features/programs/dev/vscode/settings.json.template {
+        "${vscodeUserDir}/settings.json".source = pkgs.replaceVars ./settings.json.template {
           fontSize = builtins.floor (fleet.fonts.sizes.terminal * 1.1);
           monoFontName = "${fleet.fonts.mono.name},Maple Mono NF CN";
           serifFontName = "Monaspace Xenon Frozen";
@@ -112,38 +109,20 @@
           }
       )
       vscodeProfilesExceptDefault;
-    optionalPackage = name:
-      lib.optional (pkgs ? ${name}) pkgs.${name};
   in {
-    environment.systemPackages =
-      [pkgs.meld]
-      ++ optionalPackage "codex"
-      ++ optionalPackage "codex-acp"
-      ++ optionalPackage "vscode"
-      ++ [syncVscodeProfiles];
-
-    xdg.mime.defaultApplications = let
-      reader = "org.pwmt.zathura.desktop";
-    in {
-      "application/pdf" = reader;
-      "application/epub+zip" = reader;
-      "application/postscript" = reader;
-    };
+    environment.systemPackages = [pkgs.vscode syncVscodeProfiles];
 
     persistUser.directories = [
-      ".codex"
       ".config/Code/User/globalStorage"
     ];
 
-    system.userActivationScripts.syncVscodeProfiles = ''
-      echo "Syncing vscode profiles."
-      ${lib.getExe syncVscodeProfiles}
-    '';
-
-    hjem.users.${userName}.files = vscodeGeneratedFiles;
+    hjem.users.${user.name}.files = vscodeGeneratedFiles;
   };
 
-  modules.darwin = _: {
-    homebrew.casks = ["codex-app"];
+  modules.nixos = {
+    system.userActivationScripts.syncVscodeProfiles = ''
+      echo "Syncing vscode profiles."
+      syncVscodeProfiles
+    '';
   };
 }

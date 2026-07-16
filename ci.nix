@@ -52,9 +52,12 @@ let
     else throw "hive hosts mismatch: expected ${builtins.toJSON expectedHiveHosts}, got ${builtins.toJSON actualHiveHosts}";
 
   assertNixosConfigurations = let
-    odinGitConfig = builtins.head nixosConfigurations.odin.config.programs.git.config;
     odinSystemPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.environment.systemPackages;
     odinFontPackageNames = map (pkg: pkg.name or pkg.pname or "") nixosConfigurations.odin.config.fonts.packages;
+    odinGitWrapper =
+      builtins.head
+      (builtins.filter (pkg: (pkg.name or pkg.pname or "") == "git") nixosConfigurations.odin.config.environment.systemPackages);
+    odinGitConfig = odinGitWrapper.config;
     odinHasPackageMatching = pattern: builtins.any (name: builtins.match pattern name != null) odinSystemPackageNames;
     odinHasFontPackageMatching = pattern: builtins.any (name: builtins.match pattern name != null) odinFontPackageNames;
   in
@@ -67,7 +70,7 @@ let
       && builtins.elem "@wheel" nixosConfigurations.odin.config.nix.settings."trusted-users"
       && builtins.elem "https://illusaen.cachix.org" nixosConfigurations.odin.config.nix.settings."extra-substituters"
       && nixosConfigurations.odin.config.programs.direnv.enable == true
-      && nixosConfigurations.odin.config.programs.git.enable == true
+      && builtins.elem "git" odinSystemPackageNames
       && odinGitConfig.user.email == "jaewchen@gmail.com"
       && odinGitConfig.core.sshCommand == "ssh -i /etc/ssh/host_ed25519"
       && nixosConfigurations.odin.config.hjem.users.wendy.enable == true
@@ -78,7 +81,7 @@ let
       && nixosConfigurations.odin.config.programs.nix-ld.enable == true
       && nixosConfigurations.odin.config.programs.firefox.languagePacks == ["en-US" "zh-CN"]
       && nixosConfigurations.odin.config.programs.firefox.policies.ExtensionSettings ? "uBlock0@raymondhill.net"
-      && nixosConfigurations.odin.config.programs.starship.enable == true
+      && builtins.elem "starship" odinSystemPackageNames
       && nixosConfigurations.odin.config.programs.steam.enable == true
       && nixosConfigurations.odin.config.programs.zsh.enable == true
       && nixosConfigurations.odin.config.programs.zsh.shellAliases.gst == "git status"
@@ -112,6 +115,10 @@ let
 
   assertDarwinParity = let
     caskNames = map (entry: entry.name) darwinParityConfig.homebrew.casks;
+    packageNames = map (pkg: pkg.name or pkg.pname or "") darwinParityConfig.environment.systemPackages;
+    gitWrapper =
+      builtins.head
+      (builtins.filter (pkg: (pkg.name or pkg.pname or "") == "git") darwinParityConfig.environment.systemPackages);
   in
     if
       darwinParityConfig.networking.computerName
@@ -127,8 +134,9 @@ let
       && darwinParityConfig.programs.direnv.enable == true
       && darwinParityConfig.programs.zsh.enable == true
       && darwinParityConfig.environment.shellAliases.gst == "git status"
-      && builtins.match ".*STARSHIP_CONFIG.*" darwinParityConfig.programs.zsh.interactiveShellInit != null
-      && builtins.match ".*sshCommand = \"ssh -i /etc/ssh/host_ed25519\".*" darwinParityConfig.environment.etc.gitconfig.text != null
+      && builtins.elem "starship" packageNames
+      && builtins.elem "git" packageNames
+      && gitWrapper.config.core.sshCommand == "ssh -i /etc/ssh/host_ed25519"
     then true
     else throw "synthetic Darwin parity configuration did not evaluate as expected";
 
