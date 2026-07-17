@@ -1,14 +1,17 @@
 {
-  deployLib,
-  featureLib,
   fleet,
   lib,
-  serviceLib,
+  libs,
   typedFleet,
 }: let
   inherit (lib) pipe;
+  inherit (libs) deployLib featureLib serviceLib;
 
-  testResults = (import ./fleet.nix) // featureLib.tests;
+  testResults =
+    (import ./fleet.nix {
+      inherit (libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
+    })
+    // featureLib.tests;
   hive = import ../hive.nix;
   hiveNodes = removeAttrs hive ["meta"];
 

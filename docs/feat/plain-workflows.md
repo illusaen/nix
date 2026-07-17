@@ -16,7 +16,12 @@ The shell provides the plain toolchain: `agenix`, `colmena`, `dix`, `treefmt`,
 
 ```bash
 bin/check
-nix-instantiate --eval --strict --json tests/fleet.nix
+nix-instantiate --eval --strict --json --expr '
+  let api = import ./default.nix;
+  in import ./tests/fleet.nix {
+    inherit (api.libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
+  }
+'
 nix-build ci.nix -A plain-eval
 ```
 

@@ -1,16 +1,10 @@
-let
-  sources = import ../npins;
-  nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
-  fleetLib = import ../lib/fleet.nix {lib = nixpkgsLib;};
-  featureLib = import ../lib/features.nix {
-    inherit sources;
-    lib = nixpkgsLib;
-  };
-  serviceLib = import ../lib/services.nix {
-    lib = nixpkgsLib;
-  };
-  evalFleet = import ../lib/eval-fleet.nix {lib = nixpkgsLib;};
-
+{
+  evalFleet,
+  featureLib,
+  fleetLib,
+  resolveFleet,
+  serviceLib,
+}: let
   baseFleet = {
     domain = "home.arpa";
     timeZone = "America/Chicago";
@@ -74,27 +68,7 @@ let
   testFleet = patch:
     baseFleet // patch;
 
-  routeFleet = fleet: let
-    typed = evalFleet fleet;
-    hostsWithServices =
-      nixpkgsLib.mapAttrs (
-        hostName: host:
-          host
-          // {
-            services = serviceLib.servicesForHost hostName typed.services;
-          }
-      )
-      typed.hosts;
-  in
-    nixpkgsLib.mapAttrs (
-      _hostName: host:
-        host
-        // {
-          inherit (host) services;
-          features = featureLib.featuresForHost host;
-        }
-    )
-    hostsWithServices;
+  routeFleet = fleet: (resolveFleet fleet).hosts;
 
   routedFleet = routeFleet baseFleet;
 in {
