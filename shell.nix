@@ -10,7 +10,11 @@
     name = "treefmt";
     runtimeInputs = [pkgs.treefmt];
     text = ''
-      exec ${lib.getExe pkgs.treefmt} --no-cache "$@"
+      exec ${lib.getExe pkgs.treefmt} \
+        --tree-root . \
+        --walk filesystem \
+        --no-cache \
+        "$@"
     '';
   };
 in

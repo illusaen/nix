@@ -393,7 +393,7 @@
             <tr>
               <td>Feature API</td>
               <td>Done for active Linux</td>
-              <td><code>features/</code> contains migrated plain features for the active Linux fleet, including the remaining non-Darwin behavior from <code>modules/features/**</code>. The Codex desktop Linux service is intentionally deferred; Darwin remains a separate parity and validation track.</td>
+              <td><code>features/</code> contains the migrated plain features for the active Linux fleet. The Codex desktop Linux service is intentionally deferred; Darwin remains a separate parity and validation track.</td>
             </tr>
             <tr>
               <td>Service routing</td>
@@ -437,8 +437,8 @@
             </tr>
             <tr>
               <td>Legacy flake path</td>
-              <td>Ready for removal</td>
-              <td>Routine shell, CI, cache, deploy, package, wrapper, formatting, and NixOS system-build workflows use the plain entrypoints. <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> are now legacy-only cleanup targets.</td>
+              <td>Removed</td>
+              <td>Routine shell, CI, cache, deploy, package, wrapper, formatting, and NixOS system-build workflows use the plain entrypoints. The old generated flake files, legacy feature modules, and generated schema/fleet modules have been deleted from tracked source.</td>
             </tr>
           </tbody>
         </table>
@@ -921,7 +921,7 @@ shellcheck bin/deploy bin/check</code></pre>
           <tbody>
             <tr>
               <td>Legacy architecture removal</td>
-              <td>Ready for a focused cleanup: delete <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code>, then rerun the plain validation suite. The remaining migration caveat is real-host Darwin validation and remote Darwin activation, not routine Linux flake parity.</td>
+              <td>Done: the old generated flake files, legacy feature modules, and generated schema/fleet modules have been deleted. The remaining migration caveat is real-host Darwin validation and remote Darwin activation, not routine Linux flake parity.</td>
             </tr>
             <tr>
               <td>Wrapper parity</td>
@@ -964,11 +964,11 @@ shellcheck bin/deploy bin/check</code></pre>
         <ol>
           <li>
             Done: add <code>npins</code>, <code>shell.nix</code>, and plain
-            <code>default.nix</code> while keeping the current flake untouched.
+            <code>default.nix</code>.
           </li>
           <li>
-            Done: move fleet registries from <code>gen-modules</code> into
-            <code>fleet/</code> as plain data and add validation checks.
+            Done: move generated fleet registries into <code>fleet/</code> as
+            plain data and add validation checks.
           </li>
           <li>
             Done: create the dendritic <code>features/</code> API and migrate
@@ -990,11 +990,7 @@ shellcheck bin/deploy bin/check</code></pre>
             Next: finish real-host Darwin validation and remote Darwin activation
             design.
           </li>
-          <li>
-            Next cleanup: remove flake-parts, gen-flake, gen-schema,
-            flake-file, and flake outputs now that routine plain entrypoints
-            cover the active workflows.
-          </li>
+          <li>Done: remove the legacy flake output path.</li>
         </ol>
       </section>
 
