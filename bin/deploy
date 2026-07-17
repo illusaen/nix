@@ -85,7 +85,7 @@ colmena_cmd() {
 }
 
 select_hosts() {
-  eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (api.deploy.selectHostNames \"$target\")"
+  eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (api.libs.deployLib.selectHostNames \"$target\")"
 }
 
 platform_for() {
