@@ -1,13 +1,6 @@
 let
   api = import ./default.nix;
-  nixpkgsLib = import (api.sources.nixpkgs.outPath + "/lib");
   pkgs = import api.sources.nixpkgs.outPath {};
-  evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
-  evalLib = import ./lib/eval-configurations.nix {
-    inherit (api) sources;
-    lib = nixpkgsLib;
-  };
-  serviceLib = import ./lib/services.nix {lib = nixpkgsLib;};
   rawFleet = import ./fleet;
   hive = import ./hive.nix;
   darwinConfigurations = import ./darwin.nix;
@@ -29,14 +22,14 @@ let
             };
           };
       };
-    typed = evalFleet raw;
+    typed = api.libs.evalFleet raw;
   in
     typed
     // {
-      hosts = serviceLib.routeHosts typed;
+      hosts = api.libs.serviceLib.routeHosts typed;
     };
   darwinParityConfig =
-    (evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
+    (api.libs.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 
   failedChecks =
     builtins.filter (name: api.checks.${name} != true)
@@ -119,7 +112,7 @@ let
     else throw "nixosConfigurations plain API did not evaluate as expected";
 
   assertDarwinConfigurations =
-    if builtins.attrNames darwinConfigurations == api.deploy.darwinHostNames
+    if builtins.attrNames darwinConfigurations == api.libs.deployLib.darwinHostNames
     then true
     else throw "darwinConfigurations plain API did not match fleet Darwin hosts";
 
@@ -153,7 +146,7 @@ let
   assertLocalPackageOverlay = let
     pkgsWithLocal = import api.sources.nixpkgs.outPath {
       system = "x86_64-linux";
-      overlays = [api.packageOverlay];
+      overlays = [api.overlays];
       config.allowUnfree = true;
     };
     localPackages = pkgsWithLocal.local;

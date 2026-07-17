@@ -419,9 +419,9 @@
               <td><code>bin/check</code>, <code>ci.nix</code>.</td>
             </tr>
             <tr>
-              <td><code>deploy</code></td>
-              <td>Host selector helpers and platform host sets.</td>
-              <td><code>bin/deploy</code>, <code>hive.nix</code>, <code>darwin.nix</code>.</td>
+              <td><code>libs</code></td>
+              <td>Combined attrset of libs.</td>
+              <td>Builds, checks, tests.</td>
             </tr>
             <tr>
               <td><code>nixosConfigurations</code> / <code>darwinConfigurations</code></td>
@@ -429,12 +429,7 @@
               <td><code>darwin.nix</code>, <code>ci.nix</code>, targeted evals.</td>
             </tr>
             <tr>
-              <td><code>mkHostModule</code></td>
-              <td>Builds the Colmena host module from resolved fleet data.</td>
-              <td><code>hive.nix</code>.</td>
-            </tr>
-            <tr>
-              <td><code>packageOverlay</code></td>
+              <td><code>overlays</code></td>
               <td>Inject repo-local packages as <code>pkgs.local</code>.</td>
               <td>Host builders, features, deploys, cache builds.</td>
             </tr>

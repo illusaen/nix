@@ -4,7 +4,7 @@ let
   nixpkgs =
     import sources.nixpkgs.outPath {
       system = builtins.currentSystem;
-      overlays = [api.packageOverlay];
+      overlays = [api.overlays];
     }
     // {
       system = builtins.currentSystem;
@@ -18,7 +18,7 @@ in
   // builtins.mapAttrs (
     hostName: host: {
       imports = [
-        (api.mkHostModule {
+        (api.libs.hostLib.mkHostModule {
           inherit hostName host sources;
           inherit (api) fleet;
         })
@@ -31,4 +31,4 @@ in
       };
     }
   )
-  api.deploy.nixosHosts
+  api.libs.deployLib.nixosHosts
