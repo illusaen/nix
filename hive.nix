@@ -1,10 +1,12 @@
 let
   api = import ./default.nix;
-  inherit (api) sources;
+  inherit (api) sources overlays fleet;
+  deploymentTags = host:
+    ["nixos"] ++ builtins.filter (tag: tag == "desktop" || tag == "server") (host.tags or []);
   nixpkgs =
     import sources.nixpkgs.outPath {
       system = builtins.currentSystem;
-      overlays = [api.overlays];
+      overlays = [overlays];
     }
     // {
       system = builtins.currentSystem;
@@ -19,8 +21,7 @@ in
     hostName: host: {
       imports = [
         (api.libs.hostLib.mkHostModule {
-          inherit hostName host sources;
-          inherit (api) fleet;
+          inherit hostName host sources fleet;
         })
       ];
 
@@ -28,6 +29,7 @@ in
         inherit (host) targetHost;
         targetUser = host.owner;
         buildOnTarget = false;
+        tags = deploymentTags host;
       };
     }
   )

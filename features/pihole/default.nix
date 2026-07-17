@@ -55,7 +55,7 @@ in {
               "dns.domain".name = fleet.domain;
             };
           };
-          pihole-web.enable = {
+          pihole-web = {
             enable = true;
             ports = [
               "80r"

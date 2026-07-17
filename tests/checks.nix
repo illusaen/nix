@@ -9,6 +9,8 @@
   inherit (lib) pipe;
 
   testResults = (import ./fleet.nix) // featureLib.tests;
+  hive = import ../hive.nix;
+  hiveNodes = removeAttrs hive ["meta"];
 
   hostFeatures = pipe fleet.hosts [
     builtins.attrNames
@@ -84,5 +86,10 @@ in
       && deployLib.selectHostNames "@all" == ["huginn" "muninn" "odin"]
       && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
       && deployLib.selectHostNames "@darwin" == []
-      && deployLib.selectHostNames "@server" == ["huginn" "muninn"];
+      && deployLib.selectHostNames "@server" == ["huginn" "muninn"]
+      && builtins.all (host: builtins.elem "nixos" host.deployment.tags) (builtins.attrValues hiveNodes)
+      && builtins.elem "server" hive.huginn.deployment.tags
+      && builtins.elem "desktop" hive.odin.deployment.tags
+      && !(builtins.elem "gpu:nvidia" hive.odin.deployment.tags)
+      && !(builtins.elem "feature:dev" hive.odin.deployment.tags);
   }
