@@ -1,4 +1,4 @@
-{
+{sources, ...}: {
   imports = [
     "shell-utils"
     ./networking.nix
@@ -17,7 +17,6 @@
       fleet,
       fleetLib,
       lib,
-      sources,
       user,
       ...
     }: let
@@ -42,11 +41,7 @@
       };
     };
 
-    darwin = {
-      host,
-      sources,
-      ...
-    }: {
+    darwin = {host, ...}: {
       imports = [
         (import "${sources.hjem.outPath}/modules/nix-darwin").default
       ];

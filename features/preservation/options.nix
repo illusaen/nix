@@ -28,50 +28,54 @@
         inherit description;
       };
   in {
-    options.persist = mkPersistOption false "Persistent root directories/files";
-    options.persistUser = mkPersistOption true "Persistent user directories/files";
-    options.ignored = mkPersistOption false "Ignored root directories/files used in find ephem";
-    options.ignoredUser = mkPersistOption false "Ignored user directories/files used in find ephem";
-
-    config.persist = {
-      directories = [
-        "/var/log"
-        "/var/lib/systemd/timers"
-        "/var/lib/systemd/rfkill"
-        "/var/lib/systemd/coredump"
-        {
-          directory = "/var/lib/nixos";
-          inInitrd = true;
-        }
-      ];
-      files = [
-        {
-          file = "/etc/machine-id";
-          inInitrd = true;
-        }
-        {
-          file = "/var/lib/systemd/random-seed";
-          how = "symlink";
-          inInitrd = true;
-          configureParent = true;
-        }
-      ];
+    options = {
+      persist = mkPersistOption false "Persistent root directories/files";
+      persistUser = mkPersistOption true "Persistent user directories/files";
+      ignored = mkPersistOption false "Ignored root directories/files used in find ephem";
+      ignoredUser = mkPersistOption false "Ignored user directories/files used in find ephem";
     };
 
-    config.persistUser = {
-      commonMountOptions = [
-        "x-gvfs-hide"
-        "x-gvfs-trash"
-      ];
-      directories = [
-        {
-          directory = ".local/share/keyrings";
-          mode = "0700";
-        }
-        "Downloads"
-        "Projects"
-        "Pictures"
-      ];
+    config = {
+      persist = {
+        directories = [
+          "/var/log"
+          "/var/lib/systemd/timers"
+          "/var/lib/systemd/rfkill"
+          "/var/lib/systemd/coredump"
+          {
+            directory = "/var/lib/nixos";
+            inInitrd = true;
+          }
+        ];
+        files = [
+          {
+            file = "/etc/machine-id";
+            inInitrd = true;
+          }
+          {
+            file = "/var/lib/systemd/random-seed";
+            how = "symlink";
+            inInitrd = true;
+            configureParent = true;
+          }
+        ];
+      };
+
+      persistUser = {
+        commonMountOptions = [
+          "x-gvfs-hide"
+          "x-gvfs-trash"
+        ];
+        directories = [
+          {
+            directory = ".local/share/keyrings";
+            mode = "0700";
+          }
+          "Downloads"
+          "Projects"
+          "Pictures"
+        ];
+      };
     };
   };
 }

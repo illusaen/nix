@@ -13,7 +13,10 @@
 
   callFeature = feature:
     if builtins.isFunction feature
-    then feature {}
+    then
+      feature {
+        sources = import ../npins;
+      }
     else feature;
 
   loadFeatureFile = path: callFeature (import path);

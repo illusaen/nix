@@ -1,9 +1,5 @@
-{
-  modules.nixos = {
-    pkgs,
-    sources,
-    ...
-  }: let
+{sources, ...}: {
+  modules.nixos = {pkgs, ...}: let
     noctaliaModule = sources.noctalia.outPath + "/nix/nixos-module.nix";
     noctaliaPackage = pkgs.callPackage (sources.noctalia.outPath + "/nix/package.nix") {};
   in {

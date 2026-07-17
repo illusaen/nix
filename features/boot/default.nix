@@ -1,11 +1,7 @@
-{
+{sources, ...}: {
   imports = [./hardware.nix];
 
-  modules.nixos = {
-    host,
-    sources,
-    ...
-  }: {
+  modules.nixos = {host, ...}: {
     imports = [
       "${sources.disko.outPath}/module.nix"
       ./disko.nix

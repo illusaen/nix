@@ -1,4 +1,4 @@
-{
+{sources, ...}: {
   imports = [./options.nix];
 
   modules.nixos = {
@@ -6,7 +6,6 @@
     host,
     lib,
     pkgs,
-    sources,
     user,
     ...
   }: let

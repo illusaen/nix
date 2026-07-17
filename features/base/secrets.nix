@@ -1,7 +1,6 @@
-{
+{sources, ...}: {
   modules.generic = {
     pkgs,
-    sources,
     host,
     ...
   }: let
