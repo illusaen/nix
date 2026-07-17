@@ -24,8 +24,6 @@ in
         targetUser = host.owner;
         buildOnTarget = false;
       };
-
-      nixpkgs.hostPlatform.system = host.system;
     }
   )
   api.deploy.nixosHosts

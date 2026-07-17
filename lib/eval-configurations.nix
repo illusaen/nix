@@ -15,9 +15,6 @@ in {
         evalConfig {
           inherit (host) system;
           modules = [
-            {
-              nixpkgs.hostPlatform.system = host.system;
-            }
             (hostLib.mkHostModule {
               inherit fleet hostName host sources;
             })
@@ -37,7 +34,6 @@ in {
           modules = [
             {
               nixpkgs = {
-                hostPlatform.system = host.system;
                 source = sources.nixpkgs.outPath;
                 flake.source = sources.nixpkgs.outPath;
               };

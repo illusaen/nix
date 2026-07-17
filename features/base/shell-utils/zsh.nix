@@ -20,6 +20,7 @@ let
     l = "eza -alg";
     ll = "eza --tree --git-ignore --all";
     whichstore = "nix_store_for_command";
+    nd = "dix /run/current-system";
   };
 in {
   modules = {

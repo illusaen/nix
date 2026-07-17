@@ -9,7 +9,15 @@
   ];
 
   modules = {
-    generic = {user, ...}: {
+    generic = {
+      host,
+      user,
+      ...
+    }: {
+      nixpkgs = {
+        config.allowUnfree = true;
+        hostPlatform = host.system;
+      };
       hjem.users.${user.name}.enable = true;
     };
 
@@ -28,8 +36,6 @@
       ];
 
       system.stateVersion = "26.11";
-
-      nixpkgs.config.allowUnfree = true;
 
       users.users.${user.name} = {
         isNormalUser = true;
