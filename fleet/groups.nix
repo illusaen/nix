@@ -19,6 +19,11 @@
     members = ["system-access"];
   };
 
+  i2c = {
+    isPosix = true;
+    members = ["system-access"];
+  };
+
   system-access = {
     isPosix = false;
     members = [];
