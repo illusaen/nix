@@ -12,7 +12,7 @@ resolution then adds routed service feature names to each routed host.
 - `servicesForHost` selects services where the host is the service `primary` or
   one of its `backups`.
 - Each routed service receives `role = "primary"` or `role = "backup"`.
-- `servicesByHost` returns each host's routed `services` list.
+- `servicesForHost` returns one host's routed `services` list.
 - Port conflicts are checked per host and port.
 
 Example service data:

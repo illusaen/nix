@@ -511,8 +511,8 @@
           <li><code>npins/default.nix</code> converts locked GitHub and GitLab pins into source paths.</li>
           <li><code>fleet/default.nix</code> returns raw fleet data.</li>
           <li><code>fleetLib.assertValid</code> rejects malformed hosts, users, groups, services, duplicate addresses, and missing host keys.</li>
-          <li><code>serviceLib.servicesByHost</code> returns routed service records by host name.</li>
-          <li><code>featureLib.featuresByHost</code> returns derived feature names by host name after services are attached.</li>
+          <li><code>serviceLib.servicesForHost</code> returns routed service records for one host.</li>
+          <li><code>featureLib.featuresForHost</code> returns derived feature names after services are attached.</li>
           <li><code>featureLib.modulesFor</code> closes feature imports and returns the generic plus platform-specific module list.</li>
           <li><code>nixosConfigurations</code> and <code>darwinConfigurations</code> expose evaluated hosts from NixOS <code>eval-config.nix</code> and nix-darwin <code>eval-config.nix</code>.</li>
         </ol>

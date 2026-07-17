@@ -174,12 +174,6 @@ in rec {
   featuresForHost = host:
     unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" (host.services or []));
 
-  featuresByHost = hosts:
-    builtins.mapAttrs (
-      _hostName: featuresForHost
-    )
-    hosts;
-
   serviceSecretRequirementsFor = services:
     pipe services [
       attrNames

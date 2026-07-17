@@ -51,13 +51,6 @@
       (map (hostName: portConflictsForHost hostName fleet.services))
       concatLists
     ];
-
-  servicesByHost = fleet:
-    builtins.mapAttrs (
-      hostName: _host:
-        servicesForHost hostName fleet.services
-    )
-    fleet.hosts;
 in {
-  inherit portConflicts requireRoutedService servicesByHost;
+  inherit portConflicts requireRoutedService servicesForHost;
 }

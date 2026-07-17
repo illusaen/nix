@@ -76,24 +76,22 @@ let
 
   routeFleet = fleet: let
     typed = evalFleet fleet;
-    servicesByHost = serviceLib.servicesByHost typed;
     hostsWithServices =
       nixpkgsLib.mapAttrs (
         hostName: host:
           host
           // {
-            services = servicesByHost.${hostName};
+            services = serviceLib.servicesForHost hostName typed.services;
           }
       )
       typed.hosts;
-    featuresByHost = featureLib.featuresByHost hostsWithServices;
   in
     nixpkgsLib.mapAttrs (
-      hostName: host:
+      _hostName: host:
         host
         // {
           inherit (host) services;
-          features = featuresByHost.${hostName};
+          features = featureLib.featuresForHost host;
         }
     )
     hostsWithServices;

@@ -669,20 +669,22 @@
         </div>
 
         <pre><code># lib/services.nix
-servicesByHost = fleet:
-  mapHosts (hostName: _:
-    servicesForHost hostName fleet.services);
+servicesForHost = hostName: services:
+  routed service records for one host;
 
 # lib/features.nix
-featuresByHost = hosts:
-  mapHosts (_: host:
-    derivedHostFeatures host
-    ++ (host.features or [])
-    ++ serviceFeatureNames host.services);
+featuresForHost = host:
+  derivedHostFeatures host
+  ++ (host.features or [])
+  ++ serviceFeatureNames host.services;
 
 # default.nix
-resolveFleet = evaluatedFleet:
-  attach servicesByHost and featuresByHost once;</code></pre>
+resolveFleet = rawFleet:
+  pipe rawFleet [
+    evalFleet
+    attach servicesForHost
+    attach featuresForHost
+  ];</code></pre>
 
         <p>
           The resolver must fail if a service routes to a host but the selected

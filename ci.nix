@@ -22,9 +22,8 @@ let
             };
           };
       };
-    typed = api.libs.evalFleet raw;
   in
-    api.libs.resolveFleet typed;
+    api.libs.resolveFleet raw;
   darwinParityConfig =
     (api.libs.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 

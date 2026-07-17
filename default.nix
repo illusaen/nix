@@ -18,20 +18,8 @@ let
     lib = nixpkgsLib;
   };
   evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
-  typedFleet = evalFleet (import ./fleet);
-  resolveFleet = evaluatedFleet: let
-    servicesByHost = serviceLib.servicesByHost evaluatedFleet;
-    hostsWithServices =
-      nixpkgsLib.mapAttrs (
-        hostName: host:
-          host
-          // {
-            services = servicesByHost.${hostName};
-          }
-      )
-      evaluatedFleet.hosts;
-    featuresByHost = featureLib.featuresByHost hostsWithServices;
-  in
+  rawFleet = import ./fleet;
+  attachServices = evaluatedFleet:
     evaluatedFleet
     // {
       hosts =
@@ -39,13 +27,32 @@ let
           hostName: host:
             host
             // {
-              inherit (host) services;
-              features = featuresByHost.${hostName};
+              services = serviceLib.servicesForHost hostName evaluatedFleet.services;
             }
         )
-        hostsWithServices;
+        evaluatedFleet.hosts;
     };
-  fleet = fleetLib.assertValid (resolveFleet typedFleet);
+  attachFeatures = evaluatedFleet:
+    evaluatedFleet
+    // {
+      hosts =
+        nixpkgsLib.mapAttrs (
+          _hostName: host:
+            host
+            // {
+              features = featureLib.featuresForHost host;
+            }
+        )
+        evaluatedFleet.hosts;
+    };
+  resolveFleet = rawFleet:
+    nixpkgsLib.pipe rawFleet [
+      evalFleet
+      attachServices
+      attachFeatures
+    ];
+  typedFleet = evalFleet rawFleet;
+  fleet = fleetLib.assertValid (resolveFleet rawFleet);
   deployLib = import ./lib/deploy.nix {
     inherit fleet fleetLib;
   };
