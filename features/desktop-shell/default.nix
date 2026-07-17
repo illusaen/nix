@@ -22,8 +22,6 @@
     };
     services.blueman.enable = true;
 
-    programs.dconf.enable = true;
-
     systemdAutostart = lib.mkIf (options ? systemdAutostart) [
       rec {
         inherit (config.services.tailscale) package;

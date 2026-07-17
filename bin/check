@@ -1,8 +1,9 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -eu
 
 ARG="${1:-""}"
 
+# shellcheck disable=SC2016
 failed_checks="$(
   nix-instantiate --eval --strict --json --expr '
     let

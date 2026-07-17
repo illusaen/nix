@@ -437,8 +437,8 @@
             </tr>
             <tr>
               <td>Legacy flake path</td>
-              <td>Still present</td>
-              <td><code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> remain until plain workflows reach parity.</td>
+              <td>Ready for removal</td>
+              <td>Routine shell, CI, cache, deploy, package, wrapper, formatting, and NixOS system-build workflows use the plain entrypoints. <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> are now legacy-only cleanup targets.</td>
             </tr>
           </tbody>
         </table>
@@ -921,7 +921,7 @@ shellcheck bin/deploy bin/check</code></pre>
           <tbody>
             <tr>
               <td>Legacy architecture removal</td>
-              <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> only after plain deploy, package, wrapper, formatting, CI, cache, and system-build workflows cover the same jobs.</td>
+              <td>Ready for a focused cleanup: delete <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code>, then rerun the plain validation suite. The remaining migration caveat is real-host Darwin validation and remote Darwin activation, not routine Linux flake parity.</td>
             </tr>
             <tr>
               <td>Wrapper parity</td>
@@ -953,7 +953,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Plain formatting and static checks</td>
-              <td>Done for treefmt: <code>treefmt.toml</code> is checked in, <code>shell.nix</code> provides the required tools, and plain CI runs <code>treefmt --fail-on-change --no-cache</code>. Pre-commit installation can remain a devshell convenience until the legacy flake module tree is removed.</td>
+              <td>Done for treefmt: <code>treefmt.toml</code> is checked in, <code>shell.nix</code> provides the required tools, <code>.envrc</code> loads the plain shell, and plain CI runs <code>treefmt --fail-on-change --no-cache</code>. Pre-commit installation is no longer part of the active plain workflow.</td>
             </tr>
           </tbody>
         </table>
@@ -991,8 +991,9 @@ shellcheck bin/deploy bin/check</code></pre>
             design.
           </li>
           <li>
-            Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
-            flake outputs once the plain entrypoints cover all workflows.
+            Next cleanup: remove flake-parts, gen-flake, gen-schema,
+            flake-file, and flake outputs now that routine plain entrypoints
+            cover the active workflows.
           </li>
         </ol>
       </section>

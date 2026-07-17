@@ -6,8 +6,10 @@ simpler reasoning about why a package is in a host closure.
 
 ## Current Shape
 
-The flake imports the whole module tree with `import-tree`. Individual host
-systems are then built from named modules:
+The plain architecture evaluates hosts from `default.nix`, `fleet/`, and the
+feature resolver in `lib/features.nix`. Individual host systems are built from
+feature names selected by platform, tags, explicit feature tags, and service
+routing:
 
 - `odin`: `base`, `boot`, `hardware`, `wendy`, `desktop-shell`, `programs`,
   `theming`, `preservation`, `nvidia`
@@ -113,8 +115,8 @@ and `huginn` use that platform:
 ["x86_64-linux" "aarch64-linux" "x86_64-linux"]
 ```
 
-This is mostly a flake output cleanup; concrete timing did not show a material
-change for `odin`'s NixOS toplevel eval.
+This was mostly an output cleanup in the old flake path; concrete timing did not
+show a material change for `odin`'s NixOS toplevel eval.
 
 ### Prefer Read-Only Eval For DrvPath Checks
 
@@ -132,7 +134,7 @@ Measured on this repo:
 Use this for quick evaluation checks:
 
 ```sh
-nix eval --read-only --impure .#nixosConfigurations.odin.config.system.build.toplevel.drvPath
+nix eval --read-only --impure --expr '(import ./default.nix).nixosConfigurations.odin.config.system.build.toplevel.drvPath'
 ```
 
 Do not use `--read-only` as a substitute for build or switch commands; it is
@@ -201,7 +203,7 @@ configuration to expose aliases that were not used by the repo.
 Use the normal configuration targets for explicit full builds:
 
 ```sh
-nix build .#nixosConfigurations.odin.config.system.build.toplevel
+nix-build default.nix -A nixosConfigurations.odin.config.system.build.toplevel
 ```
 
 ## Smaller Cleanups
@@ -212,9 +214,8 @@ nix build .#nixosConfigurations.odin.config.system.build.toplevel
   Remaining duplicate paths come from upstream NixOS modules, such as filesystem
   tools, firewall/nftables helpers, user/group management, and shell defaults.
   Nix store closures deduplicate by path, so these are mostly readability noise.
-- `modules/features/programs/steam.nix` has `homebrew.cashs`, which looks like a
-  typo for `homebrew.casks`. This is not a Linux build-time issue, but it is dead
-  configuration.
+- A typo in the old Darwin Steam cask configuration was left behind with the
+  legacy module tree. It is not part of the active plain Linux build path.
 
 ## Suggested Implementation Order
 
@@ -232,15 +233,15 @@ nix build .#nixosConfigurations.odin.config.system.build.toplevel
 Use these after each cleanup step:
 
 ```sh
-nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.mapAttrs (_: h: h.moduleNames) f.evaluation.config.fleet.hosts'
-nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in map (p: p.name or null) f.nixosConfigurations.huginn.config.environment.systemPackages'
-nix eval --impure --expr '(builtins.getFlake "path:/home/wendy/Projects/nix").nixosConfigurations.odin.config.system.build.toplevel.drvPath'
-nix eval --impure --json --expr 'let f = builtins.getFlake "path:/home/wendy/Projects/nix"; in builtins.attrNames f.checks.x86_64-linux'
+nix-instantiate --eval --strict --json --expr 'let api = import ./default.nix; in builtins.mapAttrs (_: h: h.features) api.fleet.hosts'
+nix-instantiate --eval --strict --json --expr 'let api = import ./default.nix; in map (p: p.name or p.pname or null) api.nixosConfigurations.huginn.config.environment.systemPackages'
+nix-instantiate --eval --strict --expr '(import ./default.nix).nixosConfigurations.odin.config.system.build.toplevel.drvPath'
+nix-instantiate --eval --strict --json --expr 'builtins.attrNames (import ./default.nix).checks'
 ```
 
 For closure size comparisons, build the target first and then inspect it:
 
 ```sh
-nix build .#nixosConfigurations.huginn.config.system.build.toplevel
-nix path-info -rSh ./result
+nix-build default.nix -A nixosConfigurations.huginn.config.system.build.toplevel -o result-huginn
+nix path-info -rSh ./result-huginn
 ```

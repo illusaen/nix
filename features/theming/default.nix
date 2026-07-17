@@ -191,12 +191,12 @@
           --italic-text=always
         '';
         "bat/themes/Base16.tmTheme" = scheme {
-          template = ../../modules/features/base/shell-utils/bat/bat.tmTheme.mustache;
+          template = ../../resources/templates/bat/bat.tmTheme.mustache;
           extension = ".tmTheme";
         };
         "gtk-3.0/settings.ini" = pkgs.writeText "gtk-settings.ini" (mkGtkIni profile);
         "gtk-4.0/settings.ini" = pkgs.writeText "gtk-settings.ini" (mkGtkIni profile);
-        "noctalia/config.toml" = pkgs.replaceVars ../../modules/features/desktop-shell/noctalia/noctalia-config.toml.template {
+        "noctalia/config.toml" = pkgs.replaceVars ../../resources/templates/noctalia/noctalia-config.toml.template {
           mono = fonts.mono.name;
           sans = fonts.sans.name;
           main = host.monitors.main;
@@ -213,7 +213,7 @@
         "zathura/zathurarc" = mkZathurarc scheme;
         "zed/settings.json" = mkZedSettings scheme;
         "zed/themes/base24-theme.json" = scheme {
-          template = ../../modules/features/programs/dev/zed/zed-base24.json.mustache;
+          template = ../../resources/templates/zed/zed-base24.json.mustache;
           extension = ".json";
         };
       };

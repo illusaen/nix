@@ -19,7 +19,7 @@ includes = ["*.py"]
 
 [formatter.shell]
 command = "shellcheck"
-options = ["-s", "sh"]
+options = ["-s", "bash"]
 includes = ["bin/*"]
 
 [formatter.statix]

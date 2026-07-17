@@ -49,9 +49,7 @@ def value(name: str, root: Path) -> str:
 
 
 def render(root: Path, output: Path) -> None:
-    template = (
-        root / "modules/features/desktop-shell/noctalia/noctalia-config.toml.template"
-    )
+    template = root / "resources/templates/noctalia/noctalia-config.toml.template"
     replacements = {f"@{name}@": value(name, root) for name in DEFAULTS}
     text = template.read_text()
     for needle, replacement in replacements.items():

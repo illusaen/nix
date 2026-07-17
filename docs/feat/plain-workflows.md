@@ -31,8 +31,7 @@ nix-shell shell.nix --run 'treefmt --fail-on-change --no-cache'
 ```
 
 `treefmt.toml` is the source of truth for formatting and static Nix checks.
-Pre-commit can stay a devshell convenience while the legacy flake module tree is
-still present.
+Direnv loads this same plain shell through `.envrc`.
 
 ## Deployment
 
