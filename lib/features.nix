@@ -3,10 +3,13 @@
   inherit (lib) pipe unique;
 
   featureRoot = ../features;
+  featureEntries = readDir featureRoot;
 
-  featureNames = pipe (attrNames (readDir featureRoot)) [
-    (filter (name: (readDir featureRoot).${name} == "directory"))
-  ];
+  featureNamesFrom = entries:
+    pipe entries [
+      attrNames
+      (filter (name: entries.${name} == "directory"))
+    ];
 
   callFeature = feature:
     if builtins.isFunction feature
@@ -82,7 +85,8 @@
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
 in rec {
-  tests = pipe featureNames [
+  tests = pipe featureEntries [
+    featureNamesFrom
     (map (featureName:
       map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
       (attrNames (features.${featureName}.tests or {}))))
@@ -100,7 +104,11 @@ in rec {
     )
     names;
 
-  features = listToAttrs (map (name: lib.nameValuePair name (loadFeature name)) featureNames);
+  features = pipe featureEntries [
+    featureNamesFrom
+    (map (name: lib.nameValuePair name (loadFeature name)))
+    listToAttrs
+  ];
 
   close = names: let
     go = seen: pending:
@@ -132,7 +140,8 @@ in rec {
     ];
 
   serviceSecretRequirementsFor = services:
-    pipe (attrNames services) [
+    pipe services [
+      attrNames
       (map (serviceName: let
         service = services.${serviceName};
         featureName = service.feature or serviceName;
@@ -147,7 +156,8 @@ in rec {
     ];
 
   serviceFeaturePlatformModuleErrors = hosts: services:
-    pipe (attrNames services) [
+    pipe services [
+      attrNames
       (map (serviceName: let
         service = services.${serviceName};
         featureName = service.feature or serviceName;

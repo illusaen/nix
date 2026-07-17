@@ -52,7 +52,7 @@ Builds and applies run `dix` automatically for local targets when `dix` is in
 ## Cache Builds
 
 ```bash
-nix-build default.nix -A packages.x86_64-linux
+nix-build ci.nix -A nixosConfigurations.odin.config.system.build.toplevel
 nix-build --expr '
   let
     api = import ./default.nix;

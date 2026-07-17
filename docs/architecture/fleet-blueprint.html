@@ -413,7 +413,7 @@
             <tr>
               <td>Local package overlay</td>
               <td>Done</td>
-              <td><code>lib/packages.nix</code> exposes repo packages through the plain API and applies the overlay to plain host builders.</td>
+              <td><code>lib/packages.nix</code> exposes repo packages through <code>pkgs.local</code> by applying the overlay to plain host builders.</td>
             </tr>
             <tr>
               <td>Theme fleet data</td>
@@ -928,7 +928,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Plain package and cache workflow</td>
-              <td>Done for current local packages and explicit heavy service targets: <code>lib/packages.nix</code> exposes the local package set, and <code>.github/workflows/nix-cache.yml</code> builds <code>default.nix -A packages.x86_64-linux</code>, the configured CUDA <code>llama-cpp</code> service package, and the plain <code>odin</code> NixOS toplevel. Add more plain build targets when a large upstream dependency needs a named cache target outside the full host build.</td>
+              <td>Done for current local packages and explicit heavy service targets: <code>lib/packages.nix</code> exposes repo-local packages through <code>pkgs.local</code>, and <code>.github/workflows/nix-cache.yml</code> builds the configured CUDA <code>llama-cpp</code> service package plus the plain <code>odin</code> NixOS toplevel. Add more plain build targets when a large upstream dependency needs a named cache target outside the full host build.</td>
             </tr>
             <tr>
               <td>Darwin parity</td>
@@ -940,7 +940,7 @@ shellcheck bin/deploy bin/check</code></pre>
             </tr>
             <tr>
               <td>Full CI wiring</td>
-              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, treefmt checks, deploy planning, and hive evaluation. <code>.github/workflows/nix-cache.yml</code> builds local packages and the plain <code>odin</code> toplevel. Add Darwin evaluation when a Darwin host returns to the plain fleet.</td>
+              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, treefmt checks, deploy planning, and hive evaluation. <code>.github/workflows/nix-cache.yml</code> builds explicit heavy package targets and the plain <code>odin</code> toplevel, which covers local packages in Odin's closure. Add Darwin evaluation when a Darwin host returns to the plain fleet.</td>
             </tr>
             <tr>
               <td>Runtime theming</td>

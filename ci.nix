@@ -144,23 +144,28 @@ let
     then true
     else throw "synthetic Darwin parity configuration did not evaluate as expected";
 
-  assertPackages = let
-    packages = api.packages.x86_64-linux;
+  assertLocalPackageOverlay = let
+    pkgsWithLocal = import api.sources.nixpkgs.outPath {
+      system = "x86_64-linux";
+      overlays = [api.packageLib.overlay];
+      config.allowUnfree = true;
+    };
+    localPackages = pkgsWithLocal.local;
   in
     if
-      builtins.attrNames packages
+      builtins.attrNames localPackages
       == api.packageLib.packageNames
-      && packages.mactahoe-cursors.pname == "mactahoe-cursors"
-      && packages.niri-scripts.name == "niri-scripts"
+      && localPackages.mactahoe-cursors.pname == "mactahoe-cursors"
+      && localPackages.niri-scripts.name == "niri-scripts"
     then true
-    else throw "plain package API did not expose expected local packages";
+    else throw "local package overlay did not expose expected packages";
 in {
   plain-eval = assert assertNoFailedChecks;
   assert assertHiveHosts;
   assert assertNixosConfigurations;
   assert assertDarwinConfigurations;
   assert assertDarwinParity;
-  assert assertPackages;
+  assert assertLocalPackageOverlay;
     pkgs.runCommand "plain-fleet-eval-checks" {} ''
       touch $out
     '';

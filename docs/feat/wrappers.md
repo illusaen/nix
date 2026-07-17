@@ -91,7 +91,6 @@ without host arguments because `nix-wrapper-modules` also exports it as a global
 package:
 
 ```text
-packages.<system>.<name>
 pkgs.local.<name>
 ```
 
