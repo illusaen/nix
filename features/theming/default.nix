@@ -1,6 +1,4 @@
 {
-  imports = [];
-
   modules.nixos = {
     fleet,
     host,
@@ -381,36 +379,38 @@
       ];
       text = ''
         set -euo pipefail
-        theme="$(cat ${themeListFile} | fuzzel --dmenu --prompt 'Theme: ')"
+        theme="$(fuzzel --dmenu --prompt 'Theme: ' < ${themeListFile})"
         [ -n "$theme" ] || exit 0
         exec theme-apply "$theme"
       '';
     };
   in {
-    environment.systemPackages = [
-      (localThemePackage cursor)
-      (localThemePackage gtk)
-      (localThemePackage icon)
-      profilesPackage
-      themeApply
-      themeCurrent
-      themeCycle
-      themeList
-      themeSelect
-    ];
+    environment = {
+      systemPackages = [
+        (localThemePackage cursor)
+        (localThemePackage gtk)
+        (localThemePackage icon)
+        profilesPackage
+        themeApply
+        themeCurrent
+        themeCycle
+        themeList
+        themeSelect
+      ];
 
-    environment.sessionVariables = {
-      BAT_CONFIG_DIR = "${profileStateDir}/current/bat";
-      GTK_THEME = gtk.name;
-      NIX_THEME_STATE_DIR = profileStateDir;
-      QT_QPA_PLATFORMTHEME = "qt6ct";
-      XCURSOR_SIZE = toString cursor.size;
-      XCURSOR_THEME = cursor.name;
-    };
+      sessionVariables = {
+        BAT_CONFIG_DIR = "${profileStateDir}/current/bat";
+        GTK_THEME = gtk.name;
+        NIX_THEME_STATE_DIR = profileStateDir;
+        QT_QPA_PLATFORMTHEME = "qt6ct";
+        XCURSOR_SIZE = toString cursor.size;
+        XCURSOR_THEME = cursor.name;
+      };
 
-    environment.etc = {
-      "xdg/gtk-3.0/settings.ini".text = gtkIni;
-      "xdg/gtk-4.0/settings.ini".text = gtkIni;
+      etc = {
+        "xdg/gtk-3.0/settings.ini".text = gtkIni;
+        "xdg/gtk-4.0/settings.ini".text = gtkIni;
+      };
     };
 
     programs.dconf = {
@@ -442,5 +442,5 @@
     '';
   };
 
-  modules.darwin = _: {};
+  modules.darwin = {};
 }

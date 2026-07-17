@@ -89,11 +89,11 @@ select_hosts() {
 }
 
 platform_for() {
-  eval_expr "let api = import ./default.nix; in api.hosts.\"$1\".platform"
+  eval_expr "let api = import ./default.nix; in api.fleet.hosts.\"$1\".platform"
 }
 
 target_host_for() {
-  eval_expr "let api = import ./default.nix; in api.hosts.\"$1\".targetHost"
+  eval_expr "let api = import ./default.nix; in api.fleet.hosts.\"$1\".targetHost"
 }
 
 is_local_target() {

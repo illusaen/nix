@@ -1,6 +1,4 @@
 {
-  imports = [];
-
   modules.nixos = {
     config,
     fleet,
@@ -39,7 +37,7 @@
     ];
   };
 
-  modules.darwin = _: {
+  modules.darwin = {
     homebrew.casks = ["steam"];
   };
 }

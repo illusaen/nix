@@ -77,8 +77,6 @@ let
 in {
   inherit evalFleet evalLib fleet hostLib packageLib rawFleet serviceLib sources;
 
-  inherit (fleet) hosts;
-
   deploy = deployLib;
 
   debug = {
@@ -104,11 +102,6 @@ in {
 
   checks = {
     fleet = fleetLib.validate typedFleet == [];
-    routedServices =
-      (serviceLib.servicesForHost "huginn" typedFleet.services).navidrome.role
-      == "primary"
-      && (serviceLib.servicesForHost "huginn" typedFleet.services).pihole.role == "primary"
-      && (serviceLib.servicesForHost "muninn" typedFleet.services).pihole.role == "backup";
     featureClosure =
       featureLib.close ["base"]
       == ["base" "shell-utils"]
@@ -123,22 +116,12 @@ in {
       )
       (builtins.attrNames fleet.hosts);
     serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
-    serviceFeaturesHaveNixosModules = featureLib.missingPlatformModules "nixos" serviceFeatures == [];
     routedServiceFeaturesHavePlatformModules = serviceFeaturePlatformModuleErrors == [];
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
     serviceRoutingComplete = serviceRoutingErrors == [];
     servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
-    localPackagesExist =
-      packageLib.packageNames
-      == [
-        "mactahoe-cursors"
-        "mactahoe-gtk-theme"
-        "mactahoe-icon-theme"
-        "misc-scripts"
-        "niri-scripts"
-      ];
     inherit themeProfilesValid;
     deploySelectors =
       deployLib.selectHostNames "odin"

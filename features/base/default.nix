@@ -8,53 +8,55 @@
     ./tailscale.nix
   ];
 
-  modules.generic = {user, ...}: {
-    hjem.users.${user.name}.enable = true;
-  };
-
-  modules.nixos = {
-    fleet,
-    fleetLib,
-    lib,
-    sources,
-    user,
-    ...
-  }: let
-    posixGroups = fleetLib.userPosixGroups fleet user.name;
-    extraGroups = lib.unique (posixGroups ++ lib.optional (user.system.isAdmin or false) "wheel");
-  in {
-    imports = [
-      (import "${sources.hjem.outPath}/modules/nixos").default
-    ];
-
-    system.stateVersion = "26.11";
-
-    nixpkgs.config.allowUnfree = true;
-
-    users.users.${user.name} = {
-      isNormalUser = true;
-      uid = lib.mkIf ((user.system.uid or null) != null) user.system.uid;
-      description = user.identity.displayName or user.name;
-      inherit extraGroups;
-      openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
-      password = "arst";
+  modules = {
+    generic = {user, ...}: {
+      hjem.users.${user.name}.enable = true;
     };
-  };
 
-  modules.darwin = {
-    host,
-    sources,
-    ...
-  }: {
-    imports = [
-      (import "${sources.hjem.outPath}/modules/nix-darwin").default
-    ];
+    nixos = {
+      fleet,
+      fleetLib,
+      lib,
+      sources,
+      user,
+      ...
+    }: let
+      posixGroups = fleetLib.userPosixGroups fleet user.name;
+      extraGroups = lib.unique (posixGroups ++ lib.optional (user.system.isAdmin or false) "wheel");
+    in {
+      imports = [
+        (import "${sources.hjem.outPath}/modules/nixos").default
+      ];
 
-    system.stateVersion = 6;
+      system.stateVersion = "26.11";
 
-    homebrew = {
-      enable = true;
-      user = host.owner;
+      nixpkgs.config.allowUnfree = true;
+
+      users.users.${user.name} = {
+        isNormalUser = true;
+        uid = lib.mkIf ((user.system.uid or null) != null) user.system.uid;
+        description = user.identity.displayName or user.name;
+        inherit extraGroups;
+        openssh.authorizedKeys.keys = map (key: key.key) (user.identity.sshKeys or []);
+        password = "arst";
+      };
+    };
+
+    darwin = {
+      host,
+      sources,
+      ...
+    }: {
+      imports = [
+        (import "${sources.hjem.outPath}/modules/nix-darwin").default
+      ];
+
+      system.stateVersion = 6;
+
+      homebrew = {
+        enable = true;
+        user = host.owner;
+      };
     };
   };
 }

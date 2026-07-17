@@ -24,5 +24,5 @@
     ];
   };
 in {
-  inherit overlay packageNames;
+  inherit overlay;
 }

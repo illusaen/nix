@@ -48,8 +48,8 @@ let
     if
       actualHiveHosts
       == expectedHiveHosts
-      && hive.huginn.deployment.targetUser == api.hosts.huginn.owner
-      && hive.huginn.deployment.targetHost == api.hosts.huginn.targetHost
+      && hive.huginn.deployment.targetUser == api.fleet.hosts.huginn.owner
+      && hive.huginn.deployment.targetHost == api.fleet.hosts.huginn.targetHost
     then true
     else throw "hive hosts or deployment settings did not match the fleet";
 
@@ -151,10 +151,17 @@ let
       config.allowUnfree = true;
     };
     localPackages = pkgsWithLocal.local;
+    expectedPackageNames = [
+      "mactahoe-cursors"
+      "mactahoe-gtk-theme"
+      "mactahoe-icon-theme"
+      "misc-scripts"
+      "niri-scripts"
+    ];
   in
     if
       builtins.attrNames localPackages
-      == api.packageLib.packageNames
+      == expectedPackageNames
       && localPackages.mactahoe-cursors.pname == "mactahoe-cursors"
       && localPackages.niri-scripts.name == "niri-scripts"
     then true

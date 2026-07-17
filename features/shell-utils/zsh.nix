@@ -22,45 +22,47 @@ let
     whichstore = "nix_store_for_command";
   };
 in {
-  modules.generic = {
-    pkgs,
-    user,
-    ...
-  }: {
-    users.users.${user.name}.shell = pkgs.zsh;
-    programs.zsh = {
-      enable = true;
-      histFile = "$HOME/${historyFile}";
-      interactiveShellInit = ''
-        eval "$(@zoxide@/bin/zoxide init zsh --cmd n)"
-        eval "$(starship init zsh)"
-        source <(@fzf@/bin/fzf --zsh)
+  modules = {
+    generic = {
+      pkgs,
+      user,
+      ...
+    }: {
+      users.users.${user.name}.shell = pkgs.zsh;
+      programs.zsh = {
+        enable = true;
+        histFile = "$HOME/${historyFile}";
+        interactiveShellInit = ''
+          eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd n)"
+          eval "$(starship init zsh)"
+          source <(${pkgs.fzf}/bin/fzf --zsh)
 
-        ${builtins.readFile ./interactive.zsh}
-      '';
+          ${builtins.readFile ./interactive.zsh}
+        '';
+      };
     };
-  };
 
-  modules.nixos = {
-    lib,
-    options,
-    ...
-  }:
-    lib.mkMerge [
-      {
-        programs.zsh.shellAliases = shellAliases;
-      }
-      (lib.mkIf (options ? persistUser) {
-        persistUser.files = [
-          {
-            file = historyFile;
-            how = "symlink";
-          }
-        ];
-      })
-    ];
+    nixos = {
+      lib,
+      options,
+      ...
+    }:
+      lib.mkMerge [
+        {
+          programs.zsh.shellAliases = shellAliases;
+        }
+        (lib.mkIf (options ? persistUser) {
+          persistUser.files = [
+            {
+              file = historyFile;
+              how = "symlink";
+            }
+          ];
+        })
+      ];
 
-  modules.darwin = _: {
-    environment.shellAliases = shellAliases;
+    darwin = {
+      environment.shellAliases = shellAliases;
+    };
   };
 }

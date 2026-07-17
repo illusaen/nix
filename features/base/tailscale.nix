@@ -27,7 +27,7 @@
       })
     ];
 
-  modules.darwin = _: {
+  modules.darwin = {
     homebrew.masApps.Tailscale = 1475387142;
   };
 }

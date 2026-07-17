@@ -1,33 +1,19 @@
 #!/usr/bin/env sh
 set -eu
 
-check() {
-  name="$1"
-  value="$(nix-instantiate --eval --strict default.nix -A "checks.$name")"
+failed_checks="$(
+  nix-instantiate --eval --strict --json --expr '
+    let
+      api = import ./default.nix;
+    in
+      builtins.filter (name: api.checks.${name} != true) (builtins.attrNames api.checks)
+  '
+)"
 
-  if [ "$value" != true ]; then
-    printf 'plain Nix migration check failed: %s = %s\n' "$name" "$value" >&2
-    exit 1
-  fi
-}
-
-check fleet
-check routedServices
-check featureClosure
-check hostFeaturesExist
-check hostFeaturesHavePlatformModules
-check serviceFeaturesExist
-check serviceFeaturesHaveNixosModules
-check routedServiceFeaturesHavePlatformModules
-check hostPublicKeysExist
-check serviceSecretsDeclared
-check serviceSecretRecipientsCoverRoutedHosts
-check serviceRoutingComplete
-check servicePortsDoNotConflict
-check localPackagesExist
-check themeProfilesValid
-check deploySelectors
-check unitTests
+if [ "$failed_checks" != "[]" ]; then
+  printf 'plain Nix migration checks failed: %s\n' "$failed_checks" >&2
+  exit 1
+fi
 
 nix-instantiate --parse hive.nix >/dev/null
 nix-instantiate --parse darwin.nix >/dev/null

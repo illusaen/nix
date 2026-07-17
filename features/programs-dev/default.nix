@@ -9,7 +9,7 @@
     ];
   };
 
-  modules.darwin = _: {
+  modules.darwin = {
     homebrew.casks = ["codex-app"];
   };
 }

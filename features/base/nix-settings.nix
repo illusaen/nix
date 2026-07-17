@@ -46,7 +46,7 @@
     '';
   };
 
-  modules.nixos = _: {
+  modules.nixos = {
     security.sudo-rs = {
       enable = true;
       wheelNeedsPassword = false;
