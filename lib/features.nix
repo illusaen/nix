@@ -192,9 +192,7 @@ in rec {
               host = hosts.${hostName} or null;
               inherit (host) platform;
             in
-              if host == null
-              then []
-              else if (feature.modules.${platform} or null) == null
+              if (feature.modules.${platform} or null) == null
               then ["service '${serviceName}' feature '${featureName}' has no ${platform} module for host '${hostName}'"]
               else []
           )
