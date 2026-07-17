@@ -7,7 +7,7 @@
       lib.pipe packageRoot [
         builtins.readDir
         (lib.filterAttrs (n: v: v == "directory" && builtins.pathExists (packageFile n)))
-        (builtins.mapAttrs (n: _v: final.callPackage (packageFile n)))
+        (builtins.mapAttrs (n: _v: final.callPackage (packageFile n) {}))
       ];
   };
 }

@@ -1,9 +1,8 @@
 {
-  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
-  sources ? import ../npins,
-  fleetLib ? import ./fleet.nix {inherit lib;},
-  featureLib ? import ./features.nix {inherit lib;},
-  hostLib ? import ./hosts.nix {inherit featureLib fleetLib lib;},
+  lib,
+  sources,
+  fleetLib,
+  hostLib,
 }: let
   inherit (lib) mapAttrs;
 in {

@@ -1,6 +1,6 @@
 {
-  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
-  sources ? import ../npins,
+  lib,
+  sources,
 }: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
   inherit (lib) pipe unique;

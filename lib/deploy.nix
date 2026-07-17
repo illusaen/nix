@@ -1,6 +1,5 @@
 {
-  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
-  fleetLib ? import ./fleet.nix {inherit lib;},
+  fleetLib,
   fleet,
 }: let
   hostNames = builtins.attrNames fleet.hosts;
@@ -10,7 +9,8 @@
 
   hostsWithTag = tag:
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
-
+in {
+  inherit darwinHostNames nixosHosts;
   selectHostNames = target:
     if target == "@all"
     then hostNames
@@ -23,6 +23,4 @@
     else if builtins.hasAttr target fleet.hosts
     then [target]
     else throw "unknown deploy target '${target}'";
-in {
-  inherit darwinHostNames nixosHosts selectHostNames;
 }
