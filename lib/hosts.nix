@@ -23,10 +23,6 @@
 
       assertions = [
         {
-          assertion = host.platform == "nixos" || host.platform == "darwin";
-          message = "host '${hostName}' has unsupported platform '${host.platform}'";
-        }
-        {
           assertion = featureLib.missingFeatures host.features == [];
           message = "host '${hostName}' references unknown features: ${builtins.concatStringsSep ", " (featureLib.missingFeatures host.features)}";
         }

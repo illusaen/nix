@@ -6,14 +6,6 @@
   hostLib ? import ./hosts.nix {inherit featureLib fleetLib lib;},
 }: let
   inherit (lib) mapAttrs;
-
-  ownerUser = fleet: host:
-    fleet.users.${host.owner} // {name = host.owner;};
-
-  mkHostEvalArgs = fleet: host: {
-    inherit fleet fleetLib host sources;
-    user = ownerUser fleet host;
-  };
 in {
   mkNixosConfigurations = {fleet}: let
     evalConfig = import "${sources.nixpkgs.outPath}/nixos/lib/eval-config.nix";
@@ -22,7 +14,6 @@ in {
       hostName: host:
         evalConfig {
           inherit (host) system;
-          specialArgs = mkHostEvalArgs fleet host;
           modules = [
             {
               nixpkgs.hostPlatform.system = host.system;
@@ -43,7 +34,6 @@ in {
       hostName: host:
         evalConfig {
           lib = nixpkgsLib;
-          specialArgs = mkHostEvalArgs fleet host;
           modules = [
             {
               nixpkgs = {

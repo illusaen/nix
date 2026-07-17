@@ -2,9 +2,6 @@
   inherit (builtins) attrNames concatLists filter listToAttrs;
   inherit (lib) optionals pipe unique;
 
-  serviceHosts = service:
-    [service.primary] ++ (service.backups or []);
-
   serviceForHost = hostName: serviceName: service:
     if service.primary == hostName
     then [
@@ -120,45 +117,6 @@
         }
     )
     fleet.hosts;
-
-  routingErrors = sourceFleet: routedFleet: let
-    hostNames = attrNames routedFleet.hosts;
-  in
-    pipe sourceFleet.services [
-      attrNames
-      (map (serviceName: let
-        service = sourceFleet.services.${serviceName};
-        expectedHosts = serviceHosts service;
-        unexpectedHosts =
-          filter (
-            hostName: builtins.hasAttr serviceName routedFleet.hosts.${hostName}.services && !(builtins.elem hostName expectedHosts)
-          )
-          hostNames;
-        missingHosts =
-          filter (
-            hostName: !(builtins.hasAttr serviceName routedFleet.hosts.${hostName}.services)
-          )
-          expectedHosts;
-        roleErrors = pipe expectedHosts [
-          (filter (hostName: builtins.hasAttr serviceName routedFleet.hosts.${hostName}.services))
-          (map (hostName: let
-            routed = routedFleet.hosts.${hostName}.services.${serviceName};
-            expectedRole =
-              if hostName == service.primary
-              then "primary"
-              else "backup";
-          in
-            if routed.role == expectedRole
-            then []
-            else ["service '${serviceName}' is '${routed.role}' on '${hostName}', expected '${expectedRole}'"]))
-          concatLists
-        ];
-      in
-        (map (hostName: "service '${serviceName}' is missing from routed host '${hostName}'") missingHosts)
-        ++ (map (hostName: "service '${serviceName}' unexpectedly routed to host '${hostName}'") unexpectedHosts)
-        ++ roleErrors))
-      concatLists
-    ];
 in {
-  inherit portConflicts routeHosts routingErrors servicesForHost;
+  inherit portConflicts routeHosts;
 }

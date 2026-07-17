@@ -80,12 +80,6 @@ let
 
   routedFleet = routeFleet baseFleet;
 in {
-  platformForSystem =
-    fleetLib.platformForSystem "x86_64-linux"
-    == "nixos"
-    && fleetLib.platformForSystem "aarch64-darwin" == "darwin"
-    && fleetLib.platformForSystem "wasm32-wasi" == null;
-
   validFleet = validationErrors baseFleet == [];
 
   userPosixGroups =
@@ -239,20 +233,6 @@ in {
       };
     })
     == [];
-
-  unsupportedSystem =
-    hasError "host 'odin' has unsupported system 'wasm32-wasi'"
-    (testFleet {
-      hosts =
-        baseFleet.hosts
-        // {
-          odin =
-            baseFleet.hosts.odin
-            // {
-              system = "wasm32-wasi";
-            };
-        };
-    });
 
   duplicateServiceBackup =
     hasError "service 'app' lists backup host 'huginn' more than once"

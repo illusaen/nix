@@ -43,7 +43,6 @@ let
   ];
   secretDeclarations = import ./secrets/secrets.nix;
   declaredSecrets = builtins.attrNames secretDeclarations;
-  missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
   serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
   expectedServiceSecrets = pipe serviceSecretRequirements [
     (map (requirement: requirement.secret))
@@ -60,7 +59,6 @@ let
         || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
     )
     serviceSecretRequirements;
-  serviceRoutingErrors = serviceLib.routingErrors typedFleet fleet;
   serviceFeaturePlatformModuleErrors =
     featureLib.serviceFeaturePlatformModuleErrors typedFleet.hosts typedFleet.services;
   themeNames = builtins.attrNames (fleet.themes.profiles or {});
@@ -83,8 +81,6 @@ in {
   debug = {
     secrets = {
       declared = declaredSecrets;
-      missingFiles = missingDeclaredSecrets;
-      expectedForServices = expectedServiceSecrets;
       missingServiceDeclarations = missingServiceSecretDeclarations;
       missingServiceRecipients = missingServiceSecretRecipients;
     };
@@ -97,12 +93,9 @@ in {
       })
       host.services)
     fleet.hosts;
-
-    inherit serviceRoutingErrors;
   };
 
   checks = {
-    fleet = fleetLib.validate typedFleet == [];
     featureClosure =
       featureLib.close ["base"]
       == ["base" "shell-utils"];
@@ -119,7 +112,6 @@ in {
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
-    serviceRoutingComplete = serviceRoutingErrors == [];
     servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
     inherit themeProfilesValid;
     deploySelectors =

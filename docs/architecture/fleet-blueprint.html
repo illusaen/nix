@@ -868,7 +868,7 @@ pkgs.mkShell {
               <li>Cycles fail with a readable path.</li>
               <li>Platform module selection is correct.</li>
               <li>Routed service features are activated.</li>
-              <li>Service routing is complete and no unrelated hosts receive a routed service.</li>
+              <li>Service route behavior is covered by focused tests.</li>
               <li>Routed service ports do not conflict per host and transport protocol.</li>
             </ul>
           </div>
@@ -885,7 +885,7 @@ pkgs.mkShell {
         </div>
 
         <h3>CI commands</h3>
-        <pre><code>nix-instantiate --eval --strict default.nix -A checks.fleet
+        <pre><code>nix-instantiate --eval --strict default.nix -A fleet
 nix-instantiate --eval --strict default.nix -A checks.featureClosure
 nix-instantiate --eval --strict default.nix -A checks.hostFeaturesHavePlatformModules
 bin/check

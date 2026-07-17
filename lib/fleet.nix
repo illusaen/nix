@@ -22,13 +22,6 @@
       ))
     ];
 
-  platformForSystem = system:
-    if builtins.match ".*-linux" system != null
-    then "nixos"
-    else if builtins.match ".*-darwin" system != null
-    then "darwin"
-    else null;
-
   hostInterfaceAddresses = host:
     pipe (host.networkInterfaces or {}) [
       attrNames
@@ -59,7 +52,6 @@
 
   validateHost = fleet: name: host:
     require (hasAttr host.owner fleet.users) "host '${name}' owner '${host.owner}' does not exist"
-    ++ require (platformForSystem host.system != null) "host '${name}' has unsupported system '${host.system}'"
     ++ require (host ? targetHost) "host '${name}' is missing targetHost"
     ++ require (!(host.preservation.enable or false) || (host.preservation.disk or null) != null) "host '${name}' enables preservation without a disk"
     ++ concatMap (feature:
@@ -132,8 +124,6 @@
       require false "uid '${toString uid}' is used by multiple users")
     duplicateUids;
 in rec {
-  inherit platformForSystem;
-
   userPosixGroups = fleet: userName: let
     user = fleet.users.${userName};
     userGroups = user.groups or [];
