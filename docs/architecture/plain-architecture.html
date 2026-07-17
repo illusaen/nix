@@ -411,7 +411,7 @@
             <tr>
               <td><code>fleet</code></td>
               <td>Validated and routed fleet data.</td>
-              <td>Feature modules, deploy selectors, debug output.</td>
+              <td>Feature modules, deploy selectors, inspection.</td>
             </tr>
             <tr>
               <td><code>checks</code></td>
@@ -424,19 +424,19 @@
               <td><code>bin/deploy</code>, <code>hive.nix</code>, <code>darwin.nix</code>.</td>
             </tr>
             <tr>
-              <td><code>hostLib</code></td>
+              <td><code>evalLib</code></td>
               <td>Constructs NixOS and Darwin configurations from fleet hosts.</td>
-              <td><code>hive.nix</code>, <code>darwin.nix</code>, targeted evals.</td>
+              <td><code>darwin.nix</code>, <code>ci.nix</code>, targeted evals.</td>
             </tr>
             <tr>
-              <td><code>packageLib.overlay</code></td>
+              <td><code>mkHostModule</code></td>
+              <td>Builds the Colmena host module from resolved fleet data.</td>
+              <td><code>hive.nix</code>.</td>
+            </tr>
+            <tr>
+              <td><code>packageOverlay</code></td>
               <td>Inject repo-local packages as <code>pkgs.local</code>.</td>
               <td>Host builders, features, deploys, cache builds.</td>
-            </tr>
-            <tr>
-              <td><code>debug</code></td>
-              <td>Structured information for routed services and secret coverage.</td>
-              <td>Human inspection and issue triage.</td>
             </tr>
           </tbody>
         </table>
@@ -518,7 +518,7 @@
           <li><code>fleetLib.assertValid</code> rejects malformed hosts, users, groups, services, duplicate addresses, and missing host keys.</li>
           <li><code>serviceLib.routeHosts</code> normalizes hosts, derives host features from system/tags/preservation, and adds service feature names.</li>
           <li><code>featureLib.modulesFor</code> closes feature imports and returns the generic plus platform-specific module list.</li>
-          <li><code>hostLib</code> calls either NixOS <code>eval-config.nix</code> or nix-darwin <code>eval-config.nix</code>.</li>
+          <li><code>evalLib</code> calls either NixOS <code>eval-config.nix</code> or nix-darwin <code>eval-config.nix</code>.</li>
         </ol>
       </section>
 
@@ -687,7 +687,7 @@
           <tbody>
             <tr>
               <td><code>mkHostModule</code></td>
-              <td>A module that imports the resolved platform feature modules, applies <code>packageLib.overlay</code>, injects special args, and asserts valid feature references.</td>
+              <td>A module that imports the resolved platform feature modules, applies <code>packageOverlay</code>, injects special args, and asserts valid feature references.</td>
             </tr>
             <tr>
               <td><code>mkNixosConfigurations</code></td>

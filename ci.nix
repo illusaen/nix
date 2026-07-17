@@ -1,6 +1,10 @@
 let
   api = import ./default.nix;
+  nixpkgsLib = import (api.sources.nixpkgs.outPath + "/lib");
   pkgs = import api.sources.nixpkgs.outPath {};
+  evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
+  serviceLib = import ./lib/services.nix {lib = nixpkgsLib;};
+  rawFleet = import ./fleet;
   hive = import ./hive.nix;
   darwinConfigurations = import ./darwin.nix;
   nixosConfigurations = api.evalLib.mkNixosConfigurations {
@@ -8,10 +12,10 @@ let
   };
   darwinParityFleet = let
     raw =
-      api.rawFleet
+      rawFleet
       // {
         hosts =
-          api.rawFleet.hosts
+          rawFleet.hosts
           // {
             test-darwin = {
               system = "aarch64-darwin";
@@ -23,11 +27,11 @@ let
             };
           };
       };
-    typed = api.evalFleet raw;
+    typed = evalFleet raw;
   in
     typed
     // {
-      hosts = api.serviceLib.routeHosts typed;
+      hosts = serviceLib.routeHosts typed;
     };
   darwinParityConfig =
     (api.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
@@ -147,7 +151,7 @@ let
   assertLocalPackageOverlay = let
     pkgsWithLocal = import api.sources.nixpkgs.outPath {
       system = "x86_64-linux";
-      overlays = [api.packageLib.overlay];
+      overlays = [api.packageOverlay];
       config.allowUnfree = true;
     };
     localPackages = pkgsWithLocal.local;

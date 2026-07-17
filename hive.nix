@@ -2,7 +2,7 @@ let
   api = import ./default.nix;
   inherit (api) sources;
   nixpkgs = import sources.nixpkgs.outPath {
-    overlays = [api.packageLib.overlay];
+    overlays = [api.packageOverlay];
   };
 in
   {
@@ -13,7 +13,7 @@ in
   // builtins.mapAttrs (
     hostName: host: {
       imports = [
-        (api.hostLib.mkHostModule {
+        (api.mkHostModule {
           inherit hostName host sources;
           inherit (api) fleet;
         })

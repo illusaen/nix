@@ -74,9 +74,11 @@ let
     )
     themeNames;
 in {
-  inherit evalFleet evalLib fleet hostLib packageLib rawFleet serviceLib sources;
+  inherit evalLib fleet sources;
+  inherit (hostLib) mkHostModule;
 
   deploy = deployLib;
+  packageOverlay = packageLib.overlay;
 
   checks = {
     featureClosure =
