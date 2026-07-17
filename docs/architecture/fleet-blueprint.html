@@ -674,9 +674,22 @@ servicesForHost = hostName: services:
 
 # lib/features.nix
 featuresForHost = { host, services }:
-  derivedHostFeatures host
-  ++ (host.features or [])
-  ++ serviceFeatureNames services;
+  pipe host context [
+    derive base/platform/tag features
+    append explicit host features
+    append service feature names
+    unique
+  ];
+
+modulesForHost = host:
+  pipe {
+    inherit host;
+    services = host.services or [];
+  } [
+    featuresForHost
+    close
+    collect platform modules
+  ];
 
 # default.nix
 resolveFleet = rawFleet:

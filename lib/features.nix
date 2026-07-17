@@ -83,32 +83,6 @@
 
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
-
-  tagFeatureNames = tags:
-    concatMap (
-      tag: let
-        match = builtins.match "feature:(.+)" tag;
-      in
-        if match == null
-        then []
-        else ["programs-${builtins.head match}"]
-    )
-    tags;
-
-  derivedHostFeatures = host: let
-    tags = host.tags or [];
-    isLinux = host.platform == "nixos";
-    isDesktop = builtins.elem "desktop" tags;
-  in
-    unique (
-      ["base"]
-      ++ optionals isLinux ["boot"]
-      ++ optionals isDesktop ["programs-core" "theming"]
-      ++ optionals (isLinux && isDesktop) ["desktop-shell"]
-      ++ optionals (builtins.elem "gpu:nvidia" tags) ["nvidia"]
-      ++ tagFeatureNames tags
-      ++ optionals (host.preservation.enable or false) ["preservation"]
-    );
 in rec {
   tests =
     concatMapAttrs (
@@ -151,18 +125,50 @@ in rec {
   in
     go [] names;
 
-  modulesFor = platform: names:
-    concatMap (
-      name:
-        features.${name}.modules.${platform} or []
-    )
-    (close names);
-
   featuresForHost = {
     host,
     services ? [],
-  }:
-    unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" services);
+  }: let
+    tags = host.tags or [];
+    isLinux = host.platform == "nixos";
+    isDesktop = builtins.elem "desktop" tags;
+  in
+    pipe [
+      ["base"]
+      (optionals isLinux ["boot"])
+      (optionals isDesktop ["programs-core" "theming"])
+      (optionals (isLinux && isDesktop) ["desktop-shell"])
+      (optionals (builtins.elem "gpu:nvidia" tags) ["nvidia"])
+      (concatMap (
+          tag: let
+            match = builtins.match "feature:(.+)" tag;
+          in
+            if match == null
+            then []
+            else ["programs-${builtins.head match}"]
+        )
+        tags)
+      (optionals (host.preservation.enable or false) ["preservation"])
+      host.features
+      (builtins.catAttrs "feature" services)
+    ] [
+      concatLists
+      unique
+    ];
+
+  modulesForHost = host:
+    pipe host [
+      (host: {
+        inherit host;
+        services = host.services or [];
+      })
+      featuresForHost
+      close
+      (concatMap (
+        name:
+          features.${name}.modules.${host.platform} or []
+      ))
+    ];
 
   serviceSecretRequirementsFor = services:
     concatMapAttrsToList (

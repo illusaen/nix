@@ -12,7 +12,7 @@
   }: let
     user = fleet.users.${host.owner} // {name = host.owner;};
   in {
-    imports = featureLib.modulesFor host.platform host.features;
+    imports = featureLib.modulesForHost host;
 
     config = {
       nixpkgs.overlays = [packageLib.overlay];
