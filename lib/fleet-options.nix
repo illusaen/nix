@@ -240,6 +240,13 @@
 
   serviceType = types.submodule ({name, ...}: {
     options = {
+      name = mkOption {
+        type = types.str;
+        default = name;
+        description = "Service name";
+        readOnly = true;
+      };
+
       feature = mkOption {
         type = types.str;
         default = name;

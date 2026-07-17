@@ -3,10 +3,11 @@
     host,
     lib,
     pkgs,
+    serviceLib,
     ...
   }: let
-    service = host.services.llama-cpp;
-    enabled = service.role == "primary" || service.role == "backup";
+    service = serviceLib.routedService host "llama-cpp";
+    enabled = service != null;
     iniFormat = pkgs.formats.ini {};
     llamaCpp =
       (pkgs.llama-cpp.override {
@@ -18,8 +19,8 @@
             cudaSupport = true;
           };
       });
-  in {
-    config = lib.mkIf enabled {
+  in
+    lib.mkIf enabled {
       assertions = [
         {
           assertion = service.protocol == "http" || service.protocol == "https";
@@ -64,5 +65,4 @@
         };
       };
     };
-  };
 }

@@ -28,13 +28,14 @@ in {
     host,
     lib,
     options,
+    serviceLib,
     ...
   }: let
-    service = host.services.pihole;
-    enabled = service.role == "primary" || service.role == "backup";
+    service = serviceLib.routedService host "pihole";
+    enabled = service != null;
     secretFile = ../../secrets/hosts/${host.name}/pihole-web-password.age;
-  in {
-    config = lib.mkIf enabled (lib.mkMerge [
+  in
+    lib.mkIf enabled (lib.mkMerge [
       {
         assertions = [
           {
@@ -101,5 +102,4 @@ in {
         ];
       })
     ]);
-  };
 }

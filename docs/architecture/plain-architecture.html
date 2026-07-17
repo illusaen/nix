@@ -415,7 +415,7 @@
             </tr>
             <tr>
               <td><code>checks</code></td>
-              <td>Boolean validation results for graph, services, secrets, deploy selectors, themes, and tests.</td>
+              <td>Combined boolean results from fleet tests, feature-local tests, graph checks, services, secrets, deploy selectors, and themes.</td>
               <td><code>bin/check</code>, <code>ci.nix</code>.</td>
             </tr>
             <tr>
@@ -424,8 +424,8 @@
               <td><code>bin/deploy</code>, <code>hive.nix</code>, <code>darwin.nix</code>.</td>
             </tr>
             <tr>
-              <td><code>evalLib</code></td>
-              <td>Constructs NixOS and Darwin configurations from fleet hosts.</td>
+              <td><code>nixosConfigurations</code> / <code>darwinConfigurations</code></td>
+              <td>Evaluated NixOS and Darwin configurations from fleet hosts.</td>
               <td><code>darwin.nix</code>, <code>ci.nix</code>, targeted evals.</td>
             </tr>
             <tr>
@@ -518,7 +518,7 @@
           <li><code>fleetLib.assertValid</code> rejects malformed hosts, users, groups, services, duplicate addresses, and missing host keys.</li>
           <li><code>serviceLib.routeHosts</code> normalizes hosts, derives host features from system/tags/preservation, and adds service feature names.</li>
           <li><code>featureLib.modulesFor</code> closes feature imports and returns the generic plus platform-specific module list.</li>
-          <li><code>evalLib</code> calls either NixOS <code>eval-config.nix</code> or nix-darwin <code>eval-config.nix</code>.</li>
+          <li><code>nixosConfigurations</code> and <code>darwinConfigurations</code> expose evaluated hosts from NixOS <code>eval-config.nix</code> and nix-darwin <code>eval-config.nix</code>.</li>
         </ol>
       </section>
 
@@ -707,7 +707,8 @@
           Fleet services are declared once, then routed onto hosts. The service
           library assigns each selected host a role and appends the service
           feature name to that host. Service features read
-          <code>host.services.&lt;name&gt;</code> to configure ports, role-specific
+          <code>host.services</code> to find routed service records by
+          <code>name</code> and configure ports, role-specific
           behavior, persistence, and secret ownership.
         </p>
 
@@ -937,9 +938,7 @@ treefmt --verbose</code></pre>
             <pre><code>nix-instantiate --eval --strict --json --expr '
 let
   api = import ./default.nix;
-  cfg = (api.evalLib.mkNixosConfigurations {
-    inherit (api) fleet;
-  }).odin.config;
+  cfg = api.nixosConfigurations.odin.config;
 in {
   hostName = cfg.networking.hostName;
   tailscale = cfg.services.tailscale.enable;
@@ -999,7 +998,7 @@ in {
           <li>Use <code>imports</code> in feature files for logical feature dependencies, not direct host imports.</li>
           <li>Use <code>serviceSecrets</code> for service-owned secret declarations.</li>
           <li>Put repo packages in <code>packages/*/package.nix</code>; consume them through <code>pkgs.local</code>.</li>
-          <li>Prefer targeted evals through <code>api.evalLib.mkNixosConfigurations</code> when debugging host behavior.</li>
+          <li>Prefer targeted evals through <code>api.nixosConfigurations</code> and <code>api.darwinConfigurations</code> when debugging host behavior.</li>
         </ul>
       </section>
     </main>

@@ -28,13 +28,14 @@ in {
     host,
     lib,
     options,
+    serviceLib,
     ...
   }: let
-    service = host.services.navidrome;
-    enabled = service.role == "primary" || service.role == "backup";
+    service = serviceLib.routedService host "navidrome";
+    enabled = service != null;
     secretFile = ../../secrets/shared/navidrome-env.age;
-  in {
-    config = lib.mkIf enabled (lib.mkMerge [
+  in
+    lib.mkIf enabled (lib.mkMerge [
       {
         assertions = [
           {
@@ -82,5 +83,4 @@ in {
         ];
       })
     ]);
-  };
 }

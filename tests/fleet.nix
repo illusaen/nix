@@ -246,10 +246,13 @@ in {
       };
     });
 
-  routedPrimaryService =
-    routedFleet.odin.services.app.role
-    == "primary"
-    && routedFleet.odin.services.app.port == 8080
+  routedPrimaryService = let
+    service = serviceLib.routedService routedFleet.odin "app";
+  in
+    builtins.isList routedFleet.odin.services
+    && service.name == "app"
+    && service.role == "primary"
+    && service.port == 8080
     && builtins.elem "llama-cpp" routedFleet.odin.features;
 
   derivedLinuxBaseFeatures =
@@ -308,8 +311,9 @@ in {
       };
     };
     routed = routeFleet fleet;
+    service = serviceLib.routedService routed.huginn "app";
   in
-    routed.huginn.services.app.role
+    service.role
     == "backup"
     && builtins.elem "llama-cpp" routed.huginn.features;
 

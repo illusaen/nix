@@ -13,99 +13,32 @@ let
     lib = nixpkgsLib;
   };
   hostLib = import ./lib/hosts.nix {
-    inherit featureLib fleetLib packageLib;
+    inherit featureLib fleetLib packageLib serviceLib;
     lib = nixpkgsLib;
   };
   evalLib = import ./lib/eval-configurations.nix {
     inherit featureLib fleetLib hostLib sources;
     lib = nixpkgsLib;
   };
-  unitTests = (import ./tests/fleet.nix) // featureLib.tests;
   evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
   rawFleet = import ./fleet;
   typedFleet = evalFleet rawFleet;
   fleet = fleetLib.assertValid (typedFleet // {hosts = serviceLib.routeHosts typedFleet;});
-  inherit (nixpkgsLib) pipe;
   deployLib = import ./lib/deploy.nix {
     inherit fleet fleetLib;
     lib = nixpkgsLib;
   };
-  hostFeatures = pipe fleet.hosts [
-    builtins.attrNames
-    (map (name: fleet.hosts.${name}.features))
-    builtins.concatLists
-    nixpkgsLib.unique
-  ];
-  serviceFeatures = pipe fleet.services [
-    builtins.attrNames
-    (map (name: fleet.services.${name}.feature))
-    nixpkgsLib.unique
-  ];
-  secretDeclarations = import ./secrets/secrets.nix;
-  declaredSecrets = builtins.attrNames secretDeclarations;
-  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
-  expectedServiceSecrets = pipe serviceSecretRequirements [
-    (map (requirement: requirement.secret))
-    nixpkgsLib.unique
-  ];
-  missingServiceSecretDeclarations =
-    builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
-  hostPublicKey = hostName:
-    builtins.replaceStrings ["\n"] [""] (builtins.readFile fleet.hosts.${hostName}.publicKey);
-  missingServiceSecretRecipients =
-    builtins.filter (
-      requirement:
-        !(builtins.hasAttr requirement.secret secretDeclarations)
-        || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
-    )
-    serviceSecretRequirements;
-  serviceFeaturePlatformModuleErrors =
-    featureLib.serviceFeaturePlatformModuleErrors typedFleet.hosts typedFleet.services;
-  themeNames = builtins.attrNames (fleet.themes.profiles or {});
-  themeProfilesValid =
-    builtins.hasAttr fleet.themes.default fleet.themes.profiles
-    && builtins.all (
-      name: let
-        profile = fleet.themes.profiles.${name};
-      in
-        builtins.pathExists profile.base16Theme
-        && (profile.wallpaper == null || builtins.pathExists profile.wallpaper)
-        && (profile.colorScheme == "dark" || profile.colorScheme == "light")
-    )
-    themeNames;
+  checks = import ./tests/checks.nix {
+    inherit deployLib featureLib fleet serviceLib typedFleet;
+    lib = nixpkgsLib;
+  };
 in {
-  inherit evalLib fleet sources;
+  inherit fleet sources checks;
   inherit (hostLib) mkHostModule;
+
+  nixosConfigurations = evalLib.mkNixosConfigurations {inherit fleet;};
+  darwinConfigurations = evalLib.mkDarwinConfigurations {inherit fleet;};
 
   deploy = deployLib;
   packageOverlay = packageLib.overlay;
-
-  checks = {
-    featureClosure =
-      featureLib.close ["base"]
-      == ["base" "shell-utils"];
-    hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
-    hostFeaturesHavePlatformModules =
-      builtins.all (
-        name:
-          featureLib.missingPlatformModules fleet.hosts.${name}.platform (fleet.hosts.${name}.features or [])
-          == []
-      )
-      (builtins.attrNames fleet.hosts);
-    serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
-    routedServiceFeaturesHavePlatformModules = serviceFeaturePlatformModuleErrors == [];
-    hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
-    serviceSecretsDeclared = missingServiceSecretDeclarations == [];
-    serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
-    servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
-    inherit themeProfilesValid;
-    deploySelectors =
-      deployLib.selectHostNames "odin"
-      == ["odin"]
-      && deployLib.selectHostNames "@all" == ["huginn" "muninn" "odin"]
-      && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
-      && deployLib.selectHostNames "@darwin" == []
-      && deployLib.selectHostNames "@server" == ["huginn" "muninn"];
-    unitTests = builtins.all (name: unitTests.${name} == true) (builtins.attrNames unitTests);
-  };
 }

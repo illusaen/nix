@@ -1,6 +1,6 @@
 {sources}: {
   imports = [
-    "shell-utils"
+    ./shell-utils
     ./networking.nix
     ./nix-settings.nix
     ./secrets.nix

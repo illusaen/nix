@@ -1,36 +1,32 @@
 {lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
-  inherit (builtins) attrNames concatLists filter listToAttrs;
+  inherit (builtins) attrNames concatLists filter;
   inherit (lib) optionals pipe unique;
 
-  serviceForHost = hostName: serviceName: service:
+  roleFor = hostName: service:
     if service.primary == hostName
-    then [
-      {
-        name = serviceName;
-        value = service // {role = "primary";};
-      }
-    ]
+    then "primary"
     else if builtins.elem hostName (service.backups or [])
-    then [
-      {
-        name = serviceName;
-        value = service // {role = "backup";};
-      }
-    ]
-    else [];
+    then "backup"
+    else null;
 
   servicesForHost = hostName: services:
     pipe services [
-      attrNames
-      (map (serviceName: serviceForHost hostName serviceName services.${serviceName}))
-      concatLists
-      listToAttrs
+      (builtins.mapAttrs (name: service:
+        service
+        // {
+          inherit name;
+          role = roleFor hostName service;
+        }))
+      builtins.attrValues
+      (builtins.filter (s: s.role != null))
     ];
+
+  routedService = host: name:
+    lib.findFirst (service: service.name == name) null (host.services or []);
 
   routedFeatureNames = routedServices:
     pipe routedServices [
-      attrNames
-      (map (name: routedServices.${name}.feature))
+      (map (service: service.feature))
       unique
     ];
 
@@ -68,15 +64,15 @@
   servicePortEntriesForHost = hostName: services: let
     routedServices = servicesForHost hostName services;
   in
-    map (serviceName: let
-      service = routedServices.${serviceName};
+    map (service: let
       protocol = transportProtocol service.protocol;
       port = toString service.port;
     in {
-      inherit hostName port protocol serviceName;
+      inherit hostName port protocol;
+      serviceName = service.name;
       key = "${hostName}:${protocol}:${port}";
     })
-    (attrNames routedServices);
+    routedServices;
 
   portConflictsForHost = hostName: services: let
     entries = servicePortEntriesForHost hostName services;
@@ -118,5 +114,5 @@
     )
     fleet.hosts;
 in {
-  inherit portConflicts routeHosts;
+  inherit portConflicts routeHosts routedService;
 }

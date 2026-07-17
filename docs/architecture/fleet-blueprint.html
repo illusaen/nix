@@ -378,7 +378,7 @@
             <tr>
               <td>Plain API</td>
               <td>Done</td>
-              <td><code>default.nix</code> exposes fleet data, deploy selectors, debug data, and checks.</td>
+              <td><code>default.nix</code> exposes fleet data, host configurations, deploy selectors, and one combined check set.</td>
             </tr>
             <tr>
               <td>Input pins and shell</td>
@@ -408,7 +408,7 @@
             <tr>
               <td>Feature-local tests</td>
               <td>Done</td>
-              <td>Features can expose boolean checks under <code>tests</code>; <code>lib/features.nix</code> namespaces them into the top-level unit test set.</td>
+              <td>Features can expose boolean checks under <code>tests</code>; <code>tests/checks.nix</code> merges them into <code>api.checks</code>.</td>
             </tr>
             <tr>
               <td>Local package overlay</td>
@@ -433,7 +433,7 @@
             <tr>
               <td>CI and local checks</td>
               <td>Partially done</td>
-              <td><code>bin/check</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, <code>treefmt.toml</code>, and GitHub workflows cover plain evaluation, graph rules, treefmt checks, local package builds, and a representative NixOS toplevel build.</td>
+              <td><code>bin/check</code>, <code>tests/checks.nix</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, <code>treefmt.toml</code>, and GitHub workflows cover plain evaluation, graph rules, treefmt checks, local package builds, and a representative NixOS toplevel build.</td>
             </tr>
             <tr>
               <td>Legacy flake path</td>
@@ -574,10 +574,12 @@
     # Shared options valid on NixOS and nix-darwin
   };
 
-  modules.nixos = { host, ... }: {
-    services.navidrome = {
+  modules.nixos = { host, lib, serviceLib, ... }: let
+    service = serviceLib.routedService host "navidrome";
+  in {
+    services.navidrome = lib.mkIf (service != null) {
       enable = true;
-      settings.Port = host.services.navidrome.port;
+      settings.Port = service.port;
     };
   };
 
@@ -626,7 +628,7 @@
             </tr>
             <tr>
               <td><code>tests</code></td>
-              <td>Optional feature-local boolean checks imported by the top-level unit test set with namespaced keys.</td>
+              <td>Optional feature-local boolean checks merged into <code>api.checks</code> with namespaced keys.</td>
             </tr>
           </tbody>
         </table>
@@ -653,12 +655,12 @@
 
             <rect class="node" x="680" y="40" width="210" height="90" rx="8"></rect>
             <text class="label" x="714" y="72">odin context</text>
-            <text class="small" x="714" y="96">host.services.navidrome</text>
+            <text class="small" x="714" y="96">service.name = "navidrome"</text>
             <text class="small" x="714" y="116">role = "primary"</text>
 
             <rect class="node" x="680" y="190" width="210" height="90" rx="8"></rect>
             <text class="label" x="714" y="222">huginn context</text>
-            <text class="small" x="714" y="246">host.services.navidrome</text>
+            <text class="small" x="714" y="246">service.name = "navidrome"</text>
             <text class="small" x="714" y="266">role = "backup"</text>
 
             <path class="edge" marker-end="url(#arrow2)" d="M 250 158 C 300 158 318 158 360 158"></path>
@@ -714,9 +716,7 @@ in
 let
   api = import ./default.nix;
 in
-  api.evalLib.mkDarwinConfigurations {
-    inherit (api) fleet;
-  }</code></pre>
+  api.darwinConfigurations</code></pre>
           </div>
         </div>
 
@@ -886,6 +886,7 @@ pkgs.mkShell {
 
         <h3>CI commands</h3>
         <pre><code>nix-instantiate --eval --strict default.nix -A fleet
+nix-instantiate --eval --strict default.nix -A checks.validFleet
 nix-instantiate --eval --strict default.nix -A checks.featureClosure
 nix-instantiate --eval --strict default.nix -A checks.hostFeaturesHavePlatformModules
 bin/check

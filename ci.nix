@@ -3,13 +3,15 @@ let
   nixpkgsLib = import (api.sources.nixpkgs.outPath + "/lib");
   pkgs = import api.sources.nixpkgs.outPath {};
   evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
+  evalLib = import ./lib/eval-configurations.nix {
+    inherit (api) sources;
+    lib = nixpkgsLib;
+  };
   serviceLib = import ./lib/services.nix {lib = nixpkgsLib;};
   rawFleet = import ./fleet;
   hive = import ./hive.nix;
   darwinConfigurations = import ./darwin.nix;
-  nixosConfigurations = api.evalLib.mkNixosConfigurations {
-    inherit (api) fleet;
-  };
+  inherit (api) nixosConfigurations;
   darwinParityFleet = let
     raw =
       rawFleet
@@ -34,7 +36,7 @@ let
       hosts = serviceLib.routeHosts typed;
     };
   darwinParityConfig =
-    (api.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
+    (evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 
   failedChecks =
     builtins.filter (name: api.checks.${name} != true)

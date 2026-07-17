@@ -3,6 +3,7 @@
   fleetLib ? import ./fleet.nix {inherit lib;},
   featureLib ? import ./features.nix {inherit lib;},
   packageLib ? import ./packages.nix {inherit lib;},
+  serviceLib ? import ./services.nix {inherit lib;},
 }: {
   mkHostModule = {
     fleet,
@@ -18,7 +19,7 @@
       nixpkgs.overlays = [packageLib.overlay];
 
       _module.args = {
-        inherit fleet fleetLib host sources user;
+        inherit fleet fleetLib host serviceLib sources user;
       };
 
       assertions = [
