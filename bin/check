@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
+ARG="${1:-""}"
+
 failed_checks="$(
   nix-instantiate --eval --strict --json --expr '
     let
@@ -9,6 +11,11 @@ failed_checks="$(
       builtins.filter (name: api.checks.${name} != true) (builtins.attrNames api.checks)
   '
 )"
+
+if [ "$ARG" == "-v" ]; then
+  nix-instantiate --eval --strict --json --expr '(import ./default.nix).checks'
+  printf '\n'
+fi
 
 if [ "$failed_checks" != "[]" ]; then
   printf 'plain Nix migration checks failed: %s\n' "$failed_checks" >&2

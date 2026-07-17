@@ -247,7 +247,7 @@ in {
     });
 
   routedPrimaryService = let
-    service = serviceLib.routedService routedFleet.odin "app";
+    service = serviceLib.requireRoutedService routedFleet.odin "app";
   in
     builtins.isList routedFleet.odin.services
     && service.name == "app"
@@ -311,7 +311,7 @@ in {
       };
     };
     routed = routeFleet fleet;
-    service = serviceLib.routedService routed.huginn "app";
+    service = serviceLib.requireRoutedService routed.huginn "app";
   in
     service.role
     == "backup"

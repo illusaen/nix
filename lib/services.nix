@@ -21,8 +21,12 @@
       (builtins.filter (s: s.role != null))
     ];
 
-  routedService = host: name:
-    lib.findFirst (service: service.name == name) null (host.services or []);
+  requireRoutedService = host: name: let
+    service = lib.findFirst (service: service.name == name) null (host.services or []);
+  in
+    if service == null
+    then throw "${name} feature requires a routed ${name} service for host '${host.name}'"
+    else service;
 
   routedFeatureNames = routedServices:
     pipe routedServices [
@@ -114,5 +118,5 @@
     )
     fleet.hosts;
 in {
-  inherit portConflicts routeHosts routedService;
+  inherit portConflicts requireRoutedService routeHosts;
 }

@@ -31,11 +31,10 @@ in {
     serviceLib,
     ...
   }: let
-    service = serviceLib.routedService host "navidrome";
-    enabled = service != null;
+    service = serviceLib.requireRoutedService host "navidrome";
     secretFile = ../../secrets/shared/navidrome-env.age;
   in
-    lib.mkIf enabled (lib.mkMerge [
+    lib.mkMerge [
       {
         assertions = [
           {
@@ -82,5 +81,5 @@ in {
           }
         ];
       })
-    ]);
+    ];
 }

@@ -31,11 +31,10 @@ in {
     serviceLib,
     ...
   }: let
-    service = serviceLib.routedService host "pihole";
-    enabled = service != null;
+    service = serviceLib.requireRoutedService host "pihole";
     secretFile = ../../secrets/hosts/${host.name}/pihole-web-password.age;
   in
-    lib.mkIf enabled (lib.mkMerge [
+    lib.mkMerge [
       {
         assertions = [
           {
@@ -101,5 +100,5 @@ in {
           }
         ];
       })
-    ]);
+    ];
 }
