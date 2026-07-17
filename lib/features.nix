@@ -2,17 +2,18 @@
   lib,
   sources,
 }: let
-  inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
-  inherit (lib) optionals pipe unique;
+  inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir;
+  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique;
+
+  concatMapAttrsToList = f: attrs:
+    pipe attrs [
+      (mapAttrsToList f)
+      concatLists
+    ];
 
   featureRoot = ../features;
   featureEntries = readDir featureRoot;
-
-  featureNamesFrom = entries:
-    pipe entries [
-      attrNames
-      (filter (name: entries.${name} == "directory"))
-    ];
+  featureNames = filter (name: featureEntries.${name} == "directory") (attrNames featureEntries);
 
   callFeature = feature:
     if builtins.isFunction feature
@@ -21,8 +22,6 @@
         inherit sources;
       }
     else feature;
-
-  loadFeatureFile = path: callFeature (import path);
 
   featureImportEntries = feature:
     filter builtins.isString (feature.imports or []);
@@ -40,20 +39,17 @@
     else [module];
 
   modulesForPlatform = fragments: platform:
-    pipe fragments [
-      (map (fragment: let
+    concatMap (
+      fragment: let
         modules = fragment.modules or {};
       in
-        moduleList modules "generic" ++ moduleList modules platform))
-      concatLists
-    ];
+        moduleList modules "generic" ++ moduleList modules platform
+    )
+    fragments;
 
   mergeFeatures = fragments: let
     merged = builtins.foldl' (acc: fragment: acc // removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
-    modulePlatformNames = pipe fragments [
-      (map (fragment: attrNames (fragment.modules or {})))
-      concatLists
-    ];
+    modulePlatformNames = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
       if builtins.elem "generic" modulePlatformNames
       then
@@ -66,10 +62,7 @@
   in
     merged
     // {
-      imports = pipe fragments [
-        (map featureImportEntries)
-        concatLists
-      ];
+      imports = concatMap featureImportEntries fragments;
       modules = listToAttrs (
         map (platform: {
           name = platform;
@@ -81,7 +74,7 @@
     };
 
   loadFeaturePath = path: let
-    feature = loadFeatureFile path;
+    feature = callFeature (import path);
     localFeatures = map loadFeaturePath (localImportEntries feature);
   in
     mergeFeatures (localFeatures ++ [feature]);
@@ -92,15 +85,15 @@
     [service.primary] ++ (service.backups or []);
 
   tagFeatureNames = tags:
-    pipe tags [
-      (map (tag: let
+    concatMap (
+      tag: let
         match = builtins.match "feature:(.+)" tag;
       in
         if match == null
         then []
-        else ["programs-${builtins.head match}"]))
-      concatLists
-    ];
+        else ["programs-${builtins.head match}"]
+    )
+    tags;
 
   derivedHostFeatures = host: let
     tags = host.tags or [];
@@ -117,14 +110,12 @@
       ++ optionals (host.preservation.enable or false) ["preservation"]
     );
 in rec {
-  tests = pipe featureEntries [
-    featureNamesFrom
-    (map (featureName:
-      map (testName: lib.nameValuePair "${featureName}.${testName}" features.${featureName}.tests.${testName})
-      (attrNames (features.${featureName}.tests or {}))))
-    concatLists
-    listToAttrs
-  ];
+  tests =
+    concatMapAttrs (
+      featureName: feature:
+        mapAttrs' (testName: test: nameValuePair "${featureName}.${testName}" test) (feature.tests or {})
+    )
+    features;
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
 
@@ -136,9 +127,8 @@ in rec {
     )
     names;
 
-  features = pipe featureEntries [
-    featureNamesFrom
-    (map (name: lib.nameValuePair name (loadFeature name)))
+  features = pipe featureNames [
+    (map (name: nameValuePair name (loadFeature name)))
     listToAttrs
   ];
 
@@ -162,14 +152,11 @@ in rec {
     go [] names;
 
   modulesFor = platform: names:
-    pipe (close names) [
-      (filter (name: (features.${name}.modules.${platform} or []) != []))
-      (map (
-        name:
-          features.${name}.modules.${platform} or []
-      ))
-      concatLists
-    ];
+    concatMap (
+      name:
+        features.${name}.modules.${platform} or []
+    )
+    (close names);
 
   featuresForHost = {
     host,
@@ -178,10 +165,8 @@ in rec {
     unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" services);
 
   serviceSecretRequirementsFor = services:
-    pipe services [
-      attrNames
-      (map (serviceName: let
-        service = services.${serviceName};
+    concatMapAttrsToList (
+      serviceName: service: let
         featureName = service.feature or serviceName;
         feature = features.${featureName} or {};
         mkRequirements = feature.serviceSecrets or (_: []);
@@ -189,24 +174,21 @@ in rec {
         mkRequirements {
           inherit service serviceName;
           hosts = serviceHosts service;
-        }))
-      concatLists
-    ];
+        }
+    )
+    services;
 
   serviceFeaturePlatformModuleErrors = hosts: services:
-    pipe services [
-      attrNames
-      (map (serviceName: let
-        service = services.${serviceName};
+    concatMapAttrsToList (
+      serviceName: service: let
         featureName = service.feature or serviceName;
         feature = features.${featureName} or null;
-        serviceHosts = [service.primary] ++ (service.backups or []);
       in
         if feature == null
         then []
         else
-          concatLists (
-            map (hostName: let
+          concatMap (
+            hostName: let
               host = hosts.${hostName} or null;
               inherit (host) platform;
             in
@@ -214,9 +196,9 @@ in rec {
               then []
               else if (feature.modules.${platform} or null) == null
               then ["service '${serviceName}' feature '${featureName}' has no ${platform} module for host '${hostName}'"]
-              else [])
-            serviceHosts
-          )))
-      concatLists
-    ];
+              else []
+          )
+          (serviceHosts service)
+    )
+    services;
 }
