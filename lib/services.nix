@@ -52,17 +52,12 @@
       concatLists
     ];
 
-  routeHosts = fleet:
+  servicesByHost = fleet:
     builtins.mapAttrs (
-      hostName: host: let
-        services = servicesForHost hostName fleet.services;
-      in
-        host
-        // {
-          inherit services;
-        }
+      hostName: _host:
+        servicesForHost hostName fleet.services
     )
     fleet.hosts;
 in {
-  inherit portConflicts requireRoutedService routeHosts;
+  inherit portConflicts requireRoutedService servicesByHost;
 }

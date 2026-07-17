@@ -24,10 +24,7 @@ let
       };
     typed = api.libs.evalFleet raw;
   in
-    typed
-    // {
-      hosts = api.libs.featureLib.addHostFeatures (api.libs.serviceLib.routeHosts typed);
-    };
+    api.libs.resolveFleet typed;
   darwinParityConfig =
     (api.libs.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 
