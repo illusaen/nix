@@ -18,7 +18,7 @@
       nixpkgs.overlays = [packageLib.overlay];
 
       _module.args = {
-        inherit fleet fleetLib host packageLib sources user;
+        inherit fleet fleetLib host sources user;
       };
 
       assertions = [

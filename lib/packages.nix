@@ -1,23 +1,18 @@
-{
-  sources ? import ../npins,
-  lib ? import (sources.nixpkgs.outPath + "/lib"),
-}: let
+{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
   inherit (builtins) attrNames filter listToAttrs readDir;
   inherit (lib) pipe;
 
   packageRoot = ../packages;
   packageEntries = readDir packageRoot;
-  packageNamesFrom = entries:
-    pipe entries [
-      attrNames
-      (filter (
-        name:
-          entries.${name}
-          == "directory"
-          && builtins.pathExists (packageRoot + "/${name}/package.nix")
-      ))
-    ];
-  packageNames = packageNamesFrom packageEntries;
+  packageNames = pipe packageEntries [
+    attrNames
+    (filter (
+      name:
+        packageEntries.${name}
+        == "directory"
+        && builtins.pathExists (packageRoot + "/${name}/package.nix")
+    ))
+  ];
 
   overlay = final: _prev: {
     local = pipe packageNames [

@@ -377,7 +377,7 @@
 |   |-- services.nix     # Service routing, role injection, port checks
 |   |-- features.nix     # Feature discovery, dependency closure, tests
 |   |-- hosts.nix        # NixOS and Darwin system builders
-|   `-- packages.nix     # Local package set and overlay
+|   `-- packages.nix     # Local package overlay
 |-- features/            # Dendritic feature modules
 |-- packages/            # Repo-local packages
 |-- hive.nix             # Colmena hive for NixOS hosts
@@ -429,9 +429,9 @@
               <td><code>hive.nix</code>, <code>darwin.nix</code>, targeted evals.</td>
             </tr>
             <tr>
-              <td><code>overlays.default</code></td>
+              <td><code>packageLib.overlay</code></td>
               <td>Inject repo-local packages as <code>pkgs.local</code>.</td>
-              <td>Features, host builds, deploys, cache builds.</td>
+              <td>Host builders, features, deploys, cache builds.</td>
             </tr>
             <tr>
               <td><code>debug</code></td>

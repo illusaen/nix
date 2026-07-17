@@ -111,7 +111,6 @@ Feature modules receive resolved host context through module arguments:
   fleet,
   fleetLib,
   host,
-  packageLib,
   sources,
   user,
   ...

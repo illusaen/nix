@@ -3,8 +3,7 @@
   sources ? import ../npins,
   fleetLib ? import ./fleet.nix {inherit lib;},
   featureLib ? import ./features.nix {inherit lib;},
-  packageLib ? import ./packages.nix {inherit sources lib;},
-  hostLib ? import ./hosts.nix {inherit featureLib fleetLib packageLib lib;},
+  hostLib ? import ./hosts.nix {inherit featureLib fleetLib lib;},
 }: let
   inherit (lib) mapAttrs;
 
@@ -12,7 +11,7 @@
     fleet.users.${host.owner} // {name = host.owner;};
 
   mkHostEvalArgs = fleet: host: {
-    inherit fleet fleetLib host packageLib sources;
+    inherit fleet fleetLib host sources;
     user = ownerUser fleet host;
   };
 in {

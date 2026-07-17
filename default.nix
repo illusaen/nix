@@ -3,7 +3,6 @@ let
   nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
   fleetLib = import ./lib/fleet.nix {lib = nixpkgsLib;};
   packageLib = import ./lib/packages.nix {
-    inherit sources;
     lib = nixpkgsLib;
   };
   serviceLib = import ./lib/services.nix {
@@ -17,7 +16,7 @@ let
     lib = nixpkgsLib;
   };
   evalLib = import ./lib/eval-configurations.nix {
-    inherit featureLib fleetLib hostLib packageLib sources;
+    inherit featureLib fleetLib hostLib sources;
     lib = nixpkgsLib;
   };
   unitTests = (import ./tests/fleet.nix) // featureLib.tests;
@@ -79,8 +78,6 @@ in {
   inherit evalFleet evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources typedFleet unitTests;
 
   inherit (fleet) hosts;
-
-  overlays.default = packageLib.overlay;
 
   deploy = deployLib;
 
