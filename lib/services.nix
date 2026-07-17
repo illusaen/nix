@@ -1,5 +1,5 @@
-{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
-  inherit (builtins) attrNames concatLists filter;
+{lib}: let
+  inherit (builtins) attrNames concatLists;
   inherit (lib) optionals pipe unique;
 
   roleFor = hostName: service:
@@ -28,12 +28,6 @@
     then throw "${name} feature requires a routed ${name} service for host '${host.name}'"
     else service;
 
-  routedFeatureNames = routedServices:
-    pipe routedServices [
-      (map (service: service.feature))
-      unique
-    ];
-
   tagFeatureNames = tags:
     pipe tags [
       (map (tag: let
@@ -60,43 +54,22 @@
       ++ optionals (host.preservation.enable or false) ["preservation"]
     );
 
-  transportProtocol = protocol:
-    if protocol == "http" || protocol == "https"
-    then "tcp"
-    else protocol;
-
-  servicePortEntriesForHost = hostName: services: let
-    routedServices = servicesForHost hostName services;
-  in
-    map (service: let
-      protocol = transportProtocol service.protocol;
-      port = toString service.port;
-    in {
-      inherit hostName port protocol;
-      serviceName = service.name;
-      key = "${hostName}:${protocol}:${port}";
-    })
-    routedServices;
-
-  portConflictsForHost = hostName: services: let
-    entries = servicePortEntriesForHost hostName services;
-    duplicateKeys = pipe entries [
-      (map (entry: entry.key))
-      unique
-      (filter (
-        key:
-          builtins.length (filter (entry: entry.key == key) entries) > 1
-      ))
+  portConflictsForHost = hostName: services:
+    pipe services [
+      (servicesForHost hostName)
+      (map (service: {
+        key = "${hostName}:${toString service.port}";
+        inherit (service) name;
+      }))
+      (builtins.groupBy (s: s.key))
+      (lib.filterAttrs (_groupName: group: lib.length group > 1))
+      (builtins.mapAttrs (groupName: group: {
+        inherit hostName;
+        key = groupName;
+        services = builtins.catAttrs "name" group;
+      }))
+      builtins.attrValues
     ];
-  in
-    map (key: {
-      inherit hostName key;
-      services = pipe entries [
-        (filter (entry: entry.key == key))
-        (map (entry: entry.serviceName))
-      ];
-    })
-    duplicateKeys;
 
   portConflicts = fleet:
     pipe fleet.hosts [
@@ -113,7 +86,7 @@
         host
         // {
           inherit services;
-          features = unique (derivedHostFeatures host ++ host.features ++ routedFeatureNames services);
+          features = unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" services);
         }
     )
     fleet.hosts;

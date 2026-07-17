@@ -36,13 +36,6 @@ in {
   in
     lib.mkMerge [
       {
-        assertions = [
-          {
-            assertion = service.protocol == "http" || service.protocol == "https";
-            message = "navidrome expects an HTTP transport protocol";
-          }
-        ];
-
         services.navidrome =
           {
             enable = true;

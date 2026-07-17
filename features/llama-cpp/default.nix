@@ -18,13 +18,6 @@
           };
       });
   in {
-    assertions = [
-      {
-        assertion = service.protocol == "http" || service.protocol == "https";
-        message = "llama-cpp expects an HTTP transport protocol";
-      }
-    ];
-
     environment.systemPackages = [llamaCpp];
 
     services.llama-cpp = {

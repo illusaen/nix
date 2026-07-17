@@ -62,7 +62,6 @@ let
         primary = "odin";
         backups = [];
         port = 8080;
-        protocol = "http";
       };
     };
   };
@@ -359,14 +358,13 @@ in {
             primary = "odin";
             backups = [];
             port = 8080;
-            protocol = "http";
           };
         };
     })
     == [
       {
         hostName = "odin";
-        key = "odin:tcp:8080";
+        key = "odin:8080";
         services = ["app" "other"];
       }
     ];

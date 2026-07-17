@@ -14,7 +14,7 @@ the service feature to each routed host.
 - Each routed service receives `role = "primary"` or `role = "backup"`.
 - `routeHosts` extends every host with `services`, derived `platform`, host key
   paths, and routed service feature names.
-- Port conflicts are checked per host, port, and protocol.
+- Port conflicts are checked per host and port.
 
 Example service data:
 
@@ -25,7 +25,6 @@ Example service data:
     primary = "odin";
     backups = [ "huginn" ];
     port = 4533;
-    protocol = "http";
   };
 }
 ```

@@ -268,12 +268,6 @@
         type = types.port;
         description = "Service port.";
       };
-
-      protocol = mkOption {
-        type = types.enum ["tcp" "udp" "http" "https"];
-        default = "tcp";
-        description = "Service network protocol.";
-      };
     };
   });
 in {

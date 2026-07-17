@@ -1,9 +1,14 @@
 let
   api = import ./default.nix;
   inherit (api) sources;
-  nixpkgs = import sources.nixpkgs.outPath {
-    overlays = [api.packageOverlay];
-  };
+  nixpkgs =
+    import sources.nixpkgs.outPath {
+      system = builtins.currentSystem;
+      overlays = [api.packageOverlay];
+    }
+    // {
+      system = builtins.currentSystem;
+    };
 in
   {
     meta = {

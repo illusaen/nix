@@ -40,7 +40,6 @@ in
           nix-tree
           nixd
           npins
-          prek
           ruff
           shellcheck
           statix

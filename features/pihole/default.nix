@@ -29,6 +29,7 @@ in {
     lib,
     options,
     serviceLib,
+    fleet,
     ...
   }: let
     service = serviceLib.requireRoutedService host "pihole";
@@ -36,23 +37,30 @@ in {
   in
     lib.mkMerge [
       {
-        assertions = [
-          {
-            assertion = service.protocol == "tcp" || service.protocol == "udp";
-            message = "pihole expects a DNS transport protocol";
-          }
-        ];
-
         services = {
           pihole-ftl = {
             enable = true;
             openFirewallDNS = true;
             openFirewallWebserver = true;
-            settings.webserver.api.cli_pw = true;
+            settings = {
+              "webserver.api" = {
+                cli_pw = true;
+                prettyJSON = true;
+              };
+              dns = {
+                inherit (service) port;
+                upstreams = ["9.9.9.9" "1.1.1.1" "8.8.8.8"];
+                hosts = [""];
+              };
+              "dns.domain".name = fleet.domain;
+            };
           };
-          pihole-web = {
+          pihole-web.enable = {
             enable = true;
-            ports = [80];
+            ports = [
+              "80r"
+              "443s"
+            ];
           };
         };
       }
@@ -81,19 +89,13 @@ in {
       (lib.mkIf (options ? persist) {
         persist.directories = [
           {
-            directory = "/etc/pihole";
+            directory = config.services.pihole-ftl.stateDirectory;
             user = "pihole";
             group = "pihole";
             mode = "0700";
           }
           {
-            directory = "/var/lib/pihole";
-            user = "pihole";
-            group = "pihole";
-            mode = "0700";
-          }
-          {
-            directory = "/var/log/pihole";
+            directory = config.services.pihole-ftl.logDirectory;
             user = "pihole";
             group = "pihole";
             mode = "0700";

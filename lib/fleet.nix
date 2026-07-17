@@ -86,8 +86,7 @@
     ++ concatMap (backup:
       require false "service '${name}' lists backup host '${backup}' more than once")
     (duplicates (service.backups or []))
-    ++ require (service.port > 0 && service.port < 65536) "service '${name}' port must be between 1 and 65535"
-    ++ require (service.protocol == "tcp" || service.protocol == "udp" || service.protocol == "http" || service.protocol == "https") "service '${name}' has invalid protocol '${service.protocol}'";
+    ++ require (service.port > 0 && service.port < 65536) "service '${name}' port must be between 1 and 65535";
 
   validateSecretHostKeys = fleet:
     pipe fleet.hosts [
