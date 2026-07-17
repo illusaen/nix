@@ -1,4 +1,4 @@
-{sources, ...}: {
+{sources}: {
   modules.generic = {
     pkgs,
     host,

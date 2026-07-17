@@ -1,4 +1,4 @@
-{sources, ...}: {
+{sources}: {
   imports = [
     "shell-utils"
     ./networking.nix

@@ -1,4 +1,4 @@
-{sources, ...}: {
+{sources}: {
   imports = [./options.nix];
 
   modules.nixos = {

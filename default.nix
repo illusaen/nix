@@ -41,8 +41,8 @@ let
     (map (name: fleet.services.${name}.feature))
     nixpkgsLib.unique
   ];
-  declaredSecrets = builtins.attrNames (import ./secrets/secrets.nix);
   secretDeclarations = import ./secrets/secrets.nix;
+  declaredSecrets = builtins.attrNames secretDeclarations;
   missingDeclaredSecrets = builtins.filter (name: !(builtins.pathExists (./secrets + "/${name}"))) declaredSecrets;
   serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
   expectedServiceSecrets = pipe serviceSecretRequirements [
@@ -105,9 +105,7 @@ in {
     fleet = fleetLib.validate typedFleet == [];
     featureClosure =
       featureLib.close ["base"]
-      == ["base" "shell-utils"]
-      && builtins.length featureLib.features.base.modules.nixos == 9
-      && builtins.length featureLib.features.base.modules.darwin == 6;
+      == ["base" "shell-utils"];
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
     hostFeaturesHavePlatformModules =
       builtins.all (

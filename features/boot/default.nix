@@ -1,4 +1,4 @@
-{sources, ...}: {
+{sources}: {
   imports = [./hardware.nix];
 
   modules.nixos = {host, ...}: {

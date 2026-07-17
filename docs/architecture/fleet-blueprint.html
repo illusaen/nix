@@ -438,7 +438,7 @@
             <tr>
               <td>Legacy flake path</td>
               <td>Still present</td>
-              <td><code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, <code>gen-modules/</code>, and generated schema docs remain until plain workflows reach parity.</td>
+              <td><code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> remain until plain workflows reach parity.</td>
             </tr>
           </tbody>
         </table>
@@ -920,7 +920,7 @@ shellcheck bin/deploy bin/check</code></pre>
           <tbody>
             <tr>
               <td>Legacy architecture removal</td>
-              <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, <code>gen-modules/</code>, and generated schema docs only after plain deploy, package, wrapper, formatting, CI, cache, and system-build workflows cover the same jobs.</td>
+              <td>Remove <code>flake.nix</code>, <code>flake.lock</code>, <code>modules/flake/</code>, <code>modules/features/</code>, and <code>gen-modules/</code> only after plain deploy, package, wrapper, formatting, CI, cache, and system-build workflows cover the same jobs.</td>
             </tr>
             <tr>
               <td>Wrapper parity</td>
@@ -986,8 +986,8 @@ shellcheck bin/deploy bin/check</code></pre>
             dispatch for NixOS and Darwin host classes.
           </li>
           <li>
-            Next: finish real-host Darwin validation, remote Darwin activation
-            design, and generated schema cleanup.
+            Next: finish real-host Darwin validation and remote Darwin activation
+            design.
           </li>
           <li>
             Final: remove flake-parts, gen-flake, gen-schema, flake-file, and
@@ -1033,8 +1033,8 @@ shellcheck bin/deploy bin/check</code></pre>
           <strong>Removal is now blocked by non-Linux cleanup.</strong> The
           plain features cover the active Linux fleet. Before deleting the old
           flake module tree, finish Darwin validation/remote activation choices,
-          generated schema removal, and any explicit decision to revive or keep
-          deferring the Codex desktop Linux service.
+          and any explicit decision to revive or keep deferring the Codex
+          desktop Linux service.
         </div>
       </section>
     </main>
