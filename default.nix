@@ -9,6 +9,7 @@ let
     lib = nixpkgsLib;
   };
   featureLib = import ./lib/features.nix {
+    inherit sources;
     lib = nixpkgsLib;
   };
   hostLib = import ./lib/hosts.nix {

@@ -1,4 +1,7 @@
-{lib ? import ((import ../npins).nixpkgs.outPath + "/lib")}: let
+{
+  lib ? import ((import ../npins).nixpkgs.outPath + "/lib"),
+  sources ? import ../npins,
+}: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
   inherit (lib) pipe unique;
 
@@ -15,7 +18,7 @@
     if builtins.isFunction feature
     then
       feature {
-        sources = import ../npins;
+        inherit sources;
       }
     else feature;
 

@@ -3,6 +3,7 @@ let
   nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
   fleetLib = import ../lib/fleet.nix {lib = nixpkgsLib;};
   featureLib = import ../lib/features.nix {
+    inherit sources;
     lib = nixpkgsLib;
   };
   serviceLib = import ../lib/services.nix {
