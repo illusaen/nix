@@ -75,7 +75,7 @@ let
     )
     themeNames;
 in {
-  inherit evalFleet evalLib featureLib fleet fleetLib hostLib nixpkgsLib packageLib rawFleet serviceLib sources typedFleet unitTests;
+  inherit evalFleet evalLib fleet hostLib packageLib rawFleet serviceLib sources;
 
   inherit (fleet) hosts;
 

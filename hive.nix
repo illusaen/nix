@@ -25,7 +25,6 @@ in
         buildOnTarget = false;
       };
 
-      networking.hostName = hostName;
       nixpkgs.hostPlatform.system = host.system;
     }
   )
