@@ -669,14 +669,20 @@
         </div>
 
         <pre><code># lib/services.nix
-routeServices = { hosts, services }:
+routeHosts = { hosts, services }:
   mapHosts (hostName: host:
     host // {
       services = servicesForHost hostName services;
+    });
+
+# lib/features.nix
+addHostFeatures = hosts:
+  mapHosts (_: host:
+    host // {
       features = unique (
         derivedHostFeatures host
         ++ (host.features or [])
-        ++ routedServiceFeatureNames hostName services
+        ++ serviceFeatureNames host.services
       );
     });</code></pre>
 

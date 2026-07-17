@@ -2,8 +2,8 @@
 
 Service instances live in `fleet/services.nix`. Each service declares a
 `primary` host and optional `backups` by host name. The plain resolver validates
-those names against `fleet.hosts`, derives per-host `host.services`, and adds
-the service feature to each routed host.
+those names against `fleet.hosts` and derives per-host `host.services`. Feature
+resolution then adds routed service feature names to each routed host.
 
 ## Routing Model
 
@@ -12,8 +12,7 @@ the service feature to each routed host.
 - `servicesForHost` selects services where the host is the service `primary` or
   one of its `backups`.
 - Each routed service receives `role = "primary"` or `role = "backup"`.
-- `routeHosts` extends every host with `services`, derived `platform`, host key
-  paths, and routed service feature names.
+- `routeHosts` extends every host with a `services` list.
 - Port conflicts are checked per host and port.
 
 Example service data:
@@ -29,16 +28,16 @@ Example service data:
 }
 ```
 
-On `odin`, the host context contains:
+On `odin`, the host context contains a routed service record:
 
 ```nix
-host.services.navidrome.role == "primary"
+(serviceLib.requireRoutedService host "navidrome").role == "primary"
 ```
 
 On `huginn`, the host context contains:
 
 ```nix
-host.services.navidrome.role == "backup"
+(serviceLib.requireRoutedService host "navidrome").role == "backup"
 ```
 
 ## Feature Activation

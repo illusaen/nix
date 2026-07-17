@@ -74,8 +74,10 @@ let
   testFleet = patch:
     baseFleet // patch;
 
-  routeFleet = fleet:
-    serviceLib.routeHosts (evalFleet fleet);
+  routeFleet = fleet: let
+    typed = evalFleet fleet;
+  in
+    featureLib.addHostFeatures (serviceLib.routeHosts typed);
 
   routedFleet = routeFleet baseFleet;
 in {

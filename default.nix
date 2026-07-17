@@ -19,10 +19,11 @@ let
   };
   evalFleet = import ./lib/eval-fleet.nix {lib = nixpkgsLib;};
   typedFleet = evalFleet (import ./fleet);
+  routedFleet = typedFleet // {hosts = serviceLib.routeHosts typedFleet;};
+  fleet = fleetLib.assertValid (routedFleet // {hosts = featureLib.addHostFeatures routedFleet.hosts;});
   deployLib = import ./lib/deploy.nix {
     inherit fleet fleetLib;
   };
-  fleet = fleetLib.assertValid (typedFleet // {hosts = serviceLib.routeHosts typedFleet;});
   checks = import ./tests/checks.nix {
     inherit deployLib featureLib fleet serviceLib typedFleet;
     lib = nixpkgsLib;

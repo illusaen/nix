@@ -26,7 +26,7 @@ let
   in
     typed
     // {
-      hosts = api.libs.serviceLib.routeHosts typed;
+      hosts = api.libs.featureLib.addHostFeatures (api.libs.serviceLib.routeHosts typed);
     };
   darwinParityConfig =
     (api.libs.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;

@@ -1,6 +1,6 @@
 {lib}: let
   inherit (builtins) attrNames concatLists;
-  inherit (lib) optionals pipe unique;
+  inherit (lib) pipe;
 
   roleFor = hostName: service:
     if service.primary == hostName
@@ -27,32 +27,6 @@
     if service == null
     then throw "${name} feature requires a routed ${name} service for host '${host.name}'"
     else service;
-
-  tagFeatureNames = tags:
-    pipe tags [
-      (map (tag: let
-        match = builtins.match "feature:(.+)" tag;
-      in
-        if match == null
-        then []
-        else ["programs-${builtins.head match}"]))
-      concatLists
-    ];
-
-  derivedHostFeatures = host: let
-    tags = host.tags or [];
-    isLinux = host.platform == "nixos";
-    isDesktop = builtins.elem "desktop" tags;
-  in
-    unique (
-      ["base"]
-      ++ optionals isLinux ["boot"]
-      ++ optionals isDesktop ["programs-core" "theming"]
-      ++ optionals (isLinux && isDesktop) ["desktop-shell"]
-      ++ optionals (builtins.elem "gpu:nvidia" tags) ["nvidia"]
-      ++ tagFeatureNames tags
-      ++ optionals (host.preservation.enable or false) ["preservation"]
-    );
 
   portConflictsForHost = hostName: services:
     pipe services [
@@ -86,7 +60,6 @@
         host
         // {
           inherit services;
-          features = unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" services);
         }
     )
     fleet.hosts;

@@ -3,7 +3,7 @@
   sources,
 }: let
   inherit (builtins) attrNames concatLists filter hasAttr listToAttrs readDir;
-  inherit (lib) pipe unique;
+  inherit (lib) optionals pipe unique;
 
   featureRoot = ../features;
   featureEntries = readDir featureRoot;
@@ -90,6 +90,32 @@
 
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
+
+  tagFeatureNames = tags:
+    pipe tags [
+      (map (tag: let
+        match = builtins.match "feature:(.+)" tag;
+      in
+        if match == null
+        then []
+        else ["programs-${builtins.head match}"]))
+      concatLists
+    ];
+
+  derivedHostFeatures = host: let
+    tags = host.tags or [];
+    isLinux = host.platform == "nixos";
+    isDesktop = builtins.elem "desktop" tags;
+  in
+    unique (
+      ["base"]
+      ++ optionals isLinux ["boot"]
+      ++ optionals isDesktop ["programs-core" "theming"]
+      ++ optionals (isLinux && isDesktop) ["desktop-shell"]
+      ++ optionals (builtins.elem "gpu:nvidia" tags) ["nvidia"]
+      ++ tagFeatureNames tags
+      ++ optionals (host.preservation.enable or false) ["preservation"]
+    );
 in rec {
   tests = pipe featureEntries [
     featureNamesFrom
@@ -144,6 +170,19 @@ in rec {
       ))
       concatLists
     ];
+
+  featuresForHost = host:
+    unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" (host.services or []));
+
+  addHostFeatures = hosts:
+    builtins.mapAttrs (
+      _hostName: host:
+        host
+        // {
+          features = featuresForHost host;
+        }
+    )
+    hosts;
 
   serviceSecretRequirementsFor = services:
     pipe services [
