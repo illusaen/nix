@@ -171,8 +171,11 @@ in rec {
       concatLists
     ];
 
-  featuresForHost = host:
-    unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" (host.services or []));
+  featuresForHost = {
+    host,
+    services ? [],
+  }:
+    unique (derivedHostFeatures host ++ host.features ++ builtins.catAttrs "feature" services);
 
   serviceSecretRequirementsFor = services:
     pipe services [

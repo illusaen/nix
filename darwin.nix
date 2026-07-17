@@ -1,4 +1,1 @@
-let
-  api = import ./default.nix;
-in
-  api.darwinConfigurations
+(import ./default.nix).darwinConfigurations

@@ -3,6 +3,23 @@
   lib,
   serviceLib,
 }: let
+  attachHostRoutes = evaluatedFleet:
+    evaluatedFleet
+    // {
+      hosts =
+        lib.mapAttrs (
+          hostName: host: let
+            services = serviceLib.servicesForHost hostName evaluatedFleet.services;
+          in
+            host
+            // {
+              inherit services;
+              features = featureLib.featuresForHost {inherit host services;};
+            }
+        )
+        evaluatedFleet.hosts;
+    };
+in rec {
   evalFleet = fleetData:
     (lib.evalModules {
       modules = [
@@ -11,40 +28,9 @@
       ];
     }).config.fleet;
 
-  attachServices = evaluatedFleet:
-    evaluatedFleet
-    // {
-      hosts =
-        lib.mapAttrs (
-          hostName: host:
-            host
-            // {
-              services = serviceLib.servicesForHost hostName evaluatedFleet.services;
-            }
-        )
-        evaluatedFleet.hosts;
-    };
-
-  attachFeatures = evaluatedFleet:
-    evaluatedFleet
-    // {
-      hosts =
-        lib.mapAttrs (
-          _hostName: host:
-            host
-            // {
-              features = featureLib.featuresForHost host;
-            }
-        )
-        evaluatedFleet.hosts;
-    };
-in {
-  inherit evalFleet;
-
   resolveFleet = rawFleet:
     lib.pipe rawFleet [
       evalFleet
-      attachServices
-      attachFeatures
+      attachHostRoutes
     ];
 }

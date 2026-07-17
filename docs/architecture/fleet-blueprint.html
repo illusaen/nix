@@ -673,17 +673,16 @@ servicesForHost = hostName: services:
   routed service records for one host;
 
 # lib/features.nix
-featuresForHost = host:
+featuresForHost = { host, services }:
   derivedHostFeatures host
   ++ (host.features or [])
-  ++ serviceFeatureNames host.services;
+  ++ serviceFeatureNames services;
 
 # default.nix
 resolveFleet = rawFleet:
   pipe rawFleet [
     evalFleet
-    attach servicesForHost
-    attach featuresForHost
+    attach servicesForHost and featuresForHost
   ];</code></pre>
 
         <p>

@@ -1,5 +1,6 @@
 {system ? builtins.currentSystem}: let
   sources = import ./npins;
+  rawFleet = import ./fleet;
   pkgs = import sources.nixpkgs.outPath {inherit system;};
   inherit (pkgs) lib;
   devshell = import sources.devshell.outPath {
@@ -17,6 +18,27 @@
         "$@"
     '';
   };
+  testsCommand = pkgs.writeShellApplication {
+    name = "tests";
+    text = ''
+      ./bin/check
+      nix-build ci.nix -A plain-eval --no-out-link
+    '';
+  };
+  deployCommand = hostName:
+    pkgs.writeShellApplication {
+      name = hostName;
+      text = ''
+        exec ./bin/deploy "$@" ${lib.escapeShellArg hostName}
+      '';
+    };
+  deployCommands =
+    map
+    (hostName: {
+      package = deployCommand hostName;
+      help = "Deploy ${hostName}";
+    })
+    (builtins.attrNames rawFleet.hosts);
 in
   devshell.mkShell {
     imports = [
@@ -46,20 +68,26 @@ in
         ]);
     };
 
-    commands = [
-      {
-        package = treefmtCommand;
-        help = "Format all files";
-      }
-      {
-        package = pkgs.nh;
-        help = "nh builder";
-      }
-      {
-        package = pkgs.nix-tree;
-        help = "Interactively browse dependency graphs of Nix derivations";
-      }
-    ];
+    commands =
+      [
+        {
+          package = treefmtCommand;
+          help = "Format all files";
+        }
+        {
+          package = pkgs.nh;
+          help = "nh builder";
+        }
+        {
+          package = pkgs.nix-tree;
+          help = "Interactively browse dependency graphs of Nix derivations";
+        }
+        {
+          package = testsCommand;
+          help = "Run ci tests";
+        }
+      ]
+      ++ deployCommands;
 
     env = [
       {
