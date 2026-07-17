@@ -978,17 +978,16 @@ in {
           </tbody>
         </table>
 
-        <h3>Debug Attributes</h3>
+        <h3>Inspection</h3>
         <p>
-          The API exposes structured debug data so inspection can stay in Nix
-          rather than relying on ad hoc text scraping.
+          The API exposes the evaluated fleet and checks directly, so inspection
+          can stay in Nix rather than relying on ad hoc text scraping.
         </p>
         <pre><code>let api = import ./default.nix; in {
-  routed = api.debug.routedServices;
-  secretProblems = {
-    missingDeclarations = api.debug.secrets.missingServiceDeclarations;
-    missingRecipients = api.debug.secrets.missingServiceRecipients;
-  };
+  odinServices = api.fleet.hosts.odin.services;
+  failedChecks =
+    builtins.filter (name: api.checks.${name} != true)
+    (builtins.attrNames api.checks);
 }</code></pre>
       </section>
 

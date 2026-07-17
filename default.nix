@@ -78,23 +78,6 @@ in {
 
   deploy = deployLib;
 
-  debug = {
-    secrets = {
-      declared = declaredSecrets;
-      missingServiceDeclarations = missingServiceSecretDeclarations;
-      missingServiceRecipients = missingServiceSecretRecipients;
-    };
-
-    routedServices = builtins.mapAttrs (_hostName: host:
-      builtins.mapAttrs (_serviceName: service: {
-        inherit (service) feature port protocol role;
-        inherit (service) primary;
-        backups = service.backups or [];
-      })
-      host.services)
-    fleet.hosts;
-  };
-
   checks = {
     featureClosure =
       featureLib.close ["base"]
