@@ -14,6 +14,7 @@
   featureRoot = ../features;
   featureEntries = readDir featureRoot;
   featureNames = filter (name: featureEntries.${name} == "directory") (attrNames featureEntries);
+  supportedModulePlatforms = ["generic" "nixos" "darwin"];
 
   callFeature = feature:
     if builtins.isFunction feature
@@ -28,6 +29,20 @@
 
   localImportEntries = feature:
     filter (entry: !builtins.isString entry) (feature.imports or []);
+
+  unsupportedModulePlatforms = feature:
+    filter (platform: !(builtins.elem platform supportedModulePlatforms)) (attrNames (feature.modules or {}));
+
+  assertSupportedModulePlatforms = path: feature: let
+    unsupported = unsupportedModulePlatforms feature;
+  in
+    if unsupported == []
+    then feature
+    else
+      throw ''
+        feature file '${toString path}' declares unsupported module platforms: ${builtins.concatStringsSep ", " unsupported}
+        supported module platforms: ${builtins.concatStringsSep ", " supportedModulePlatforms}
+      '';
 
   moduleList = modules: platform: let
     module = modules.${platform} or null;
@@ -74,7 +89,7 @@
     };
 
   loadFeaturePath = path: let
-    feature = callFeature (import path);
+    feature = assertSupportedModulePlatforms path (callFeature (import path));
     localFeatures = map loadFeaturePath (localImportEntries feature);
   in
     mergeFeatures (localFeatures ++ [feature]);
@@ -85,11 +100,17 @@
     [service.primary] ++ (service.backups or []);
 in rec {
   tests =
-    concatMapAttrs (
-      featureName: feature:
-        mapAttrs' (testName: test: nameValuePair "${featureName}.${testName}" test) (feature.tests or {})
-    )
-    features;
+    (concatMapAttrs (
+        featureName: feature:
+          mapAttrs' (testName: test: nameValuePair "${featureName}.${testName}" test) (feature.tests or {})
+      )
+      features)
+    // {
+      unsupportedModulePlatformsRejected =
+        !(builtins.tryEval (assertSupportedModulePlatforms "test-feature" {
+          modules.linux = {};
+        })).success;
+    };
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
 
@@ -157,11 +178,10 @@ in rec {
     ];
 
   modulesForHost = host:
-    pipe host [
-      (host: {
-        inherit host;
-        services = host.services or [];
-      })
+    pipe {
+      inherit host;
+      services = host.services or [];
+    } [
       featuresForHost
       close
       (concatMap (

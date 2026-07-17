@@ -674,10 +674,10 @@ servicesForHost = hostName: services:
 
 # lib/features.nix
 featuresForHost = { host, services }:
-  pipe host context [
+  pipe feature sources [
     derive base/platform/tag features
     append explicit host features
-    append service feature names
+    append routed service feature names
     unique
   ];
 
