@@ -30,6 +30,7 @@ in
         targetUser = host.owner;
         buildOnTarget = false;
         tags = deploymentTags host;
+        allowLocalDeployment = true;
       };
     }
   )
