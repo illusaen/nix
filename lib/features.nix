@@ -44,14 +44,16 @@
       message = "module platforms";
     };
 
+  assertLocalImports = path: feature:
+    if builtins.all builtins.isPath (feature.imports or [])
+    then feature
+    else throw "feature file '${toString path}' imports must be paths";
+
   mergeFeatures = fragments: let
     declaredModulePlatforms = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
       filter (platform: any (flip elem declaredModulePlatforms) ["generic" platform]) ["nixos" "darwin"];
-    featureImportEntries = feature:
-      filter builtins.isString (feature.imports or []);
   in {
-    imports = concatMap featureImportEntries fragments;
     modules = listToAttrs (
       map (platform: {
         name = platform;
@@ -80,10 +82,8 @@
           inherit sources;
         }
       else feature;
-    feature = assertSupportedModulePlatforms path (assertSupportedFeatureAttrs path (callFeature (import path)));
-    localImportEntries = feature:
-      filter (entry: !builtins.isString entry) (feature.imports or []);
-    localFeatures = map loadFeaturePath (localImportEntries feature);
+    feature = assertSupportedModulePlatforms path (assertSupportedFeatureAttrs path (assertLocalImports path (callFeature (import path))));
+    localFeatures = map loadFeaturePath (feature.imports or []);
   in
     mergeFeatures (localFeatures ++ [feature]);
 
@@ -114,6 +114,10 @@ in rec {
         !(builtins.tryEval (assertSupportedFeatureAttrs "test-feature" {
           module.nixos = {};
         })).success;
+      namedFeatureImportsRejected =
+        !(builtins.tryEval (assertLocalImports "test-feature" {
+          imports = ["base"];
+        })).success;
       serviceSecretsMerged =
         (mergeFeatures [
           {serviceSecrets = _: ["first"];}
@@ -131,25 +135,6 @@ in rec {
         && (features.${name}.modules.${platform} or null) == null
     )
     names;
-
-  close = names: let
-    go = seen: pending:
-      if pending == []
-      then seen
-      else let
-        name = builtins.head pending;
-        rest = builtins.tail pending;
-        feature =
-          if hasAttr name features
-          then features.${name}
-          else throw "unknown feature '${name}'";
-        next = feature.imports;
-      in
-        if builtins.elem name seen
-        then go seen rest
-        else go (seen ++ [name]) (rest ++ next);
-  in
-    go [] names;
 
   featuresForHost = {
     host,
@@ -181,10 +166,10 @@ in rec {
   modulesForHost = host:
     concatMap
     (name: features.${name}.modules.${host.platform} or [])
-    (close (featuresForHost {
+    (featuresForHost {
       inherit host;
       services = host.services or [];
-    }));
+    });
 
   serviceSecretRequirementsFor = services:
     concatMapAttrsToList (

@@ -65,9 +65,6 @@
 in
   testResults
   // {
-    featureClosure =
-      featureLib.close ["base"]
-      == ["base"];
     hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
     hostFeaturesHavePlatformModules =
       builtins.all (
