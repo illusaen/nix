@@ -203,8 +203,9 @@ in {
         };
     });
 
-  duplicateLinkLocalIpv6Allowed =
-    validationErrors (testFleet {
+  duplicateLinkLocalIpv6 =
+    hasError "network address 'fe80::1/64' is used by multiple hosts"
+    (testFleet {
       hosts = {
         odin =
           baseFleet.hosts.odin
@@ -223,8 +224,7 @@ in {
             };
           };
       };
-    })
-    == [];
+    });
 
   duplicateServiceBackup =
     hasError "service 'app' lists backup host 'huginn' more than once"

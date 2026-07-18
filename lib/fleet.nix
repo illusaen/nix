@@ -1,12 +1,6 @@
 {lib}: let
   inherit (builtins) attrNames concatLists filter hasAttr;
-  inherit (lib) pipe unique;
-
-  concatMap = f: values:
-    pipe values [
-      (map f)
-      concatLists
-    ];
+  inherit (lib) pipe concatMap unique;
 
   require = condition: message:
     if condition
@@ -15,39 +9,29 @@
 
   duplicates = values:
     pipe values [
+      (filter (value: (lib.count (candidate: candidate == value) values) > 1))
       unique
-      (filter (
-        value:
-          builtins.length (filter (candidate: candidate == value) values) > 1
-      ))
     ];
 
-  hostInterfaceAddresses = host:
-    pipe (host.networkInterfaces or {}) [
-      attrNames
-      (concatMap (
-        interfaceName: let
-          interface = host.networkInterfaces.${interfaceName};
-        in
-          lib.optional ((interface.ipv4 or null) != null) {
-            address = interface.ipv4;
-            family = "ipv4";
-          }
-          ++ lib.optional ((interface.ipv6 or null) != null) {
-            address = interface.ipv6;
-            family = "ipv6";
-          }
-      ))
+  networkInterfacesToAddress = n:
+    pipe n [
+      (builtins.mapAttrs (_n: interface:
+        lib.optional ((interface.ipv4 or null) != null) {
+          address = interface.ipv4;
+          family = "ipv4";
+        }
+        ++ lib.optional ((interface.ipv6 or null) != null) {
+          address = interface.ipv6;
+          family = "ipv6";
+        }))
+      lib.concatAttrValues
     ];
 
   hostAddressEntries = fleet:
     pipe fleet.hosts [
-      attrNames
-      (concatMap (
-        name:
-          map (entry: entry // {host = name;})
-          (hostInterfaceAddresses fleet.hosts.${name})
-      ))
+      builtins.attrValues
+      (builtins.catAttrs "networkInterfaces")
+      (concatMap networkInterfacesToAddress)
     ];
 
   validateHost = fleet: name: host:
@@ -101,8 +85,7 @@
     hostsWithHostId = filter (name: fleet.hosts.${name} ? hostId) names;
     duplicateHostIds = duplicates (map (name: fleet.hosts.${name}.hostId) hostsWithHostId);
     addressEntries = hostAddressEntries fleet;
-    globallyUniqueAddressEntries = filter (entry: entry.family != "ipv6" || builtins.substring 0 5 entry.address != "fe80:") addressEntries;
-    duplicateAddresses = duplicates (map (entry: entry.address) globallyUniqueAddressEntries);
+    duplicateAddresses = duplicates (map (entry: entry.address) addressEntries);
   in
     concatMap (targetHost:
       require false "targetHost '${targetHost}' is used by multiple hosts")

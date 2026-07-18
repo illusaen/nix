@@ -7,10 +7,7 @@
 
     tags = ["desktop" "gpu:nvidia" "feature:creative" "feature:dev" "feature:gaming"];
 
-    networkInterfaces.eno1 = {
-      ipv4 = "192.168.1.162/24";
-      ipv6 = "fe80::fa06:591c:fca0:664e/64";
-    };
+    networkInterfaces.eno1.ipv4 = "192.168.1.162/24";
 
     monitors = {
       main = "DP-2";
@@ -31,10 +28,7 @@
 
     tags = ["server"];
 
-    networkInterfaces.enp1s0 = {
-      ipv4 = "192.168.1.161/24";
-      ipv6 = "fe80::fa06:591c:fca0:664e/64";
-    };
+    networkInterfaces.enp1s0.ipv4 = "192.168.1.161/24";
 
     preservation = {
       enable = true;
@@ -50,9 +44,7 @@
 
     tags = ["server"];
 
-    networkInterfaces.eno1 = {
-      ipv4 = "192.168.1.163/24";
-    };
+    networkInterfaces.eno1.ipv4 = "192.168.1.163/24";
 
     preservation = {
       enable = true;
