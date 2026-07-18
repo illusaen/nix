@@ -6,7 +6,6 @@
 }: {
   mkHostModule = {
     fleet,
-    hostName,
     host,
     sources,
   }: let
@@ -20,17 +19,6 @@
       _module.args = {
         inherit fleet fleetLib host serviceLib sources user;
       };
-
-      assertions = [
-        {
-          assertion = featureLib.missingFeatures host.features == [];
-          message = "host '${hostName}' references unknown features: ${builtins.concatStringsSep ", " (featureLib.missingFeatures host.features)}";
-        }
-        {
-          assertion = featureLib.missingPlatformModules host.platform host.features == [];
-          message = "host '${hostName}' references features without ${host.platform} modules: ${builtins.concatStringsSep ", " (featureLib.missingPlatformModules host.platform host.features)}";
-        }
-      ];
     };
   };
 }

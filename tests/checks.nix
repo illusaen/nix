@@ -22,12 +22,6 @@
     lib.unique
   ];
 
-  serviceFeatures = pipe fleet.services [
-    builtins.attrNames
-    (map (name: fleet.services.${name}.feature))
-    lib.unique
-  ];
-
   secretDeclarations = import ../secrets/secrets.nix;
   declaredSecrets = builtins.attrNames secretDeclarations;
   serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
@@ -46,9 +40,6 @@
         || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
     )
     serviceSecretRequirements;
-
-  serviceFeaturePlatformModuleErrors =
-    featureLib.serviceFeaturePlatformModuleErrors typedFleet.hosts typedFleet.services;
 
   themeNames = builtins.attrNames (fleet.themes.profiles or {});
   themeProfilesValid =
@@ -73,8 +64,6 @@ in
           == []
       )
       (builtins.attrNames fleet.hosts);
-    serviceFeaturesExist = featureLib.missingFeatures serviceFeatures == [];
-    routedServiceFeaturesHavePlatformModules = serviceFeaturePlatformModuleErrors == [];
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];

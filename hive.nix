@@ -18,10 +18,10 @@ in
     };
   }
   // builtins.mapAttrs (
-    hostName: host: {
+    _hostName: host: {
       imports = [
         (api.libs.hostLib.mkHostModule {
-          inherit hostName host sources fleet;
+          inherit host sources fleet;
         })
       ];
 

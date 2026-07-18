@@ -2,14 +2,11 @@
   lib,
   sources,
 }: let
-  inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir concatStringsSep elem any;
-  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs flip;
+  inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir concatStringsSep elem;
+  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs;
 
   concatMapAttrsToList = f: attrs:
-    pipe attrs [
-      (mapAttrsToList f)
-      concatLists
-    ];
+    concatLists (mapAttrsToList f attrs);
 
   assertSupported = {
     path,
@@ -44,15 +41,25 @@
       message = "module platforms";
     };
 
-  assertLocalImports = path: feature:
-    if builtins.all builtins.isPath (feature.imports or [])
+  assertFeatureTypes = path: feature: let
+    imports = feature.imports or [];
+    errors =
+      optionals (!builtins.isList imports) ["imports must be a list"]
+      ++ optionals (builtins.isList imports && !builtins.all builtins.isPath imports) ["imports must contain only paths"]
+      ++ optionals (feature ? modules && !builtins.isAttrs feature.modules) ["modules must be an attribute set"]
+      ++ optionals (feature ? tests && !builtins.isAttrs feature.tests) ["tests must be an attribute set"]
+      ++ optionals (feature ? serviceSecrets && !builtins.isFunction feature.serviceSecrets) ["serviceSecrets must be a function"];
+  in
+    if errors == []
     then feature
-    else throw "feature file '${toString path}' imports must be paths";
+    else throw "feature file '${toString path}' has invalid fields: ${concatStringsSep "; " errors}";
 
   mergeFeatures = fragments: let
     declaredModulePlatforms = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
-      filter (platform: any (flip elem declaredModulePlatforms) ["generic" platform]) ["nixos" "darwin"];
+      filter
+      (platform: elem "generic" declaredModulePlatforms || elem platform declaredModulePlatforms)
+      ["nixos" "darwin"];
   in {
     modules = listToAttrs (
       map (platform: {
@@ -82,7 +89,11 @@
           inherit sources;
         }
       else feature;
-    feature = assertSupportedModulePlatforms path (assertSupportedFeatureAttrs path (assertLocalImports path (callFeature (import path))));
+    feature = pipe (callFeature (import path)) [
+      (assertSupportedFeatureAttrs path)
+      (assertFeatureTypes path)
+      (assertSupportedModulePlatforms path)
+    ];
     localFeatures = map loadFeaturePath (feature.imports or []);
   in
     mergeFeatures (localFeatures ++ [feature]);
@@ -114,9 +125,21 @@ in rec {
         !(builtins.tryEval (assertSupportedFeatureAttrs "test-feature" {
           module.nixos = {};
         })).success;
-      namedFeatureImportsRejected =
-        !(builtins.tryEval (assertLocalImports "test-feature" {
+      invalidFeatureImportsRejected =
+        !(builtins.tryEval (assertFeatureTypes "test-feature" {
           imports = ["base"];
+        })).success;
+      invalidFeatureModulesRejected =
+        !(builtins.tryEval (assertFeatureTypes "test-feature" {
+          modules = [];
+        })).success;
+      invalidFeatureTestsRejected =
+        !(builtins.tryEval (assertFeatureTypes "test-feature" {
+          tests = [];
+        })).success;
+      invalidFeatureServiceSecretsRejected =
+        !(builtins.tryEval (assertFeatureTypes "test-feature" {
+          serviceSecrets = [];
         })).success;
       serviceSecretsMerged =
         (mergeFeatures [
@@ -124,6 +147,24 @@ in rec {
           {serviceSecrets = _: ["second"];}
         ]).serviceSecrets {}
         == ["first" "second"];
+      unknownHostFeatureRejected =
+        !(builtins.tryEval (modulesForHost {
+          name = "test-host";
+          platform = "nixos";
+          tags = [];
+          features = ["missing"];
+          preservation.enable = false;
+        })).success;
+      unsupportedHostFeaturePlatformRejected =
+        !(builtins.tryEval (
+          modulesForHost {
+            name = "test-host";
+            platform = "darwin";
+            tags = [];
+            features = ["nvidia"];
+            preservation.enable = false;
+          }
+        )).success;
     };
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
@@ -132,7 +173,7 @@ in rec {
     filter (
       name:
         hasAttr name features
-        && (features.${name}.modules.${platform} or null) == null
+        && !hasAttr platform features.${name}.modules
     )
     names;
 
@@ -163,13 +204,19 @@ in rec {
   in
     unique (concatLists featureGroups);
 
-  modulesForHost = host:
-    concatMap
-    (name: features.${name}.modules.${host.platform} or [])
-    (featuresForHost {
+  modulesForHost = host: let
+    names = featuresForHost {
       inherit host;
       services = host.services or [];
-    });
+    };
+    missing = missingFeatures names;
+    unsupported = missingPlatformModules host.platform names;
+  in
+    if missing != []
+    then throw "host '${host.name}' references unknown features: ${concatStringsSep ", " missing}"
+    else if unsupported != []
+    then throw "host '${host.name}' references features without ${host.platform} modules: ${concatStringsSep ", " unsupported}"
+    else concatMap (name: features.${name}.modules.${host.platform}) names;
 
   serviceSecretRequirementsFor = services:
     concatMapAttrsToList (
@@ -198,7 +245,7 @@ in rec {
               host = hosts.${hostName} or null;
               inherit (host) platform;
             in
-              if (feature.modules.${platform} or null) == null
+              if !hasAttr platform feature.modules
               then ["service '${serviceName}' feature '${featureName}' has no ${platform} module for host '${hostName}'"]
               else []
           )

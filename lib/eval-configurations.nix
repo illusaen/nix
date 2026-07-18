@@ -10,12 +10,12 @@ in {
     evalConfig = import "${sources.nixpkgs.outPath}/nixos/lib/eval-config.nix";
   in
     mapAttrs (
-      hostName: host:
+      _hostName: host:
         evalConfig {
           inherit (host) system;
           modules = [
             (hostLib.mkHostModule {
-              inherit fleet hostName host sources;
+              inherit fleet host sources;
             })
           ];
         }
@@ -27,7 +27,7 @@ in {
     nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
   in
     mapAttrs (
-      hostName: host:
+      _hostName: host:
         evalConfig {
           lib = nixpkgsLib;
           modules = [
@@ -39,7 +39,7 @@ in {
               system.checks.verifyNixPath = false;
             }
             (hostLib.mkHostModule {
-              inherit fleet hostName host sources;
+              inherit fleet host sources;
             })
           ];
         }
