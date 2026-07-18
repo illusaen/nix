@@ -3,7 +3,7 @@
   sources,
 }: let
   inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir;
-  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique;
+  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs;
 
   concatMapAttrsToList = f: attrs:
     pipe attrs [
@@ -12,9 +12,6 @@
     ];
 
   featureRoot = ../features;
-  featureEntries = readDir featureRoot;
-  featureNames = filter (name: featureEntries.${name} == "directory") (attrNames featureEntries);
-  supportedModulePlatforms = ["generic" "nixos" "darwin"];
 
   callFeature = feature:
     if builtins.isFunction feature
@@ -30,19 +27,38 @@
   localImportEntries = feature:
     filter (entry: !builtins.isString entry) (feature.imports or []);
 
-  unsupportedModulePlatforms = feature:
-    filter (platform: !(builtins.elem platform supportedModulePlatforms)) (attrNames (feature.modules or {}));
-
-  assertSupportedModulePlatforms = path: feature: let
-    unsupported = unsupportedModulePlatforms feature;
-  in
+  assertSupported = {
+    path,
+    feature,
+    message,
+    unsupported,
+    supported,
+  }:
     if unsupported == []
     then feature
     else
       throw ''
-        feature file '${toString path}' declares unsupported module platforms: ${builtins.concatStringsSep ", " unsupported}
-        supported module platforms: ${builtins.concatStringsSep ", " supportedModulePlatforms}
+        feature file '${toString path}' declares unsupported ${message}: ${builtins.concatStringsSep ", " unsupported}
+        supported ${message}: ${builtins.concatStringsSep ", " supported}
       '';
+
+  assertSupportedFeatureAttrs = path: feature: let
+    supported = ["imports" "modules" "tests" "serviceSecrets"];
+  in
+    assertSupported {
+      inherit path feature supported;
+      unsupported = filter (name: !(builtins.elem name supported)) (attrNames feature);
+      message = "attributes";
+    };
+
+  assertSupportedModulePlatforms = path: feature: let
+    supported = ["generic" "nixos" "darwin"];
+  in
+    assertSupported {
+      inherit path feature supported;
+      unsupported = filter (platform: !(builtins.elem platform supported)) (attrNames (feature.modules or {}));
+      message = "module platforms";
+    };
 
   moduleList = modules: platform: let
     module = modules.${platform} or null;
@@ -63,7 +79,6 @@
     fragments;
 
   mergeFeatures = fragments: let
-    merged = builtins.foldl' (acc: fragment: acc // removeAttrs fragment ["imports" "modules" "tests"]) {} fragments;
     modulePlatformNames = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
       if builtins.elem "generic" modulePlatformNames
@@ -74,30 +89,34 @@
           unique
         ]
       else unique modulePlatformNames;
-  in
-    merged
-    // {
-      imports = concatMap featureImportEntries fragments;
-      modules = listToAttrs (
-        map (platform: {
-          name = platform;
-          value = modulesForPlatform fragments platform;
-        })
-        platformNames
-      );
-      tests = builtins.foldl' (acc: fragment: acc // (fragment.tests or {})) {} fragments;
-    };
+  in {
+    imports = concatMap featureImportEntries fragments;
+    modules = listToAttrs (
+      map (platform: {
+        name = platform;
+        value = modulesForPlatform fragments platform;
+      })
+      platformNames
+    );
+    tests = builtins.foldl' (acc: fragment: acc // (fragment.tests or {})) {} fragments;
+    serviceSecrets = args:
+      concatMap (fragment: (fragment.serviceSecrets or (_: [])) args) fragments;
+  };
 
   loadFeaturePath = path: let
-    feature = assertSupportedModulePlatforms path (callFeature (import path));
+    feature = assertSupportedModulePlatforms path (assertSupportedFeatureAttrs path (callFeature (import path)));
     localFeatures = map loadFeaturePath (localImportEntries feature);
   in
     mergeFeatures (localFeatures ++ [feature]);
 
-  loadFeature = name: loadFeaturePath (featureRoot + "/${name}");
-
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
+
+  features = pipe featureRoot [
+    readDir
+    (filterAttrs (_name: value: value == "directory"))
+    (builtins.mapAttrs (name: _value: (loadFeaturePath (featureRoot + "/${name}"))))
+  ];
 in rec {
   tests =
     (concatMapAttrs (
@@ -110,6 +129,16 @@ in rec {
         !(builtins.tryEval (assertSupportedModulePlatforms "test-feature" {
           modules.linux = {};
         })).success;
+      unsupportedFeatureAttrsRejected =
+        !(builtins.tryEval (assertSupportedFeatureAttrs "test-feature" {
+          module.nixos = {};
+        })).success;
+      serviceSecretsMerged =
+        (mergeFeatures [
+          {serviceSecrets = _: ["first"];}
+          {serviceSecrets = _: ["second"];}
+        ]).serviceSecrets {}
+        == ["first" "second"];
     };
 
   missingFeatures = names: filter (name: !(hasAttr name features)) names;
@@ -121,11 +150,6 @@ in rec {
         && (features.${name}.modules.${platform} or null) == null
     )
     names;
-
-  features = pipe featureNames [
-    (map (name: nameValuePair name (loadFeature name)))
-    listToAttrs
-  ];
 
   close = names: let
     go = seen: pending:
