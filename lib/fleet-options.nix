@@ -238,7 +238,11 @@
     };
   };
 
-  serviceType = types.submodule ({name, ...}: {
+  serviceType = types.submodule ({
+    name,
+    config,
+    ...
+  }: {
     options = {
       name = mkOption {
         type = types.str;
@@ -267,6 +271,12 @@
       port = mkOption {
         type = types.port;
         description = "Service port.";
+      };
+
+      proxyPort = mkOption {
+        type = types.port;
+        default = config.port;
+        description = "HTTP port used by the central reverse proxy.";
       };
     };
   });

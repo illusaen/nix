@@ -34,6 +34,8 @@ in {
   }: let
     service = serviceLib.requireRoutedService host "pihole";
     secretFile = ../../secrets/hosts/${host.name}/pihole-web-password.age;
+    proxy = serviceLib.reverseProxy fleet;
+    proxyHostNames = builtins.attrNames proxy.routes;
   in
     lib.mkMerge [
       {
@@ -50,17 +52,15 @@ in {
               dns = {
                 inherit (service) port;
                 upstreams = ["9.9.9.9" "1.1.1.1" "8.8.8.8"];
-                hosts = [""];
+                hosts = map (name: "${proxy.address} ${name}") proxyHostNames;
               };
               "dns.domain".name = fleet.domain;
             };
           };
           pihole-web = {
             enable = true;
-            ports = [
-              "80r"
-              "443s"
-            ];
+            hostName = "pihole.${host.name}.${fleet.domain}";
+            ports = [service.proxyPort];
           };
         };
       }

@@ -362,6 +362,27 @@ in {
       }
     ];
 
+  reverseProxyRoutes = let
+    proxy = serviceLib.reverseProxy (evalFleet (testFleet {
+      services =
+        baseFleet.services
+        // {
+          caddy = {
+            primary = "huginn";
+            port = 443;
+          };
+        };
+    }));
+  in
+    proxy.address
+    == "192.168.1.164"
+    && proxy.routes."app.odin.home.arpa"
+    == {
+      serviceName = "app";
+      hostName = "odin";
+      upstream = "192.168.1.162:8080";
+    };
+
   routedServiceFeaturePlatformModuleErrors =
     featureLib.serviceFeaturePlatformModuleErrors
     (evalFleet (testFleet {
