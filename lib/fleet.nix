@@ -13,25 +13,32 @@
       unique
     ];
 
-  networkInterfacesToAddress = n:
-    pipe n [
-      (builtins.mapAttrs (_n: interface:
-        lib.optional ((interface.ipv4 or null) != null) {
-          address = interface.ipv4;
-          family = "ipv4";
-        }
-        ++ lib.optional ((interface.ipv6 or null) != null) {
-          address = interface.ipv6;
-          family = "ipv6";
-        }))
-      lib.concatAttrValues
-    ];
+  hostAddresses = family: host:
+    builtins.filter builtins.isString (
+      builtins.catAttrs family (builtins.attrValues (host.networkInterfaces or {}))
+    );
+
+  stripCidr = address:
+    builtins.head (lib.splitString "/" address);
+
+  hostIps = family: host:
+    map stripCidr (hostAddresses family host);
+
+  requireHostIp = family: host: let
+    addresses = hostIps family host;
+  in
+    if addresses == []
+    then throw "host '${host.name}' has no static ${family} address"
+    else builtins.head addresses;
 
   hostAddressEntries = fleet:
     pipe fleet.hosts [
       builtins.attrValues
-      (builtins.catAttrs "networkInterfaces")
-      (concatMap networkInterfacesToAddress)
+      (concatMap (host:
+        concatMap (
+          family:
+            map (address: {inherit address family;}) (hostAddresses family host)
+        ) ["ipv4" "ipv6"]))
     ];
 
   validateHost = fleet: name: host:
@@ -106,6 +113,8 @@
       require false "uid '${toString uid}' is used by multiple users")
     duplicateUids;
 in rec {
+  inherit hostAddresses hostIps requireHostIp;
+
   userPosixGroups = fleet: userName: let
     user = fleet.users.${userName};
     userGroups = user.groups or [];

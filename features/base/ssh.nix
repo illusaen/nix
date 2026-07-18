@@ -1,21 +1,11 @@
 {
   modules.nixos = {
     fleet,
+    fleetLib,
     host,
     lib,
     ...
   }: let
-    stripCidr = address: builtins.head (lib.splitString "/" address);
-    ipv4Addresses = knownHost:
-      builtins.concatLists (
-        map (
-          interfaceName: let
-            interface = knownHost.networkInterfaces.${interfaceName};
-          in
-            lib.optional ((interface.ipv4 or null) != null) (stripCidr interface.ipv4)
-        )
-        (builtins.attrNames (knownHost.networkInterfaces or {}))
-      );
     mkFleetHostEntry = name: knownHost:
       lib.nameValuePair name {
         hostNames = lib.unique (
@@ -24,7 +14,7 @@
             "${name}.${fleet.domain}"
             knownHost.targetHost
           ]
-          ++ ipv4Addresses knownHost
+          ++ fleetLib.hostIps "ipv4" knownHost
         );
         publicKeyFile = knownHost.publicKey;
       };

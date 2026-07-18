@@ -1,4 +1,7 @@
-{lib}: let
+{
+  fleetLib,
+  lib,
+}: let
   inherit (builtins) attrNames concatLists;
   inherit (lib) mapAttrs' nameValuePair pipe;
 
@@ -52,18 +55,11 @@
       concatLists
     ];
 
-  hostIpv4 = host: let
-    addresses = builtins.filter builtins.isString (builtins.catAttrs "ipv4" (builtins.attrValues host.networkInterfaces));
-  in
-    if addresses == []
-    then throw "host '${host.name}' has no static IPv4 address"
-    else builtins.head (lib.splitString "/" (builtins.head addresses));
-
   reverseProxy = fleet: let
     caddy = fleet.services.caddy or (throw "the fleet has no caddy service");
     proxyHost = fleet.hosts.${caddy.primary};
   in {
-    address = hostIpv4 proxyHost;
+    address = fleetLib.requireHostIp "ipv4" proxyHost;
     routes = mapAttrs' (
       serviceName: service: let
         upstreamHost = fleet.hosts.${service.primary};
@@ -71,10 +67,10 @@
         nameValuePair "${serviceName}.${upstreamHost.name}.${fleet.domain}" {
           inherit serviceName;
           hostName = upstreamHost.name;
-          upstream = "${hostIpv4 upstreamHost}:${toString (service.proxyPort or service.port)}";
+          upstream = "${fleetLib.requireHostIp "ipv4" upstreamHost}:${toString (service.proxyPort or service.port)}";
         }
     ) (removeAttrs fleet.services ["caddy"]);
   };
 in {
-  inherit hostIpv4 portConflicts requireRoutedService reverseProxy servicesForHost;
+  inherit portConflicts requireRoutedService reverseProxy servicesForHost;
 }

@@ -10,7 +10,7 @@
         services.jellyfin = {
           enable = true;
           openFirewall = true;
-          hardwareAcceleration.enable = true;
+          # hardwareAcceleration.enable = true;
         };
       }
       (lib.mkIf (options ? persist) {

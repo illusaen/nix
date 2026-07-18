@@ -1,6 +1,7 @@
 {
   modules.nixos = {
     fleet,
+    fleetLib,
     host,
     lib,
     options,
@@ -8,6 +9,15 @@
   }: let
     staticInterfaces = host.networkInterfaces or {};
     hasStaticInterfaces = staticInterfaces != {};
+    hostsWithIpv4 = lib.filterAttrs (name: knownHost:
+      name != host.name && fleetLib.hostIps "ipv4" knownHost != [])
+    fleet.hosts;
+    fleetHosts = lib.mapAttrs' (_name: knownHost:
+      lib.nameValuePair (builtins.head (fleetLib.hostIps "ipv4" knownHost)) [
+        knownHost.name
+        "${knownHost.name}.${fleet.domain}"
+      ])
+    hostsWithIpv4;
     mkNetwork = name: interface:
       lib.nameValuePair "10-${name}" {
         matchConfig.Name = name;
@@ -27,6 +37,7 @@
           hostName = host.name or null;
           inherit (fleet) domain;
           inherit (host) hostId;
+          hosts = fleetHosts;
           networkmanager.enable = !hasStaticInterfaces;
           useDHCP = !hasStaticInterfaces;
           useNetworkd = hasStaticInterfaces;

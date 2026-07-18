@@ -17,5 +17,7 @@
         cpu.amd.updateMicrocode = lib.mkForce false;
         cpu.intel.updateMicrocode = lib.mkForce false;
       });
+
+    services.power-profiles-daemon.enable = false;
   };
 }

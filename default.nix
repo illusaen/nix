@@ -4,6 +4,7 @@ let
   fleetLib = import ./lib/fleet.nix {lib = nixpkgsLib;};
   packageLib = import ./lib/packages.nix {lib = nixpkgsLib;};
   serviceLib = import ./lib/services.nix {
+    inherit fleetLib;
     lib = nixpkgsLib;
   };
   featureLib = import ./lib/features.nix {
