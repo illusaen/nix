@@ -2,8 +2,8 @@
   lib,
   sources,
 }: let
-  inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir;
-  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs;
+  inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir concatStringsSep elem any;
+  inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs flip;
 
   concatMapAttrsToList = f: attrs:
     pipe attrs [
@@ -22,8 +22,8 @@
     then feature
     else
       throw ''
-        feature file '${toString path}' declares unsupported ${message}: ${builtins.concatStringsSep ", " unsupported}
-        supported ${message}: ${builtins.concatStringsSep ", " supported}
+        feature file '${toString path}' declares unsupported ${message}: ${concatStringsSep ", " unsupported}
+        supported ${message}: ${concatStringsSep ", " supported}
       '';
 
   assertSupportedFeatureAttrs = path: feature: let
@@ -31,7 +31,7 @@
   in
     assertSupported {
       inherit path feature supported;
-      unsupported = filter (name: !(builtins.elem name supported)) (attrNames feature);
+      unsupported = filter (name: !(elem name supported)) (attrNames feature);
       message = "attributes";
     };
 
@@ -40,17 +40,14 @@
   in
     assertSupported {
       inherit path feature supported;
-      unsupported = filter (platform: !(builtins.elem platform supported)) (attrNames (feature.modules or {}));
+      unsupported = filter (platform: !(elem platform supported)) (attrNames (feature.modules or {}));
       message = "module platforms";
     };
 
   mergeFeatures = fragments: let
-    modulePlatformNames = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
+    declaredModulePlatforms = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
-      filter
-      (platform:
-        builtins.elem "generic" modulePlatformNames || builtins.elem platform modulePlatformNames)
-      ["nixos" "darwin"];
+      filter (platform: any (flip elem declaredModulePlatforms) ["generic" platform]) ["nixos" "darwin"];
     featureImportEntries = feature:
       filter builtins.isString (feature.imports or []);
   in {
@@ -105,7 +102,7 @@ in rec {
   tests =
     (concatMapAttrs (
         featureName: feature:
-          mapAttrs' (testName: test: nameValuePair "${featureName}.${testName}" test) (feature.tests or {})
+          mapAttrs' (testName: test: nameValuePair "${featureName}.${testName}" test) feature.tests
       )
       features)
     // {
@@ -146,7 +143,7 @@ in rec {
           if hasAttr name features
           then features.${name}
           else throw "unknown feature '${name}'";
-        next = feature.imports or [];
+        next = feature.imports;
       in
         if builtins.elem name seen
         then go seen rest
@@ -161,7 +158,7 @@ in rec {
     tags = host.tags or [];
     isLinux = host.platform == "nixos";
     isDesktop = builtins.elem "desktop" tags;
-    allTags = [
+    featureGroups = [
       ["base"]
       (optionals isLinux ["boot"])
       (optionals isDesktop ["programs-core" "theming"])
@@ -179,23 +176,15 @@ in rec {
       (builtins.catAttrs "feature" services)
     ];
   in
-    pipe allTags [
-      concatLists
-      unique
-    ];
+    unique (concatLists featureGroups);
 
   modulesForHost = host:
-    pipe {
+    concatMap
+    (name: features.${name}.modules.${host.platform} or [])
+    (close (featuresForHost {
       inherit host;
       services = host.services or [];
-    } [
-      featuresForHost
-      close
-      (concatMap (
-        name:
-          features.${name}.modules.${host.platform} or []
-      ))
-    ];
+    }));
 
   serviceSecretRequirementsFor = services:
     concatMapAttrsToList (
