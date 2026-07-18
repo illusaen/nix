@@ -11,22 +11,6 @@
       concatLists
     ];
 
-  featureRoot = ../features;
-
-  callFeature = feature:
-    if builtins.isFunction feature
-    then
-      feature {
-        inherit sources;
-      }
-    else feature;
-
-  featureImportEntries = feature:
-    filter builtins.isString (feature.imports or []);
-
-  localImportEntries = feature:
-    filter (entry: !builtins.isString entry) (feature.imports or []);
-
   assertSupported = {
     path,
     feature,
@@ -60,41 +44,29 @@
       message = "module platforms";
     };
 
-  moduleList = modules: platform: let
-    module = modules.${platform} or null;
-  in
-    if module == null
-    then []
-    else if builtins.isList module
-    then module
-    else [module];
-
-  modulesForPlatform = fragments: platform:
-    concatMap (
-      fragment: let
-        modules = fragment.modules or {};
-      in
-        moduleList modules "generic" ++ moduleList modules platform
-    )
-    fragments;
-
   mergeFeatures = fragments: let
     modulePlatformNames = concatMap (fragment: attrNames (fragment.modules or {})) fragments;
     platformNames =
-      if builtins.elem "generic" modulePlatformNames
-      then
-        pipe modulePlatformNames [
-          (filter (platform: platform != "generic"))
-          (platforms: ["nixos" "darwin"] ++ platforms)
-          unique
-        ]
-      else unique modulePlatformNames;
+      filter
+      (platform:
+        builtins.elem "generic" modulePlatformNames || builtins.elem platform modulePlatformNames)
+      ["nixos" "darwin"];
+    featureImportEntries = feature:
+      filter builtins.isString (feature.imports or []);
   in {
     imports = concatMap featureImportEntries fragments;
     modules = listToAttrs (
       map (platform: {
         name = platform;
-        value = modulesForPlatform fragments platform;
+        value =
+          concatMap (
+            fragment: let
+              modules = fragment.modules or {};
+              moduleList = platform: lib.optionals ((modules.${platform} or null) != null) (lib.toList modules.${platform});
+            in
+              moduleList "generic" ++ moduleList platform
+          )
+          fragments;
       })
       platformNames
     );
@@ -104,7 +76,16 @@
   };
 
   loadFeaturePath = path: let
+    callFeature = feature:
+      if builtins.isFunction feature
+      then
+        feature {
+          inherit sources;
+        }
+      else feature;
     feature = assertSupportedModulePlatforms path (assertSupportedFeatureAttrs path (callFeature (import path)));
+    localImportEntries = feature:
+      filter (entry: !builtins.isString entry) (feature.imports or []);
     localFeatures = map loadFeaturePath (localImportEntries feature);
   in
     mergeFeatures (localFeatures ++ [feature]);
@@ -112,11 +93,14 @@
   serviceHosts = service:
     [service.primary] ++ (service.backups or []);
 
-  features = pipe featureRoot [
-    readDir
-    (filterAttrs (_name: value: value == "directory"))
-    (builtins.mapAttrs (name: _value: (loadFeaturePath (featureRoot + "/${name}"))))
-  ];
+  features = let
+    featureRoot = ../features;
+  in
+    pipe featureRoot [
+      readDir
+      (filterAttrs (_name: value: value == "directory"))
+      (builtins.mapAttrs (name: _value: (loadFeaturePath (featureRoot + "/${name}"))))
+    ];
 in rec {
   tests =
     (concatMapAttrs (
@@ -177,8 +161,7 @@ in rec {
     tags = host.tags or [];
     isLinux = host.platform == "nixos";
     isDesktop = builtins.elem "desktop" tags;
-  in
-    pipe [
+    allTags = [
       ["base"]
       (optionals isLinux ["boot"])
       (optionals isDesktop ["programs-core" "theming"])
@@ -188,15 +171,15 @@ in rec {
           tag: let
             match = builtins.match "feature:(.+)" tag;
           in
-            if match == null
-            then []
-            else ["programs-${builtins.head match}"]
+            optionals (match != null) ["programs-${builtins.head match}"]
         )
         tags)
       (optionals (host.preservation.enable or false) ["preservation"])
       host.features
       (builtins.catAttrs "feature" services)
-    ] [
+    ];
+  in
+    pipe allTags [
       concatLists
       unique
     ];
@@ -222,7 +205,6 @@ in rec {
         mkRequirements = feature.serviceSecrets or (_: []);
       in
         mkRequirements {
-          inherit service serviceName;
           hosts = serviceHosts service;
         }
     )
