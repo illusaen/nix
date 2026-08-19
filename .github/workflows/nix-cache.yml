@@ -28,8 +28,18 @@ jobs:
           name: illusaen
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      - name: Build plain local packages
-        run: nix-build default.nix -A packages.x86_64-linux
+      - name: Build bambu-studio
+        run: |
+          nix-build --expr '
+            let
+              api = import ./default.nix;
+              pkgs = import api.sources.nixpkgs.outPath {
+                system = "x86_64-linux";
+                config.allowUnfree = true;
+                overlays = [ api.overlays ];
+              };
+            in
+              pkgs.bambu-studio
 
       - name: Build CUDA llama-cpp service package
         run: |
