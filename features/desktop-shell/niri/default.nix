@@ -35,7 +35,7 @@
             main = host.monitors.main;
             secondary = host.monitors.secondary or host.monitors.main;
           };
-          "niri/niri-config.kdl".source = ./niri-config.kdl;
+          "niri/config.kdl".source = ./niri-config.kdl;
         }
         // lib.optionalAttrs (host.monitors.secondary != null) {
           "niri/niri-monitors.kdl".text = ''
