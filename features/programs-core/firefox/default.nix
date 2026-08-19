@@ -50,11 +50,11 @@
       ...
     }: let
       firefoxAddonsOverlay = final: prev: let
-        firefoxAddonsRoot = dirOf (dirOf sources."firefox-addons".outPath);
+        firefoxAddonsRepo = sources."firefox-addons".outPath;
       in {
-        firefox-addons = final.callPackage sources."firefox-addons".outPath {
+        firefox-addons = final.callPackage (firefoxAddonsRepo + "/pkgs/firefox-addons") {
           buildMozillaXpiAddon = let
-            libMozilla = import (firefoxAddonsRoot + "/lib/mozilla.nix") {inherit (prev) lib;};
+            libMozilla = import (firefoxAddonsRepo + "/lib/mozilla.nix") {inherit (prev) lib;};
           in
             libMozilla.mkBuildMozillaXpiAddon {
               inherit (final) fetchurl stdenv;

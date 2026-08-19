@@ -1,90 +1,161 @@
 {
-  "version": 1,
   "pins": {
     "agenix": {
-      "type": "github",
-      "owner": "ryantm",
-      "repo": "agenix",
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "ryantm",
+        "repo": "agenix"
+      },
+      "branch": "main",
+      "submodules": false,
       "revision": "b027ee29d959fda4b60b57566d64c98a202e0feb",
+      "url": "https://github.com/ryantm/agenix/archive/b027ee29d959fda4b60b57566d64c98a202e0feb.tar.gz",
       "hash": "sha256-9VnK6Oqai65puVJ4WYtCTvlJeXxMzAp/69HhQuTdl/I="
     },
     "base16": {
-      "type": "github",
-      "owner": "SenchoPens",
-      "repo": "base16.nix",
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "SenchoPens",
+        "repo": "base16.nix"
+      },
+      "branch": "main",
+      "submodules": false,
       "revision": "75ed5e5e3fce37df22e49125181fa37899c3ccd6",
+      "url": "https://github.com/SenchoPens/base16.nix/archive/75ed5e5e3fce37df22e49125181fa37899c3ccd6.tar.gz",
       "hash": "sha256-qcMhnL7aGAuFuutH4rq9fvAhCpJWVHLcHVZLtPctPlo="
     },
     "darwin": {
-      "type": "github",
-      "owner": "nix-darwin",
-      "repo": "nix-darwin",
-      "revision": "a1fa429e945becaf60468600daf649be4ba0350c",
-      "hash": "sha256-rCPytmKNjctLloB6UgK5CRrHSwV4b0ygxtJLPPp8R14="
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-darwin",
+        "repo": "nix-darwin"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "4cff07de74b50e64bdd68cd4e722ab5b6b35ee48",
+      "url": "https://github.com/nix-darwin/nix-darwin/archive/4cff07de74b50e64bdd68cd4e722ab5b6b35ee48.tar.gz",
+      "hash": "sha256-oQFip+v0luP8NIxJzmiW4Wu8bILsbFWom5l0zonl8hQ="
     },
     "devshell": {
-      "type": "github",
-      "owner": "numtide",
-      "repo": "devshell",
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "numtide",
+        "repo": "devshell"
+      },
+      "branch": "main",
+      "submodules": false,
       "revision": "255a2b1725a20d060f566e4755dbf571bbbb5f76",
+      "url": "https://github.com/numtide/devshell/archive/255a2b1725a20d060f566e4755dbf571bbbb5f76.tar.gz",
       "hash": "sha256-460jc0+CZfyaO8+w8JNtlClB2n4ui1RbHfPTLkpwhU8="
     },
     "disko": {
-      "type": "github",
-      "owner": "nix-community",
-      "repo": "disko",
-      "revision": "de5708739256238fb912c62f03988815db89ec9a",
-      "hash": "sha256-CNzzBsRhq7gg4BMBuTDObiWDH/rFYHEuDRVOwCcwXw4="
-    },
-    "fromYaml": {
-      "type": "github",
-      "owner": "SenchoPens",
-      "repo": "fromYaml",
-      "revision": "106af9e2f715e2d828df706c386a685698f3223b",
-      "hash": "sha256-lq95WydhbUTWig/JpqiB7oViTcHFP8Lv41IGtayokA8="
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "disko"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+      "url": "https://github.com/nix-community/disko/archive/ff8702b4de27f72b4c78573dfb89ec74e36abdf1.tar.gz",
+      "hash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o="
     },
     "firefox-addons": {
-      "type": "gitlab",
-      "owner": "rycee",
-      "repo": "nur-expressions",
-      "revision": "d84e72970b14f90170b1b7fb09adc59cbf40eb3b",
-      "hash": "sha256-MedB3zphmF3ie1tQDYLJbpIdDByYD9Sf9gkjC7et+h4=",
-      "dir": "pkgs/firefox-addons"
+      "type": "Git",
+      "repository": {
+        "type": "GitLab",
+        "repo_path": "rycee/nur-expressions",
+        "server": "https://gitlab.com/"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "85331c5014af50dc08ce5d16fd2dc829520d21cf",
+      "url": "https://gitlab.com/api/v4/projects/rycee%2Fnur-expressions/repository/archive.tar.gz?sha=85331c5014af50dc08ce5d16fd2dc829520d21cf",
+      "hash": "sha256-AHUEkickUzn8Xs210zD9TtUgiVYaB/ezxesTGg432MY="
+    },
+    "fromYaml": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "SenchoPens",
+        "repo": "fromYaml"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "106af9e2f715e2d828df706c386a685698f3223b",
+      "url": "https://github.com/SenchoPens/fromYaml/archive/106af9e2f715e2d828df706c386a685698f3223b.tar.gz",
+      "hash": "sha256-lq95WydhbUTWig/JpqiB7oViTcHFP8Lv41IGtayokA8="
     },
     "hjem": {
-      "type": "github",
-      "owner": "feel-co",
-      "repo": "hjem",
-      "revision": "dd0ba9e22fb46581f843e6121de33ca7a4a80224",
-      "hash": "sha256-so1hIImuLtTKTVUokJ/6C2D2b2D4znCx+/PAjMSAnpw="
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "feel-co",
+        "repo": "hjem"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "b610953d0c56da6b28fd39c21bd193b88e91341c",
+      "url": "https://github.com/feel-co/hjem/archive/b610953d0c56da6b28fd39c21bd193b88e91341c.tar.gz",
+      "hash": "sha256-qwppDYdtxqtDpI1iSp7bs8prOJ0KQSvhJchfROD04f0="
     },
     "nixpkgs": {
-      "type": "github",
-      "owner": "NixOS",
-      "repo": "nixpkgs",
-      "revision": "65179426c83bb3f6bc14898b42ea1c6f01d374b0",
-      "hash": "sha256-xnJJk+ct+D2+wdRxj1wk36w5zV9RVESwRqcklPdt3fM="
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "NixOS",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-unstable",
+      "submodules": false,
+      "revision": "e5bdc4a41d4c072fe1e3787eaa0320a384741d44",
+      "url": "https://github.com/NixOS/nixpkgs/archive/e5bdc4a41d4c072fe1e3787eaa0320a384741d44.tar.gz",
+      "hash": "sha256-FBJRXmbGXiSUDvYEbfLYRkckayyZ6SK1UEqhCrIZ2Cs="
     },
     "noctalia": {
-      "type": "github",
-      "owner": "noctalia-dev",
-      "repo": "noctalia",
-      "revision": "e1e904c556efbc020d002af5f8a6b7620383f7ef",
-      "hash": "sha256-O4zq1bnVN2D7NipynZ5oZMeOabQnB2ccJZ48W+XgI3s="
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "noctalia-dev",
+        "repo": "noctalia"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "74db8e7a62c04e85c876da4827405700455c160c",
+      "url": "https://github.com/noctalia-dev/noctalia/archive/74db8e7a62c04e85c876da4827405700455c160c.tar.gz",
+      "hash": "sha256-sFyoCSeC+vwQUjQ54e2EBYh9EdYc7yGp31whjaYOOfk="
     },
     "preservation": {
-      "type": "github",
-      "owner": "nix-community",
-      "repo": "preservation",
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "preservation"
+      },
+      "branch": "main",
+      "submodules": false,
       "revision": "93416f4614ad2dfed5b0dcf12f27e57d27a5ab11",
+      "url": "https://github.com/nix-community/preservation/archive/93416f4614ad2dfed5b0dcf12f27e57d27a5ab11.tar.gz",
       "hash": "sha256-mMI9IanU+Xw+pVogD2oT0I2kTmvz2Un/Apc5+CwUpEY="
     },
     "shimmer": {
-      "type": "github",
-      "owner": "nuclearcodecat",
-      "repo": "shimmer",
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nuclearcodecat",
+        "repo": "shimmer"
+      },
+      "branch": "main",
+      "submodules": false,
       "revision": "c346a3744bcbe49cce33ec2b82754ed0621ebbb7",
+      "url": "https://github.com/nuclearcodecat/shimmer/archive/c346a3744bcbe49cce33ec2b82754ed0621ebbb7.tar.gz",
       "hash": "sha256-z3yEiKFkuQNOzdaAt7vGsB3V/7XgcaFN48uihjSFoz8="
     }
-  }
+  },
+  "version": 8
 }

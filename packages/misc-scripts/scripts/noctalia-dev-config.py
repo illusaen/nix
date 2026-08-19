@@ -3,10 +3,9 @@
 
 import argparse
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 DEFAULTS = {
     "mono": "Monaspace Neon NF",
