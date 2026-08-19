@@ -40,6 +40,7 @@ jobs:
               };
             in
               pkgs.bambu-studio
+          '
 
       - name: Build CUDA llama-cpp service package
         run: |
