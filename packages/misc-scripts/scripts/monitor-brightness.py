@@ -13,7 +13,9 @@ INPUTS = {
 
 
 def find_lg_bus():
-    result = subprocess.run(["ddcutil", "detect"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["ddcutil", "detect"], capture_output=True, text=True, check=True
+    )
     bus = None
     for line in result.stdout.splitlines():
         m = re.search(r"/dev/i2c-(\d+)", line)
@@ -26,7 +28,10 @@ def find_lg_bus():
 
 def find_current_brightness(bus):
     result = subprocess.run(
-        ["ddcutil", "getvcp", "10", "-b", str(bus)], capture_output=True, text=True
+        ["ddcutil", "getvcp", "10", "-b", str(bus)],
+        capture_output=True,
+        text=True,
+        check=True,
     )
     # VCP code 0x10 (Brightness                    ): current value =    40, max value =   100
     for line in result.stdout.splitlines():

@@ -30,7 +30,9 @@ INPUTS = {
 
 
 def find_lg_bus():
-    result = subprocess.run(["ddcutil", "detect"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["ddcutil", "detect"], capture_output=True, text=True, check=True
+    )
     bus = None
     for line in result.stdout.splitlines():
         m = re.search(r"/dev/i2c-(\d+)", line)
