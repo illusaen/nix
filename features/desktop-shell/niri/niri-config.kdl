@@ -74,7 +74,6 @@
 }
 "window-rule"  {
   "match" "app-id"="code"
-  "match" "app-id"="dev.zed.Zed"
   "match" "app-id"="google-chrome"
   "match" "app-id"="firefox"
   "open-on-workspace" "code"

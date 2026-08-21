@@ -69,6 +69,15 @@
 
     mkAlacrittyToml = scheme:
       pkgs.writeText "alacritty.toml" ''
+        [window]
+        padding = { x = 32, y = 32 }
+        dynamic_padding = true
+        opacity = 0.9
+        blur = true
+
+        [selection]
+        save_to_clipboard = true
+
         [font]
         size = ${toString sizes.terminal}
 
@@ -113,49 +122,6 @@
         set recolor-lightcolor "${scheme.withHashtag.base00}"
         set recolor-darkcolor "${scheme.withHashtag.base06}"
       '';
-
-    pxToPt = size: builtins.floor (size * 4 / 3 + 0.5);
-
-    mkZedSettings = scheme:
-      pkgs.writeText "zed-settings.json" (builtins.toJSON {
-        agent_servers.Codex = {
-          command = "codex-acp";
-          type = "custom";
-        };
-        autosave.after_delay.milliseconds = 5000;
-        auto_signature_help = true;
-        auto_update = false;
-        buffer_font_family = fonts.mono.name;
-        buffer_font_fallbacks = [icon.name];
-        buffer_font_size = pxToPt sizes.terminal;
-        code_lens = "on";
-        diff_view_style = "unified";
-        formatter.external = {
-          command = "treefmt";
-          arguments = [
-            "--stdin"
-            "{buffer_path}"
-          ];
-        };
-        languages.Nix.language_servers = ["nixd" "!nil"];
-        load_direnv = "shell_hook";
-        preferred_line_length = 120;
-        soft_wrap = "editor_width";
-        tab_size = 2;
-        telemetry = {
-          diagnostics = false;
-          metrics = false;
-        };
-        theme = let
-          themeName = "Base24 ${scheme."scheme-name"}";
-        in {
-          dark = themeName;
-          light = themeName;
-        };
-        ui_font_family = fonts.sans.name;
-        ui_font_fallbacks = [icon.name];
-        ui_font_size = pxToPt sizes.desktop;
-      });
 
     mkProfileLinkCommands = files:
       lib.concatStringsSep "\n" (
@@ -211,15 +177,10 @@
         "qt5ct/qt5ct.conf" = mkQtctConf profile;
         "qt6ct/qt6ct.conf" = mkQtctConf profile;
         "zathura/zathurarc" = mkZathurarc scheme;
-        "zed/settings.json" = mkZedSettings scheme;
-        "zed/themes/base24-theme.json" = scheme {
-          template = ../../resources/templates/zed/zed-base24.json.mustache;
-          extension = ".json";
-        };
       };
     in
       pkgs.runCommand "nix-theme-profile-${name}" {} ''
-        mkdir -p "$out/alacritty" "$out/bat/themes" "$out/gtk-3.0" "$out/gtk-4.0" "$out/noctalia" "$out/qt5ct" "$out/qt6ct" "$out/zathura" "$out/zed/themes"
+        mkdir -p "$out/alacritty" "$out/bat/themes" "$out/gtk-3.0" "$out/gtk-4.0" "$out/noctalia" "$out/qt5ct" "$out/qt6ct" "$out/zathura"
         cp -rs ${lib.escapeShellArg "${localThemePackage gtk}/share/libadwaita-themes"}/* "$out/gtk-4.0/" 2>/dev/null || true
         ${mkProfileLinkCommands profileFiles}
       '';

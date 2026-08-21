@@ -70,14 +70,14 @@ nix_store_for_command() {
 }
 
 open_editor() {
-  for editor in zeditor nvim vim; do
+  for editor in code nvim vim; do
     if command -v "$editor" >/dev/null 2>&1; then
       "$editor" .
       return
     fi
   done
 
-  echo "Error: no supported editor found (zed, nvim, or vim)." >&2
+  echo "Error: no supported editor found (code, nvim, or vim)." >&2
   return 1
 }
 

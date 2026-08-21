@@ -80,11 +80,12 @@ let
       && nixosConfigurations.odin.config.programs.nix-ld.enable == true
       && nixosConfigurations.odin.config.programs.firefox.languagePacks == ["en-US" "zh-CN"]
       && nixosConfigurations.odin.config.programs.firefox.policies.ExtensionSettings ? "uBlock0@raymondhill.net"
-      && builtins.elem "starship" odinSystemPackageNames
+      && odinHasPackageMatching "starship-.*"
       && nixosConfigurations.odin.config.programs.steam.enable == true
       && nixosConfigurations.odin.config.programs.zsh.enable == true
       && nixosConfigurations.odin.config.programs.zsh.shellAliases.gst == "git status"
       && builtins.match ".*dot_cd_accept_line.*" nixosConfigurations.odin.config.programs.zsh.interactiveShellInit != null
+      && pkgs.lib.hasInfix "starship init zsh" nixosConfigurations.odin.config.programs.zsh.promptInit
       && builtins.match ".*BETA" nixosConfigurations.odin.config.programs._1password-gui.package.name != null
       && builtins.match ".*/where_is_my_sddm_theme" nixosConfigurations.odin.config.services.displayManager.sddm.theme != null
       && nixosConfigurations.odin.config.users.users.wendy.shell.pname == "zsh"
@@ -133,7 +134,7 @@ let
       && darwinParityConfig.programs.direnv.enable == true
       && darwinParityConfig.programs.zsh.enable == true
       && darwinParityConfig.environment.shellAliases.gst == "git status"
-      && builtins.elem "starship" packageNames
+      && builtins.any (name: builtins.match "starship-.*" name != null) packageNames
       && builtins.elem "git" packageNames
       && gitWrapper.config.core.sshCommand == "ssh -i /etc/ssh/host_ed25519"
     then true

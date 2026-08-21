@@ -35,10 +35,12 @@ in {
         histFile = "$HOME/${historyFile}";
         interactiveShellInit = ''
           eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd n)"
-          eval "$(starship init zsh)"
           source <(${pkgs.fzf}/bin/fzf --zsh)
 
           ${builtins.readFile ./interactive.zsh}
+        '';
+        promptInit = ''
+          eval "$(${pkgs.starship}/bin/starship init zsh)"
         '';
       };
     };

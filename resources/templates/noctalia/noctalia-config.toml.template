@@ -394,7 +394,7 @@ wallpaper_scheme = "m3-fruit-salad"
 
 [theme.templates]
 builtin_ids = ["alacritty", "gtk3", "gtk4", "qt", "starship"]
-community_ids = ["zed", "zathura"]
+community_ids = ["zathura"]
 
 [wallpaper]
 directory = "@imageDirectory@"
