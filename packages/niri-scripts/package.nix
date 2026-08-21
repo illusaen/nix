@@ -1,7 +1,7 @@
 {
   symlinkJoin,
   writeShellApplication,
-  local,
+  niri,
   python3,
 }: let
   pythonScript = name: script: runtimeInputs:
@@ -16,11 +16,11 @@ in
     name = "niri-scripts";
     paths = [
       (pythonScript "ndrop" ./scripts/ndrop.py [
-        local.niri
+        niri
         python3
       ])
       (pythonScript "niri-workspace" ./scripts/niri-workspace.py [
-        local.niri
+        niri
         python3
       ])
     ];

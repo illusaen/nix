@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eu
+
+ARG="${1:-""}"
+
+# shellcheck disable=SC2016
+failed_checks="$(
+  nix-instantiate --eval --strict --json --expr '
+    let
+      api = import ./default.nix;
+    in
+      builtins.filter (name: api.checks.${name} != true) (builtins.attrNames api.checks)
+  '
+)"
+
+if [ "$ARG" == "-v" ]; then
+  nix-instantiate --eval --strict --json --expr '(import ./default.nix).checks'
+  printf '\n'
+fi
+
+if [ "$failed_checks" != "[]" ]; then
+  printf 'plain Nix migration checks failed: %s\n' "$failed_checks" >&2
+  exit 1
+fi
+
+nix-instantiate --parse hive.nix >/dev/null
+nix-instantiate --parse darwin.nix >/dev/null
+
+printf '%s\n' 'plain Nix migration checks passed'

@@ -1,0 +1,84 @@
+{
+  fleet,
+  lib,
+  libs,
+  typedFleet,
+}: let
+  inherit (lib) pipe;
+  inherit (libs) deployLib featureLib serviceLib;
+
+  testResults =
+    (import ./fleet.nix {
+      inherit (libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
+    })
+    // featureLib.tests;
+  hive = import ../hive.nix;
+  hiveNodes = removeAttrs hive ["meta"];
+
+  hostFeatures = pipe fleet.hosts [
+    builtins.attrNames
+    (map (name: fleet.hosts.${name}.features))
+    builtins.concatLists
+    lib.unique
+  ];
+
+  secretDeclarations = import ../secrets/secrets.nix;
+  declaredSecrets = builtins.attrNames secretDeclarations;
+  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
+  expectedServiceSecrets = pipe serviceSecretRequirements [
+    (map (requirement: requirement.secret))
+    lib.unique
+  ];
+  missingServiceSecretDeclarations =
+    builtins.filter (name: !(builtins.elem name declaredSecrets)) expectedServiceSecrets;
+  hostPublicKey = hostName:
+    builtins.replaceStrings ["\n"] [""] (builtins.readFile fleet.hosts.${hostName}.publicKey);
+  missingServiceSecretRecipients =
+    builtins.filter (
+      requirement:
+        !(builtins.hasAttr requirement.secret secretDeclarations)
+        || !(builtins.elem (hostPublicKey requirement.hostName) secretDeclarations.${requirement.secret}.publicKeys)
+    )
+    serviceSecretRequirements;
+
+  themeNames = builtins.attrNames (fleet.themes.profiles or {});
+  themeProfilesValid =
+    builtins.hasAttr fleet.themes.default fleet.themes.profiles
+    && builtins.all (
+      name: let
+        profile = fleet.themes.profiles.${name};
+      in
+        builtins.pathExists profile.base16Theme
+        && (profile.wallpaper == null || builtins.pathExists profile.wallpaper)
+        && (profile.colorScheme == "dark" || profile.colorScheme == "light")
+    )
+    themeNames;
+in
+  testResults
+  // {
+    hostFeaturesExist = featureLib.missingFeatures hostFeatures == [];
+    hostFeaturesHavePlatformModules =
+      builtins.all (
+        name:
+          featureLib.missingPlatformModules fleet.hosts.${name}.platform (fleet.hosts.${name}.features or [])
+          == []
+      )
+      (builtins.attrNames fleet.hosts);
+    hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
+    serviceSecretsDeclared = missingServiceSecretDeclarations == [];
+    serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
+    servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
+    inherit themeProfilesValid;
+    deploySelectors =
+      deployLib.selectHostNames "odin"
+      == ["odin"]
+      && deployLib.selectHostNames "@all" == ["huginn" "muninn" "odin"]
+      && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
+      && deployLib.selectHostNames "@darwin" == []
+      && deployLib.selectHostNames "@server" == ["huginn" "muninn"]
+      && builtins.all (host: builtins.elem "nixos" host.deployment.tags) (builtins.attrValues hiveNodes)
+      && builtins.elem "server" hive.huginn.deployment.tags
+      && builtins.elem "desktop" hive.odin.deployment.tags
+      && !(builtins.elem "gpu:nvidia" hive.odin.deployment.tags)
+      && !(builtins.elem "feature:dev" hive.odin.deployment.tags);
+  }

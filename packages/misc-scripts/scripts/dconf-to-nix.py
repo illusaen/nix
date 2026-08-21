@@ -52,10 +52,12 @@ DCONF_SETTINGS
 
 
 def _run(command):
-    return run(command, encoding="UTF-8", capture_output=True, shell=True).stdout
+    return run(
+        command, encoding="UTF-8", capture_output=True, shell=True, check=True
+    ).stdout
 
 
-def dconf_read_recursive(dconf_dir, output_entries={}):
+def dconf_read_recursive(dconf_dir, output_entries=None):
     """
     Output entries is:
     {
@@ -74,7 +76,7 @@ def dconf_read_recursive(dconf_dir, output_entries={}):
         else:
             value = _run("dconf read " + dconf_dir + key).removesuffix("\n")
             if dconf_dir not in output_entries:
-                output_entries[dconf_dir] = dict()
+                output_entries[dconf_dir] = {}
             output_entries[dconf_dir][key] = value
     return output_entries
 

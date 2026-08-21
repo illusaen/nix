@@ -50,7 +50,7 @@ age-keygen -y ~/.config/agenix/wendy.agekey > secrets/users/wendy/age.pub
 Edit a host secret:
 
 ```bash
-RULES=secrets/secrets.nix nix run github:ryantm/agenix -- -i ~/.config/agenix/wendy.agekey -e secrets/hosts/huginn/pihole-web-password.age
+nix-shell shell.nix --run 'RULES=secrets/secrets.nix agenix -i ~/.config/agenix/wendy.agekey -e secrets/hosts/huginn/pihole-web-password.age'
 ```
 
 Declare the secret in a NixOS module:

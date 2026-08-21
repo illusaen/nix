@@ -10,9 +10,7 @@ import sys
 
 def niri_json(*args):
     result = subprocess.run(
-        ["niri", "msg", "--json", *args],
-        capture_output=True,
-        text=True,
+        ["niri", "msg", "--json", *args], capture_output=True, text=True, check=True
     )
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "unknown error"

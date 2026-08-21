@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plain Fleet Architecture</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f7f5;
+        --fg: #17211e;
+        --muted: #5b6863;
+        --line: #c9d3ce;
+        --panel: #ffffff;
+        --panel-2: #edf3f0;
+        --accent: #0f766e;
+        --accent-2: #7c2d12;
+        --code-bg: #111c19;
+        --code-fg: #e8f2ee;
+        --shadow: rgba(23, 33, 30, 0.08);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1513;
+          --fg: #edf4f1;
+          --muted: #a5b2ad;
+          --line: #2e3d38;
+          --panel: #17201d;
+          --panel-2: #1d2a26;
+          --accent: #5eead4;
+          --accent-2: #fdba74;
+          --code-bg: #06100d;
+          --code-fg: #dceee8;
+          --shadow: rgba(0, 0, 0, 0.25);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 26px;
+        margin-bottom: 30px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.15;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2.1rem, 5vw, 4.2rem);
+        letter-spacing: 0;
+        max-width: 900px;
+      }
+
+      h2 {
+        font-size: 1.6rem;
+        margin-top: 44px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+      }
+
+      h3 {
+        font-size: 1.08rem;
+        margin-top: 24px;
+      }
+
+      p {
+        max-width: 860px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      code {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      :not(pre) > code {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+
+      pre {
+        margin: 14px 0;
+        overflow-x: auto;
+        border-radius: 8px;
+        background: var(--code-bg);
+        color: var(--code-fg);
+        padding: 16px;
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+        background: var(--panel);
+      }
+
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--panel-2);
+      }
+
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+
+      li + li {
+        margin-top: 5px;
+      }
+
+      .lede {
+        font-size: 1.12rem;
+        color: var(--muted);
+        max-width: 920px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 10px;
+        color: var(--muted);
+        background: var(--panel);
+        font-size: 0.88rem;
+      }
+
+      .grid,
+      .grid-3 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      @media (max-width: 820px) {
+        .grid,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .box {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+        box-shadow: 0 1px 6px var(--shadow);
+      }
+
+      .box h3 {
+        margin-top: 0;
+      }
+
+      .note {
+        border-left: 4px solid var(--accent);
+        background: var(--panel-2);
+        padding: 14px 16px;
+        margin: 18px 0;
+      }
+
+      .warn {
+        border-left-color: var(--accent-2);
+      }
+
+      .diagram {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        margin: 18px 0;
+        overflow-x: auto;
+      }
+
+      .diagram svg {
+        display: block;
+        min-width: 900px;
+        width: 100%;
+        height: auto;
+      }
+
+      .node {
+        fill: var(--panel-2);
+        stroke: var(--line);
+        stroke-width: 1.4;
+      }
+
+      .node-strong {
+        fill: color-mix(in srgb, var(--accent) 15%, var(--panel));
+        stroke: var(--accent);
+        stroke-width: 1.8;
+      }
+
+      .node-warn {
+        fill: color-mix(in srgb, var(--accent-2) 14%, var(--panel));
+        stroke: var(--accent-2);
+        stroke-width: 1.6;
+      }
+
+      .label {
+        fill: var(--fg);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .small {
+        fill: var(--muted);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 12px;
+      }
+
+      .edge {
+        stroke: var(--accent);
+        stroke-width: 1.7;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+
+      .edge-muted {
+        stroke: var(--muted);
+        stroke-width: 1.4;
+        stroke-dasharray: 5 5;
+        fill: none;
+        marker-end: url(#arrow-muted);
+      }
+
+      .toc {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 18px;
+        max-width: 900px;
+        margin: 18px 0 0;
+      }
+
+      @media (max-width: 700px) {
+        .toc {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .toc a {
+        display: block;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Plain Fleet Architecture</h1>
+        <p class="lede">
+          This document describes the flake-free architecture used by this Nix
+          repository: how raw fleet data is normalized, how feature modules are
+          resolved, how NixOS and Darwin systems are evaluated, and how deploy
+          and CI entrypoints share the same API.
+        </p>
+        <div class="meta">
+          <span class="pill">Entry API: <code>default.nix</code></span>
+          <span class="pill">Pins: <code>npins/</code></span>
+          <span class="pill">Features: <code>features/*/default.nix</code></span>
+          <span class="pill">Deploy: <code>bin/deploy</code></span>
+        </div>
+        <nav class="toc" aria-label="Table of contents">
+          <a href="#goals">Design Goals</a>
+          <a href="#map">Repository Map</a>
+          <a href="#api">API Surface</a>
+          <a href="#evaluation">Evaluation Pipeline</a>
+          <a href="#features">Feature Contract</a>
+          <a href="#hosts">Host Builders</a>
+          <a href="#services">Services and Secrets</a>
+          <a href="#packages">Packages and Overlays</a>
+          <a href="#deploy">Deploy Flow</a>
+          <a href="#checks">Checks and Debugging</a>
+        </nav>
+      </header>
+
+      <section id="goals">
+        <h2>Design Goals</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Plain Nix First</h3>
+            <p>
+              Routine evaluation, deployment, package access, and checks use
+              ordinary Nix files. The legacy flake path can remain present
+              during migration, but it is not the operational source of truth.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Data Before Modules</h3>
+            <p>
+              Hosts, users, services, fonts, themes, and package pins are plain
+              data. Libraries normalize and validate that data before platform
+              modules are imported.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Feature Ownership</h3>
+            <p>
+              A feature owns the NixOS and Darwin module fragments for one
+              concern. Hosts select feature names, not module paths, and the
+              resolver closes dependencies.
+            </p>
+          </div>
+        </div>
+
+        <div class="note">
+          The steady-state architecture is intentionally small: <code>npins</code>
+          fetches sources, <code>default.nix</code> assembles an API, and
+          <code>lib/*</code> handles validation, routing, feature closure, host
+          evaluation, and local packages.
+        </div>
+      </section>
+
+      <section id="map">
+        <h2>Repository Map</h2>
+        <pre><code>.
+|-- default.nix          # Main plain API
+|-- npins/               # Locked upstream sources
+|-- fleet/               # Hosts, users, groups, services, themes, fonts
+|-- lib/
+|   |-- fleet.nix        # Validation, platform split, helpers
+|   |-- services.nix     # Service routing, role injection, port checks
+|   |-- features.nix     # Feature discovery, dependency closure, tests
+|   |-- hosts.nix        # NixOS and Darwin system builders
+|   `-- packages.nix     # Local package overlay
+|-- features/            # Dendritic feature modules
+|-- packages/            # Repo-local packages
+|-- hive.nix             # Colmena hive for NixOS hosts
+|-- darwin.nix           # nix-darwin configurations
+|-- bin/deploy           # Unified deploy selector and dispatcher
+`-- ci.nix               # Plain evaluation aggregate</code></pre>
+      </section>
+
+      <section id="api">
+        <h2>API Surface</h2>
+        <p>
+          <code>default.nix</code> is the public interface for the plain
+          architecture. Other entrypoints import it instead of reimplementing
+          fleet loading or feature resolution.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Purpose</th>
+              <th>Main Consumers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>sources</code></td>
+              <td>Pinned upstream source paths from <code>npins</code>.</td>
+              <td>Feature modules, host builders, shell, package lib.</td>
+            </tr>
+            <tr>
+              <td><code>fleet</code></td>
+              <td>Validated and routed fleet data.</td>
+              <td>Feature modules, deploy selectors, inspection.</td>
+            </tr>
+            <tr>
+              <td><code>checks</code></td>
+              <td>Combined boolean results from fleet tests, feature-local tests, graph checks, services, secrets, deploy selectors, and themes.</td>
+              <td><code>bin/check</code>, <code>ci.nix</code>.</td>
+            </tr>
+            <tr>
+              <td><code>libs</code></td>
+              <td>Combined attrset of libs.</td>
+              <td>Builds, checks, tests.</td>
+            </tr>
+            <tr>
+              <td><code>nixosConfigurations</code> / <code>darwinConfigurations</code></td>
+              <td>Evaluated NixOS and Darwin configurations from fleet hosts.</td>
+              <td><code>darwin.nix</code>, <code>ci.nix</code>, targeted evals.</td>
+            </tr>
+            <tr>
+              <td><code>overlays</code></td>
+              <td>Inject repo-local packages as <code>pkgs.local</code>.</td>
+              <td>Host builders, features, deploys, cache builds.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="evaluation">
+        <h2>Evaluation Pipeline</h2>
+        <p>
+          The plain graph has one direction of travel: pins and raw fleet data
+          flow into validation, routing, feature resolution, and finally platform
+          system builders. No host imports a feature file directly.
+        </p>
+
+        <div class="diagram" aria-label="Plain evaluation pipeline diagram">
+          <svg viewBox="0 0 1080 420" role="img">
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+              <marker id="arrow-muted" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+            </defs>
+
+            <rect class="node" x="30" y="50" width="180" height="78" rx="8"></rect>
+            <text class="label" x="52" y="82">npins/sources.json</text>
+            <text class="small" x="52" y="106">Locked upstream inputs</text>
+
+            <rect class="node" x="30" y="180" width="180" height="78" rx="8"></rect>
+            <text class="label" x="52" y="212">fleet/</text>
+            <text class="small" x="52" y="236">Raw hosts, users, services</text>
+
+            <rect class="node-strong" x="270" y="115" width="185" height="95" rx="8"></rect>
+            <text class="label" x="292" y="148">default.nix</text>
+            <text class="small" x="292" y="172">Assembles the API</text>
+            <text class="small" x="292" y="192">Runs validation gates</text>
+
+            <rect class="node" x="515" y="42" width="185" height="75" rx="8"></rect>
+            <text class="label" x="538" y="73">lib/fleet.nix</text>
+            <text class="small" x="538" y="97">Validate and classify</text>
+
+            <rect class="node" x="515" y="140" width="185" height="75" rx="8"></rect>
+            <text class="label" x="538" y="171">lib/services.nix</text>
+            <text class="small" x="538" y="195">Route roles and ports</text>
+
+            <rect class="node" x="515" y="238" width="185" height="75" rx="8"></rect>
+            <text class="label" x="538" y="269">lib/features.nix</text>
+            <text class="small" x="538" y="293">Close feature imports</text>
+
+            <rect class="node" x="760" y="70" width="185" height="75" rx="8"></rect>
+            <text class="label" x="782" y="101">features/</text>
+            <text class="small" x="782" y="125">Platform module fragments</text>
+
+            <rect class="node-strong" x="760" y="205" width="185" height="90" rx="8"></rect>
+            <text class="label" x="782" y="238">lib/hosts.nix</text>
+            <text class="small" x="782" y="262">Build NixOS/Darwin</text>
+            <text class="small" x="782" y="282">configuration attrs</text>
+
+            <rect class="node" x="875" y="330" width="160" height="60" rx="8"></rect>
+            <text class="label" x="900" y="362">Entrypoints</text>
+            <text class="small" x="900" y="382">hive, deploy, CI</text>
+
+            <path class="edge" d="M210 89 C235 89,245 145,270 145"></path>
+            <path class="edge" d="M210 219 C235 219,245 174,270 174"></path>
+            <path class="edge" d="M455 140 C482 115,490 85,515 79"></path>
+            <path class="edge" d="M455 160 C482 160,490 174,515 177"></path>
+            <path class="edge" d="M455 190 C482 225,490 266,515 276"></path>
+            <path class="edge" d="M700 276 C730 276,735 250,760 250"></path>
+            <path class="edge" d="M700 276 C735 250,735 120,760 108"></path>
+            <path class="edge" d="M945 250 C980 250,985 318,955 330"></path>
+            <path class="edge-muted" d="M607 117 L607 140"></path>
+            <path class="edge-muted" d="M607 215 L607 238"></path>
+          </svg>
+        </div>
+
+        <ol>
+          <li><code>npins/default.nix</code> converts locked GitHub and GitLab pins into source paths.</li>
+          <li><code>fleet/default.nix</code> returns raw fleet data.</li>
+          <li><code>fleetLib.assertValid</code> rejects malformed hosts, users, groups, services, duplicate addresses, and missing host keys.</li>
+          <li><code>serviceLib.servicesForHost</code> returns routed service records for one host.</li>
+          <li><code>featureLib.featuresForHost</code> returns derived feature names from host metadata plus routed services.</li>
+          <li><code>featureLib.modulesForHost</code> closes feature imports and returns the generic plus platform-specific module list.</li>
+          <li><code>nixosConfigurations</code> and <code>darwinConfigurations</code> expose evaluated hosts from NixOS <code>eval-config.nix</code> and nix-darwin <code>eval-config.nix</code>.</li>
+        </ol>
+      </section>
+
+      <section id="features">
+        <h2>Feature Contract</h2>
+        <p>
+          Every directory under <code>features/</code> may expose imports,
+          platform modules, feature-local tests, and service secret metadata. The
+          resolver discovers features from the filesystem and does not require a
+          central registry. Feature imports can mix string feature dependencies
+          with local file paths for splitting a large feature into smaller
+          fragments.
+        </p>
+
+        <pre><code>{
+  imports = [
+    "other-feature"  # Feature dependency.
+    ./networking.nix # Local feature fragment.
+  ];
+
+  serviceSecrets = { service, serviceName, hosts }: [
+    { secret = "shared/example.age"; hostName = service.primary; }
+  ];
+
+  tests.someInvariant = true;
+
+  modules.generic = { fleet, host, user, sources, pkgs, lib, ... }: {
+    # Shared options valid on NixOS and nix-darwin
+  };
+
+  modules.nixos = { fleet, host, user, sources, pkgs, lib, ... }: {
+    # NixOS options
+  };
+
+  modules.darwin = { fleet, host, user, sources, pkgs, lib, ... }: {
+    # nix-darwin options
+  };
+}</code></pre>
+
+        <div class="grid">
+          <div class="box">
+            <h3>Feature Dependencies</h3>
+            <p>
+              String entries in <code>imports</code> list other feature names.
+              The closure is stable and duplicate-safe: once a feature is seen it
+              is not added twice. Host feature lists stay small because shared
+              behavior can be implied by one parent feature.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Local Fragments</h3>
+            <p>
+              Path entries in <code>imports</code> are imported relative to the
+              feature file and merged into the same feature. This is useful for
+              files such as <code>features/base/networking.nix</code> that should
+              contribute modules without becoming host-selectable features.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Platform Modules</h3>
+            <p>
+              <code>modules.generic</code> is prepended for every supported
+              platform, while <code>modules.nixos</code> and
+              <code>modules.darwin</code> are imported only for matching hosts.
+              A feature can intentionally support only one platform; direct host
+              references to unsupported features are caught by checks.
+            </p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Injected Argument</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>fleet</code></td>
+              <td>Validated, routed fleet data.</td>
+            </tr>
+            <tr>
+              <td><code>host</code></td>
+              <td>The normalized host being evaluated, including <code>host.services</code>.</td>
+            </tr>
+            <tr>
+              <td><code>user</code></td>
+              <td>The host owner user object plus an injected <code>name</code>.</td>
+            </tr>
+            <tr>
+              <td><code>sources</code></td>
+              <td>All pinned source paths from <code>npins</code>.</td>
+            </tr>
+            <tr>
+              <td><code>fleetLib</code></td>
+              <td>Shared fleet helpers such as POSIX group resolution.</td>
+            </tr>
+            <tr>
+              <td><code>packageLib</code></td>
+              <td>Local package overlay and package helpers.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="hosts">
+        <h2>Host Builders</h2>
+        <p>
+          <code>lib/hosts.nix</code> is the boundary between fleet data and
+          platform module systems. It builds a common host module, injects
+          shared arguments, applies the local overlay, and then delegates to the
+          platform evaluator.
+        </p>
+
+        <div class="diagram" aria-label="Host builder diagram">
+          <svg viewBox="0 0 1080 390" role="img">
+            <defs>
+              <marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+            </defs>
+
+            <rect class="node" x="40" y="70" width="180" height="78" rx="8"></rect>
+            <text class="label" x="62" y="103">fleet.hosts.odin</text>
+            <text class="small" x="62" y="127">system, owner, tags</text>
+
+            <rect class="node" x="40" y="210" width="180" height="78" rx="8"></rect>
+            <text class="label" x="62" y="243">resolveFleet</text>
+            <text class="small" x="62" y="267">adds services and platform</text>
+
+            <rect class="node-strong" x="290" y="135" width="210" height="95" rx="8"></rect>
+            <text class="label" x="313" y="168">mkHostModule</text>
+            <text class="small" x="313" y="192">imports feature modules</text>
+            <text class="small" x="313" y="212">sets _module.args</text>
+
+            <rect class="node" x="570" y="70" width="185" height="82" rx="8"></rect>
+            <text class="label" x="592" y="103">NixOS hosts</text>
+            <text class="small" x="592" y="127">nixos/lib/eval-config.nix</text>
+
+            <rect class="node" x="570" y="220" width="185" height="82" rx="8"></rect>
+            <text class="label" x="592" y="253">Darwin hosts</text>
+            <text class="small" x="592" y="277">darwin/eval-config.nix</text>
+
+            <rect class="node-strong" x="835" y="145" width="180" height="86" rx="8"></rect>
+            <text class="label" x="858" y="178">Configurations</text>
+            <text class="small" x="858" y="202">nixosConfigurations</text>
+            <text class="small" x="858" y="220">darwinConfigurations</text>
+
+            <path class="edge" style="marker-end: url(#arrow2)" d="M220 109 C255 120,260 155,290 165"></path>
+            <path class="edge" style="marker-end: url(#arrow2)" d="M220 249 C255 240,260 205,290 195"></path>
+            <path class="edge" style="marker-end: url(#arrow2)" d="M500 172 C535 150,535 114,570 111"></path>
+            <path class="edge" style="marker-end: url(#arrow2)" d="M500 197 C535 220,535 260,570 261"></path>
+            <path class="edge" style="marker-end: url(#arrow2)" d="M755 111 C800 125,800 165,835 175"></path>
+            <path class="edge" style="marker-end: url(#arrow2)" d="M755 261 C800 245,800 205,835 198"></path>
+          </svg>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Function</th>
+              <th>Output</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>mkHostModule</code></td>
+              <td>A module that imports the resolved platform feature modules, applies <code>packageOverlay</code>, injects special args, and asserts valid feature references.</td>
+            </tr>
+            <tr>
+              <td><code>mkNixosConfigurations</code></td>
+              <td>An attribute set of evaluated NixOS configurations for Linux hosts.</td>
+            </tr>
+            <tr>
+              <td><code>mkDarwinConfigurations</code></td>
+              <td>An attribute set of evaluated nix-darwin configurations for Darwin hosts.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="services">
+        <h2>Services and Secrets</h2>
+        <p>
+          Fleet services are declared once, then routed onto hosts. The service
+          library assigns each selected host a role and appends the service
+          feature name to that host. Service features read
+          <code>host.services</code> to find routed service records by
+          <code>name</code> and configure ports, role-specific
+          behavior, persistence, and secret ownership.
+        </p>
+
+        <div class="diagram" aria-label="Service routing and secret coverage diagram">
+          <svg viewBox="0 0 1080 420" role="img">
+            <defs>
+              <marker id="arrow3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+            </defs>
+
+            <rect class="node" x="45" y="65" width="210" height="90" rx="8"></rect>
+            <text class="label" x="70" y="98">fleet.services</text>
+            <text class="small" x="70" y="122">primary, backups</text>
+            <text class="small" x="70" y="142">port, feature</text>
+
+            <rect class="node-strong" x="330" y="92" width="205" height="78" rx="8"></rect>
+            <text class="label" x="352" y="125">servicesForHost</text>
+            <text class="small" x="352" y="149">injects role metadata</text>
+
+            <rect class="node" x="610" y="55" width="190" height="85" rx="8"></rect>
+            <text class="label" x="632" y="88">host.services</text>
+            <text class="small" x="632" y="112">navidrome.role</text>
+            <text class="small" x="632" y="132">pihole.port</text>
+
+            <rect class="node" x="610" y="188" width="190" height="85" rx="8"></rect>
+            <text class="label" x="632" y="221">Feature modules</text>
+            <text class="small" x="632" y="245">read routed metadata</text>
+
+            <rect class="node" x="870" y="188" width="170" height="85" rx="8"></rect>
+            <text class="label" x="894" y="221">NixOS service</text>
+            <text class="small" x="894" y="245">ports, users, files</text>
+
+            <rect class="node-warn" x="330" y="270" width="205" height="86" rx="8"></rect>
+            <text class="label" x="352" y="303">serviceSecrets</text>
+            <text class="small" x="352" y="327">declares required age files</text>
+
+            <rect class="node-warn" x="610" y="305" width="190" height="75" rx="8"></rect>
+            <text class="label" x="632" y="338">Secret checks</text>
+            <text class="small" x="632" y="362">declaration and recipients</text>
+
+            <path class="edge" style="marker-end: url(#arrow3)" d="M255 110 C285 110,300 130,330 130"></path>
+            <path class="edge" style="marker-end: url(#arrow3)" d="M535 130 C565 120,580 100,610 98"></path>
+            <path class="edge" style="marker-end: url(#arrow3)" d="M705 140 L705 188"></path>
+            <path class="edge" style="marker-end: url(#arrow3)" d="M800 230 L870 230"></path>
+            <path class="edge" style="marker-end: url(#arrow3)" d="M255 140 C285 195,300 290,330 312"></path>
+            <path class="edge" style="marker-end: url(#arrow3)" d="M535 315 C565 325,580 340,610 342"></path>
+          </svg>
+        </div>
+
+        <div class="grid">
+          <div class="box">
+            <h3>Routing Rules</h3>
+            <ul>
+              <li>The primary host receives <code>role = "primary"</code>.</li>
+              <li>Backup hosts receive <code>role = "backup"</code>.</li>
+              <li>HTTP and HTTPS services are checked as TCP for port conflicts.</li>
+              <li>Base, boot, desktop, GPU, tagged program, preservation, and routed service features are derived for each host.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Secret Coverage</h3>
+            <ul>
+              <li>Service features expose <code>serviceSecrets</code>.</li>
+              <li><code>default.nix</code> derives expected age secret names.</li>
+              <li>Checks verify declarations and recipient host keys.</li>
+              <li>Feature modules still own service-specific <code>age.secrets</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="packages">
+        <h2>Packages and Overlays</h2>
+        <p>
+          Local packages live under <code>packages/*/package.nix</code>. The
+          package library discovers them by directory, exposes buildable package
+          sets by system, and provides an overlay that makes each package
+          available directly as <code>pkgs.&lt;name&gt;</code> and collectively as
+          <code>pkgs.local.&lt;name&gt;</code>.
+        </p>
+
+        <div class="diagram" aria-label="Local package overlay diagram">
+          <svg viewBox="0 0 1080 315" role="img">
+            <defs>
+              <marker id="arrow4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+            </defs>
+
+            <rect class="node" x="55" y="70" width="210" height="84" rx="8"></rect>
+            <text class="label" x="78" y="103">packages/</text>
+            <text class="small" x="78" y="127">package.nix per package</text>
+
+            <rect class="node-strong" x="335" y="70" width="210" height="84" rx="8"></rect>
+            <text class="label" x="358" y="103">lib/packages.nix</text>
+            <text class="small" x="358" y="127">discovers and calls packages</text>
+
+            <rect class="node" x="615" y="35" width="190" height="74" rx="8"></rect>
+            <text class="label" x="638" y="67">host builds</text>
+            <text class="small" x="638" y="91">cache local closures</text>
+
+            <rect class="node" x="615" y="150" width="190" height="74" rx="8"></rect>
+            <text class="label" x="638" y="182">overlay</text>
+            <text class="small" x="638" y="206">pkgs.local</text>
+
+            <rect class="node" x="870" y="150" width="160" height="74" rx="8"></rect>
+            <text class="label" x="892" y="182">Features</text>
+            <text class="small" x="892" y="206">consume local packages</text>
+
+            <path class="edge" style="marker-end: url(#arrow4)" d="M265 112 L335 112"></path>
+            <path class="edge" style="marker-end: url(#arrow4)" d="M545 98 C580 80,585 72,615 72"></path>
+            <path class="edge" style="marker-end: url(#arrow4)" d="M545 128 C580 158,585 184,615 187"></path>
+            <path class="edge" style="marker-end: url(#arrow4)" d="M805 187 L870 187"></path>
+          </svg>
+        </div>
+
+        <p>
+          The overlay is also applied inside <code>mkHostModule</code>, so any
+          feature can use local packages without importing the package library
+          itself.
+        </p>
+      </section>
+
+      <section id="deploy">
+        <h2>Deploy Flow</h2>
+        <p>
+          <code>bin/deploy</code> is the operational entrypoint. It uses the same
+          selector logic exported by <code>default.nix</code>, splits hosts by
+          platform, and dispatches NixOS hosts through Colmena and Darwin hosts
+          through nix-darwin builds.
+        </p>
+
+        <div class="diagram" aria-label="Deploy flow diagram">
+          <svg viewBox="0 0 1080 360" role="img">
+            <defs>
+              <marker id="arrow5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+              </marker>
+            </defs>
+
+            <rect class="node" x="35" y="120" width="185" height="78" rx="8"></rect>
+            <text class="label" x="58" y="153">bin/deploy</text>
+            <text class="small" x="58" y="177">target and mode parser</text>
+
+            <rect class="node-strong" x="285" y="120" width="190" height="78" rx="8"></rect>
+            <text class="label" x="308" y="153">selectHostNames</text>
+            <text class="small" x="308" y="177">host, @all, @tag</text>
+
+            <rect class="node" x="545" y="55" width="185" height="75" rx="8"></rect>
+            <text class="label" x="568" y="87">NixOS</text>
+            <text class="small" x="568" y="111">Colmena hive.nix</text>
+
+            <rect class="node" x="545" y="205" width="185" height="75" rx="8"></rect>
+            <text class="label" x="568" y="237">Darwin</text>
+            <text class="small" x="568" y="261">nix-build darwin.nix</text>
+
+            <rect class="node" x="800" y="30" width="215" height="90" rx="8"></rect>
+            <text class="label" x="823" y="63">plan, dry-run, build</text>
+            <text class="small" x="823" y="87">show or realize changes</text>
+            <text class="small" x="823" y="107">build mode can run dix diff</text>
+
+            <rect class="node-warn" x="800" y="205" width="215" height="90" rx="8"></rect>
+            <text class="label" x="823" y="238">apply</text>
+            <text class="small" x="823" y="262">Colmena apply or local</text>
+            <text class="small" x="823" y="282">Darwin activation script</text>
+
+            <path class="edge" style="marker-end: url(#arrow5)" d="M220 159 L285 159"></path>
+            <path class="edge" style="marker-end: url(#arrow5)" d="M475 145 C505 120,512 93,545 92"></path>
+            <path class="edge" style="marker-end: url(#arrow5)" d="M475 174 C505 205,512 242,545 242"></path>
+            <path class="edge" style="marker-end: url(#arrow5)" d="M730 92 L800 75"></path>
+            <path class="edge" style="marker-end: url(#arrow5)" d="M730 242 L800 250"></path>
+          </svg>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bin/deploy --plan --on @all</code></td>
+              <td>Prints selected hosts, platform, and target host without building.</td>
+            </tr>
+            <tr>
+              <td><code>bin/deploy --dry-run --on odin</code></td>
+              <td>Runs Colmena dry-run for a NixOS host.</td>
+            </tr>
+            <tr>
+              <td><code>bin/deploy --build --on odin</code></td>
+              <td>Builds the NixOS host and runs <code>dix</code> against the local current system when possible.</td>
+            </tr>
+            <tr>
+              <td><code>bin/deploy --apply --on odin</code></td>
+              <td>Applies the NixOS host through Colmena.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note warn">
+          Darwin support exists in the plain architecture, but remote Darwin
+          activation remains an explicit design decision. Current Darwin apply
+          builds locally and runs activation scripts from the build result.
+        </div>
+      </section>
+
+      <section id="checks">
+        <h2>Checks and Debugging</h2>
+        <p>
+          Checks are ordinary Nix booleans and derivations. <code>default.nix</code>
+          exposes low-level checks; <code>ci.nix</code> aggregates those checks
+          and asserts representative evaluated behavior for the current fleet.
+        </p>
+
+        <div class="grid">
+          <div class="box">
+            <h3>Fast Local Checks</h3>
+            <pre><code>bin/check
+nix-build ci.nix -A plain-eval --no-out-link
+treefmt --verbose</code></pre>
+          </div>
+          <div class="box">
+            <h3>Targeted Evaluation</h3>
+            <pre><code>nix-instantiate --eval --strict --json --expr '
+let
+  api = import ./default.nix;
+  cfg = api.nixosConfigurations.odin.config;
+in {
+  hostName = cfg.networking.hostName;
+  tailscale = cfg.services.tailscale.enable;
+}'</code></pre>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Check Group</th>
+              <th>What It Protects</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fleet validation</td>
+              <td>Known owners, supported systems, target hosts, preservation disks, duplicate feature/tag values, host keys, duplicate addresses, duplicate UIDs.</td>
+            </tr>
+            <tr>
+              <td>Feature resolution</td>
+              <td>Unknown host features, unsupported platform modules, service feature module availability, and feature-local unit tests.</td>
+            </tr>
+            <tr>
+              <td>Service routing</td>
+              <td>Primary/backup route behavior in tests, service feature availability, and per-host port conflicts.</td>
+            </tr>
+            <tr>
+              <td>Secret coverage</td>
+              <td>Required service secrets are declared and encrypted for the host keys that need them.</td>
+            </tr>
+            <tr>
+              <td>Configuration parity</td>
+              <td><code>ci.nix</code> asserts concrete evaluated NixOS and synthetic Darwin behavior.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Inspection</h3>
+        <p>
+          The API exposes the evaluated fleet and checks directly, so inspection
+          can stay in Nix rather than relying on ad hoc text scraping.
+        </p>
+        <pre><code>let api = import ./default.nix; in {
+  odinServices = api.fleet.hosts.odin.services;
+  failedChecks =
+    builtins.filter (name: api.checks.${name} != true)
+    (builtins.attrNames api.checks);
+}</code></pre>
+      </section>
+
+      <section>
+        <h2>Design Rules</h2>
+        <ul>
+          <li>Add upstream inputs to <code>npins/sources.json</code>; import explicit source paths from features.</li>
+          <li>Add host-selectable behavior as a directory under <code>features/</code>.</li>
+          <li>Use <code>imports</code> in feature files for logical feature dependencies, not direct host imports.</li>
+          <li>Use <code>serviceSecrets</code> for service-owned secret declarations.</li>
+          <li>Put repo packages in <code>packages/*/package.nix</code>; consume them through <code>pkgs.local</code>.</li>
+          <li>Prefer targeted evals through <code>api.nixosConfigurations</code> and <code>api.darwinConfigurations</code> when debugging host behavior.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fleet Architecture Blueprint</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f7f7f4;
+        --fg: #1d2523;
+        --muted: #5e6965;
+        --line: #cfd7d3;
+        --panel: #ffffff;
+        --panel-2: #eef4f2;
+        --accent: #0f766e;
+        --accent-2: #9f1239;
+        --code-bg: #16211f;
+        --code-fg: #e6f0ed;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101513;
+          --fg: #eef4f2;
+          --muted: #a9b6b1;
+          --line: #31413c;
+          --panel: #17201d;
+          --panel-2: #1d2a26;
+          --accent: #5eead4;
+          --accent-2: #fda4af;
+          --code-bg: #07110f;
+          --code-fg: #d6ebe5;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 24px;
+        margin-bottom: 28px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.15;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 4rem);
+        letter-spacing: 0;
+        max-width: 900px;
+      }
+
+      h2 {
+        font-size: 1.65rem;
+        margin-top: 44px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+
+      h3 {
+        font-size: 1.15rem;
+        margin-top: 26px;
+      }
+
+      p {
+        max-width: 820px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      .lede {
+        font-size: 1.12rem;
+        color: var(--muted);
+        max-width: 900px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 10px;
+        color: var(--muted);
+        background: var(--panel);
+        font-size: 0.88rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      @media (max-width: 780px) {
+        .grid,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .box {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .box h3 {
+        margin-top: 0;
+      }
+
+      .note {
+        border-left: 4px solid var(--accent);
+        background: var(--panel-2);
+        padding: 14px 16px;
+        margin: 18px 0;
+      }
+
+      .warn {
+        border-left-color: var(--accent-2);
+      }
+
+      pre {
+        margin: 14px 0;
+        overflow-x: auto;
+        border-radius: 8px;
+        background: var(--code-bg);
+        color: var(--code-fg);
+        padding: 16px;
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      code {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      :not(pre) > code {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+        background: var(--panel);
+      }
+
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--panel-2);
+      }
+
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+
+      li + li {
+        margin-top: 5px;
+      }
+
+      .diagram {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        margin: 18px 0;
+        overflow-x: auto;
+      }
+
+      .diagram svg {
+        display: block;
+        min-width: 780px;
+        width: 100%;
+        height: auto;
+      }
+
+      .node {
+        fill: var(--panel-2);
+        stroke: var(--line);
+      }
+
+      .node-accent {
+        fill: color-mix(in srgb, var(--accent) 16%, var(--panel));
+        stroke: var(--accent);
+      }
+
+      .edge {
+        stroke: var(--muted);
+        stroke-width: 1.5;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+
+      .label {
+        fill: var(--fg);
+        font: 14px ui-sans-serif, system-ui, sans-serif;
+      }
+
+      .small {
+        fill: var(--muted);
+        font: 12px ui-sans-serif, system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Fleet Architecture Blueprint</h1>
+        <p class="lede">
+          A non-flake, Colmena-centered architecture for Linux hosts, with a
+          matching Darwin deploy path, dendritic feature ownership, service
+          primary/backup routing, agenix secrets, and CI-friendly tests.
+        </p>
+        <p>
+          For the steady-state design reference, see
+          <a href="./plain-architecture.html">Plain Fleet Architecture</a>.
+        </p>
+        <div class="meta">
+          <span class="pill">Status: in progress</span>
+          <span class="pill">Inputs: npins</span>
+          <span class="pill">NixOS deploy: Colmena</span>
+          <span class="pill">Darwin deploy: nix-darwin wrapper</span>
+          <span class="pill">Secrets: agenix</span>
+        </div>
+      </header>
+
+      <section>
+        <h2>Goals</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Optimize for plain Nix</h3>
+            <p>
+              Stop using flakes as the primary interface, avoid copying the
+              whole repository into the store for routine evaluation, and expose
+              normal Nix entrypoints that can be called by CI, Colmena, and
+              local scripts.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Keep features dendritic</h3>
+            <p>
+              A feature lives in one directory and owns its NixOS module,
+              Darwin module, package hooks, secrets, tests, and service routing
+              behavior. Hosts select feature names, not scattered module paths.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Use the right deployer</h3>
+            <p>
+              Colmena deploys NixOS hosts. Darwin hosts use nix-darwin through
+              the same top-level deploy command, because Colmena's deployment
+              options are NixOS module options and local deployment is NixOS
+              specific.
+            </p>
+          </div>
+          <div class="box">
+            <h3>Keep service routing explicit</h3>
+            <p>
+              Services declare a primary host and backup hosts. The resolver
+              injects the routed service metadata into each host and imports the
+              matching feature module for the host platform.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Top-Level Shape</h2>
+        <p>
+          The new architecture replaces flake-parts, gen-flake, and gen-schema
+          with direct Nix files. The repository still uses Nix modules for
+          NixOS and nix-darwin systems, but the fleet model is plain data plus a
+          small resolver library. The plain entrypoints now exist; the remaining
+          migration work is mostly parity, cleanup, and CI hardening.
+        </p>
+
+        <pre><code>.
+|-- default.nix              # Plain API: fleet, hosts, checks, deploy metadata
+|-- hive.nix                 # Colmena hive, NixOS hosts only
+|-- darwin.nix               # nix-darwin configurations
+|-- ci.nix                   # Buildable plain-eval check derivation
+|-- shell.nix                # Developer and CI shell
+|-- npins/
+|   |-- default.nix
+|   `-- sources.json
+|-- bin/
+|   |-- deploy               # One deploy API for Linux and Darwin hosts
+|   `-- check                # Runs local CI checks without flakes
+|-- lib/
+|   |-- fleet.nix            # Registry loading and validation
+|   |-- features.nix         # Dendritic feature resolver
+|   |-- services.nix         # Primary/backup routing
+|   `-- hosts.nix            # NixOS and Darwin builders
+|-- fleet/
+|   |-- hosts.nix
+|   |-- users.nix
+|   |-- groups.nix
+|   `-- services.nix
+|-- features/
+|   `-- &lt;feature&gt;/default.nix
+|-- packages/
+|-- secrets/
+`-- tests/</code></pre>
+
+        <div class="note">
+          <strong>Default rule:</strong> registry files are plain data. System
+          modules stay in features. Cross-cutting transformation lives only in
+          <code>lib/</code>.
+        </div>
+      </section>
+
+      <section>
+        <h2>Current Implementation State</h2>
+        <p>
+          The first implementation pass has landed the plain fleet architecture
+          beside the legacy flake path. Treat this section as the migration
+          ledger: items marked done should stay covered by checks, and open
+          items are the work needed before removing the generated architecture.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>State</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Plain API</td>
+              <td>Done</td>
+              <td><code>default.nix</code> exposes fleet data, host configurations, deploy selectors, and one combined check set.</td>
+            </tr>
+            <tr>
+              <td>Input pins and shell</td>
+              <td>Done</td>
+              <td><code>npins/</code> and <code>shell.nix</code> are present; the shell includes Colmena, agenix, treefmt, statix, deadnix, nil, and shellcheck.</td>
+            </tr>
+            <tr>
+              <td>Fleet registries</td>
+              <td>Done</td>
+              <td><code>fleet/</code> owns hosts, users, groups, services, fonts, theming, and wallpaper data.</td>
+            </tr>
+            <tr>
+              <td>Feature API</td>
+              <td>Done for active Linux</td>
+              <td><code>features/</code> contains the migrated plain features for the active Linux fleet. The Codex desktop Linux service is intentionally deferred; Darwin remains a separate parity and validation track.</td>
+            </tr>
+            <tr>
+              <td>Service routing</td>
+              <td>Done</td>
+              <td><code>lib/services.nix</code> routes primary and backup hosts, adds role metadata, activates routed features, and checks port conflicts.</td>
+            </tr>
+            <tr>
+              <td>Service secret metadata</td>
+              <td>Done</td>
+              <td>Service features can declare routed age secret requirements with <code>serviceSecrets</code>; top-level checks consume those declarations generically.</td>
+            </tr>
+            <tr>
+              <td>Feature-local tests</td>
+              <td>Done</td>
+              <td>Features can expose boolean checks under <code>tests</code>; <code>tests/checks.nix</code> merges them into <code>api.checks</code>.</td>
+            </tr>
+            <tr>
+              <td>Local package overlay</td>
+              <td>Done</td>
+              <td><code>lib/packages.nix</code> exposes repo packages through <code>pkgs.local</code> by applying the overlay to plain host builders.</td>
+            </tr>
+            <tr>
+              <td>Theme fleet data</td>
+              <td>Done</td>
+              <td><code>fleet/default.nix</code> carries runtime theme profiles and the plain theming feature installs the local GTK, icon, and cursor packages.</td>
+            </tr>
+            <tr>
+              <td>Host builders</td>
+              <td>Done</td>
+              <td><code>lib/hosts.nix</code> builds NixOS and Darwin configurations from the same host module resolver.</td>
+            </tr>
+            <tr>
+              <td>Deployment entrypoints</td>
+              <td>Partially done</td>
+              <td><code>hive.nix</code>, <code>darwin.nix</code>, and <code>bin/deploy</code> exist. Darwin planning, build, and dry-run modes are present; apply still builds and activates locally, so remote Darwin activation remains a design and implementation gap.</td>
+            </tr>
+            <tr>
+              <td>CI and local checks</td>
+              <td>Partially done</td>
+              <td><code>bin/check</code>, <code>tests/checks.nix</code>, <code>tests/fleet.nix</code>, <code>ci.nix</code>, <code>treefmt.toml</code>, and GitHub workflows cover plain evaluation, graph rules, treefmt checks, local package builds, and a representative NixOS toplevel build.</td>
+            </tr>
+            <tr>
+              <td>Legacy flake path</td>
+              <td>Removed</td>
+              <td>Routine shell, CI, cache, deploy, package, wrapper, formatting, and NixOS system-build workflows use the plain entrypoints. The old generated flake files, legacy feature modules, and generated schema/fleet modules have been deleted from tracked source.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Evaluation Flow</h2>
+        <div class="diagram" role="img" aria-label="Architecture flow diagram">
+          <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+              </marker>
+            </defs>
+            <rect class="node" x="40" y="40" width="160" height="68" rx="8"></rect>
+            <text class="label" x="62" y="70">npins sources</text>
+            <text class="small" x="62" y="92">nixpkgs, darwin, agenix</text>
+
+            <rect class="node" x="40" y="158" width="160" height="88" rx="8"></rect>
+            <text class="label" x="62" y="188">fleet data</text>
+            <text class="small" x="62" y="210">hosts, users, services</text>
+            <text class="small" x="62" y="230">plain Nix attrsets</text>
+
+            <rect class="node" x="40" y="296" width="160" height="68" rx="8"></rect>
+            <text class="label" x="62" y="326">features</text>
+            <text class="small" x="62" y="348">one directory per feature</text>
+
+            <rect class="node-accent" x="310" y="140" width="180" height="116" rx="8"></rect>
+            <text class="label" x="337" y="170">resolver library</text>
+            <text class="small" x="337" y="194">validates fleet graph</text>
+            <text class="small" x="337" y="216">routes services</text>
+            <text class="small" x="337" y="238">selects platform modules</text>
+
+            <rect class="node" x="600" y="72" width="170" height="86" rx="8"></rect>
+            <text class="label" x="628" y="104">hive.nix</text>
+            <text class="small" x="628" y="126">Colmena nodes</text>
+            <text class="small" x="628" y="146">NixOS only</text>
+
+            <rect class="node" x="600" y="226" width="170" height="86" rx="8"></rect>
+            <text class="label" x="628" y="258">darwin.nix</text>
+            <text class="small" x="628" y="280">nix-darwin configs</text>
+            <text class="small" x="628" y="300">Darwin only</text>
+
+            <rect class="node-accent" x="830" y="148" width="120" height="88" rx="8"></rect>
+            <text class="label" x="858" y="180">bin/deploy</text>
+            <text class="small" x="858" y="202">one user API</text>
+
+            <path class="edge" d="M 200 74 C 245 74 260 154 310 170"></path>
+            <path class="edge" d="M 200 202 C 250 202 270 202 310 202"></path>
+            <path class="edge" d="M 200 330 C 255 330 265 236 310 228"></path>
+            <path class="edge" d="M 490 172 C 540 146 560 120 600 112"></path>
+            <path class="edge" d="M 490 226 C 540 244 560 266 600 270"></path>
+            <path class="edge" d="M 770 116 C 812 130 824 160 830 176"></path>
+            <path class="edge" d="M 770 270 C 814 254 824 222 830 204"></path>
+          </svg>
+        </div>
+
+        <p>
+          The resolver is the only layer that interprets the fleet graph. It
+          returns evaluated host contexts, Colmena nodes, Darwin configurations,
+          and check derivations. Feature modules receive resolved
+          <code>fleet</code>, <code>host</code>, <code>user</code>, and
+          <code>host.services</code> through <code>specialArgs</code>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Fleet Data Model</h2>
+        <p>
+          Fleet data is intentionally small. It should be easy to inspect in
+          <code>nix repl</code>, validate in unit tests, and pass to host
+          builders without hidden option machinery.
+        </p>
+
+        <div class="grid">
+          <div>
+            <h3>Host example</h3>
+            <pre><code>{
+  odin = {
+    system = "x86_64-linux";
+    owner = "wendy";
+    targetHost = "odin.home.arpa";
+    tags = [ "desktop" "gpu:nvidia" "feature:dev" ];
+    monitors.main = "DP-2";
+    preservation = {
+      enable = true;
+      disk = "nvme0n1";
+    };
+  };
+}</code></pre>
+            <p>
+              The host platform is derived from <code>system</code>:
+              Linux systems become <code>nixos</code>, Darwin systems become
+              <code>darwin</code>.
+            </p>
+          </div>
+          <div>
+            <h3>Service example</h3>
+            <pre><code>{
+  navidrome = {
+    feature = "navidrome";
+    primary = "odin";
+    backups = [ "huginn" ];
+    port = 8080;
+    secrets = [ "navidrome-env" ];
+  };
+}</code></pre>
+          </div>
+        </div>
+
+        <p>
+          References are names in data files. The resolver turns names into
+          objects only when building a host context. This keeps registry files
+          serializable and removes the need for reference types.
+        </p>
+      </section>
+
+      <section>
+        <h2>Dendritic Features</h2>
+        <p>
+          A feature owns every platform implementation in one place. A host does
+          not import a NixOS path directly; it enables a feature name. The
+          resolver picks the right module for that host platform.
+        </p>
+
+        <pre><code># features/navidrome/default.nix
+{ inputs, lib, ... }:
+{
+  imports = [ "secrets" ];
+
+  modules.generic = { host, ... }: {
+    # Shared options valid on NixOS and nix-darwin
+  };
+
+  modules.nixos = { host, lib, serviceLib, ... }: let
+    service = serviceLib.routedService host "navidrome";
+  in {
+    services.navidrome = lib.mkIf (service != null) {
+      enable = true;
+      settings.Port = service.port;
+    };
+  };
+
+  modules.darwin = null;
+
+  serviceSecrets = { hosts, ... }:
+    map (hostName: {
+      secret = "shared/navidrome-env.age";
+      inherit hostName;
+    }) hosts;
+
+  tests.nixos = ./test.nix;
+}</code></pre>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Feature field</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>imports</code></td>
+              <td>Feature names this feature depends on.</td>
+            </tr>
+            <tr>
+              <td><code>modules.generic</code></td>
+              <td>Shared module prepended to both NixOS and Darwin host module lists.</td>
+            </tr>
+            <tr>
+              <td><code>modules.nixos</code></td>
+              <td>NixOS module imported only for NixOS hosts.</td>
+            </tr>
+            <tr>
+              <td><code>modules.darwin</code></td>
+              <td>nix-darwin module imported only for Darwin hosts.</td>
+            </tr>
+            <tr>
+              <td><code>packages</code></td>
+              <td>Planned: optional package definitions or overlay hooks owned by the feature. Repo-level package exposure is implemented in <code>lib/packages.nix</code>.</td>
+            </tr>
+            <tr>
+              <td><code>serviceSecrets</code></td>
+              <td>Optional function returning routed age secret requirements for service features.</td>
+            </tr>
+            <tr>
+              <td><code>tests</code></td>
+              <td>Optional feature-local boolean checks merged into <code>api.checks</code> with namespaced keys.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Service Routing</h2>
+        <div class="diagram" role="img" aria-label="Service routing diagram">
+          <svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+              </marker>
+            </defs>
+            <rect class="node" x="60" y="112" width="190" height="90" rx="8"></rect>
+            <text class="label" x="88" y="145">fleet/services.nix</text>
+            <text class="small" x="88" y="168">primary = "odin"</text>
+            <text class="small" x="88" y="188">backups = [ "huginn" ]</text>
+
+            <rect class="node-accent" x="360" y="112" width="190" height="90" rx="8"></rect>
+            <text class="label" x="390" y="145">routeServices</text>
+            <text class="small" x="390" y="168">adds role metadata</text>
+            <text class="small" x="390" y="188">activates feature</text>
+
+            <rect class="node" x="680" y="40" width="210" height="90" rx="8"></rect>
+            <text class="label" x="714" y="72">odin context</text>
+            <text class="small" x="714" y="96">service.name = "navidrome"</text>
+            <text class="small" x="714" y="116">role = "primary"</text>
+
+            <rect class="node" x="680" y="190" width="210" height="90" rx="8"></rect>
+            <text class="label" x="714" y="222">huginn context</text>
+            <text class="small" x="714" y="246">service.name = "navidrome"</text>
+            <text class="small" x="714" y="266">role = "backup"</text>
+
+            <path class="edge" marker-end="url(#arrow2)" d="M 250 158 C 300 158 318 158 360 158"></path>
+            <path class="edge" marker-end="url(#arrow2)" d="M 550 142 C 612 102 628 84 680 84"></path>
+            <path class="edge" marker-end="url(#arrow2)" d="M 550 178 C 612 214 628 234 680 234"></path>
+          </svg>
+        </div>
+
+        <pre><code># lib/services.nix
+servicesForHost = hostName: services:
+  routed service records for one host;
+
+# lib/features.nix
+featuresForHost = { host, services }:
+  pipe feature sources [
+    derive base/platform/tag features
+    append explicit host features
+    append routed service feature names
+    unique
+  ];
+
+modulesForHost = host:
+  pipe {
+    inherit host;
+    services = host.services or [];
+  } [
+    featuresForHost
+    close
+    collect platform modules
+  ];
+
+# default.nix
+resolveFleet = rawFleet:
+  pipe rawFleet [
+    evalFleet
+    attach servicesForHost and featuresForHost
+  ];</code></pre>
+
+        <p>
+          The resolver must fail if a service routes to a host but the selected
+          feature has no module for that host platform. This prevents registry
+          drift and silent non-deployment.
+        </p>
+      </section>
+
+      <section>
+        <h2>Deployment Model</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>NixOS</h3>
+            <p>
+              <code>hive.nix</code> contains only NixOS hosts and is consumed by
+              Colmena. Each node gets deployment metadata from the host registry:
+              <code>targetHost</code>, <code>targetUser</code>, tags, and build
+              policy.
+            </p>
+            <pre><code># hive.nix
+let
+  api = import ./default.nix;
+in
+  { meta = { ... }; } // api.deploy.nixosHosts</code></pre>
+          </div>
+          <div class="box">
+            <h3>Darwin</h3>
+            <p>
+              <code>darwin.nix</code> exposes nix-darwin configurations. The
+              deploy script builds the activation package and runs activation on
+              the target host over SSH or locally.
+            </p>
+            <pre><code># darwin.nix
+let
+  api = import ./default.nix;
+in
+  api.darwinConfigurations</code></pre>
+          </div>
+        </div>
+
+        <h3>Single deploy API</h3>
+        <pre><code>bin/deploy --on odin
+bin/deploy --on huginn
+bin/deploy --on macbook
+bin/deploy --on @server
+bin/deploy --build-only --on @all</code></pre>
+
+        <p>
+          The script selects hosts from the registry. NixOS targets are grouped
+          into one Colmena invocation where possible. Darwin targets are handled
+          one host at a time with nix-darwin activation.
+        </p>
+      </section>
+
+      <section>
+        <h2>Secrets</h2>
+        <p>
+          Keep agenix as the default. It matches the existing host public key
+          layout and decrypts secrets during activation on the target host.
+          Colmena <code>deployment.keys</code> remains available for bootstrap
+          or deploy-time generated keys, but application secrets should stay in
+          agenix.
+        </p>
+
+        <pre><code>secrets/
+|-- secrets.nix
+|-- hosts/&lt;host&gt;/host_ed25519.pub
+|-- hosts/&lt;host&gt;/*.age
+|-- services/&lt;service&gt;/*.age
+`-- users/wendy/age.pub</code></pre>
+
+        <ul>
+          <li>Host-only secrets include the target host and admin recipients.</li>
+          <li>Service secrets include primary and backup host recipients.</li>
+          <li>CI validates that every referenced encrypted file exists.</li>
+          <li>CI validates that every service secret can be mapped to deployed hosts.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Developer Shell</h2>
+        <p>
+          Use <code>shell.nix</code> with <code>npins</code> sources. Do not
+          keep numtide/devshell unless a later workflow needs it. The default
+          shell should be boring and fast.
+        </p>
+
+        <pre><code># shell.nix
+let
+  sources = import ./npins;
+  pkgs = import sources.nixpkgs { system = builtins.currentSystem; };
+in
+pkgs.mkShell {
+  packages = with pkgs; [
+    npins
+    colmena
+    agenix
+    treefmt
+    deadnix
+    statix
+    nil
+    shellcheck
+  ];
+}</code></pre>
+      </section>
+
+      <section>
+        <h2>Library Recommendations</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Library</th>
+              <th>Recommendation</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>npins</code></td>
+              <td>Adopt</td>
+              <td>Pins inputs without flakes and keeps source behavior explicit.</td>
+            </tr>
+            <tr>
+              <td><code>colmena</code></td>
+              <td>Adopt for NixOS</td>
+              <td>Fast, stateless NixOS deployment with host selection and tags.</td>
+            </tr>
+            <tr>
+              <td><code>nix-darwin</code></td>
+              <td>Keep</td>
+              <td>Required for Darwin system configuration and activation.</td>
+            </tr>
+            <tr>
+              <td><code>agenix</code></td>
+              <td>Keep</td>
+              <td>Small secrets surface area and fits existing SSH host key model.</td>
+            </tr>
+            <tr>
+              <td><code>flake-parts</code></td>
+              <td>Remove</td>
+              <td>The design exposes plain Nix entrypoints instead of flake outputs.</td>
+            </tr>
+            <tr>
+              <td><code>gen-flake</code></td>
+              <td>Remove</td>
+              <td>It is coupled to the current generated flake-parts module flow.</td>
+            </tr>
+            <tr>
+              <td><code>gen-schema</code></td>
+              <td>Remove</td>
+              <td>Direct data validation is simpler and benchmarked eval savings were not meaningful.</td>
+            </tr>
+            <tr>
+              <td><code>home-manager</code></td>
+              <td>Do not add</td>
+              <td>Add only if user-level activation becomes a clear requirement.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>CI Test Plan</h2>
+        <p>
+          CI should call plain Nix entrypoints. It should validate graph
+          correctness cheaply on every change and reserve full system builds for
+          representative hosts or cache workflows.
+        </p>
+
+        <div class="grid-3">
+          <div class="box">
+            <h3>Fleet checks</h3>
+            <ul>
+              <li>All host owners exist.</li>
+              <li>All user and group references exist.</li>
+              <li>All service primary and backup hosts exist.</li>
+              <li>Every host has a public key path.</li>
+              <li>No service uses the same host as primary and backup.</li>
+              <li>No duplicate host features, tags, target hosts, host IDs, non-link-local network addresses, UIDs, user groups, or group members.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Resolver checks</h3>
+            <ul>
+              <li>Feature imports close recursively.</li>
+              <li>Cycles fail with a readable path.</li>
+              <li>Platform module selection is correct.</li>
+              <li>Routed service features are activated.</li>
+              <li>Service route behavior is covered by focused tests.</li>
+              <li>Routed service ports do not conflict per host.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Deployment checks</h3>
+            <ul>
+              <li><code>hive.nix</code> evaluates.</li>
+              <li><code>darwin.nix</code> evaluates.</li>
+              <li><code>bin/deploy --plan</code> prints selected targets.</li>
+              <li>Darwin hosts are absent from Colmena hive.</li>
+              <li>Deploy selectors cover host names, <code>@all</code>, platform selectors, and tag selectors.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>CI commands</h3>
+        <pre><code>nix-instantiate --eval --strict default.nix -A fleet
+nix-instantiate --eval --strict default.nix -A checks.validFleet
+nix-instantiate --eval --strict default.nix -A checks.featureClosure
+nix-instantiate --eval --strict default.nix -A checks.hostFeaturesHavePlatformModules
+bin/check
+nix-instantiate --parse hive.nix
+nix-instantiate --parse darwin.nix
+nix-build ci.nix -A plain-eval
+shellcheck bin/deploy bin/check</code></pre>
+
+        <h3>Optional heavier checks</h3>
+        <ul>
+          <li>Build one NixOS server toplevel.</li>
+          <li>Build one NixOS desktop toplevel.</li>
+          <li>Evaluate one Darwin host without activating it.</li>
+          <li>Run Colmena in build-only mode for selected NixOS hosts.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Known Migration Gaps</h2>
+        <p>
+          These are the missing pieces from the initial plan after comparing
+          the blueprint with the current repository state.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Gap</th>
+              <th>Required work</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Legacy architecture removal</td>
+              <td>Done: the old generated flake files, legacy feature modules, and generated schema/fleet modules have been deleted. The remaining migration caveat is real-host Darwin validation and remote Darwin activation, not routine Linux flake parity.</td>
+            </tr>
+            <tr>
+              <td>Wrapper parity</td>
+              <td>Done for active fleet behavior: plain features now replace git, zsh, and starship wrappers with native NixOS options; install feature-local wrappers for Alacritty, Bat, Zathura, Zed, and yt-dlp; generate the old Niri settings as a validated <code>config.kdl</code>; and import Noctalia from <code>npins</code> with its upstream NixOS module plus runtime theme profile config. The standalone <code>flake.wrappers</code> output API and generic <code>constructFiles</code> wrapper mechanism are intentionally left as legacy-only unless an external consumer needs them.</td>
+            </tr>
+            <tr>
+              <td>Plain package and cache workflow</td>
+              <td>Done for current local packages and explicit heavy service targets: <code>lib/packages.nix</code> exposes repo-local packages through <code>pkgs.local</code>, and <code>.github/workflows/nix-cache.yml</code> builds the configured CUDA <code>llama-cpp</code> service package plus the plain <code>odin</code> NixOS toplevel. Add more plain build targets when a large upstream dependency needs a named cache target outside the full host build.</td>
+            </tr>
+            <tr>
+              <td>Darwin parity</td>
+              <td>Partially done and now covered by a synthetic Darwin eval check in <code>ci.nix</code>: the plain Darwin base enables nix-darwin Homebrew with <code>host.owner</code>, migrated features declare the old Homebrew casks/MAS apps for Codex, Firefox, Pixelmator Pro, Bambu Studio, Steam, and Tailscale, wallpaper activation is ported, and shell utility behavior now includes git config, zsh aliases/init, direnv, and starship config. Remaining items are intentionally dropped Darwin-only legacy module behavior, optional Darwin <code>hjem</code> integration if it becomes useful, and validation against a real Darwin host once one returns to <code>fleet/hosts.nix</code>.</td>
+            </tr>
+            <tr>
+              <td>Remote Darwin deployment</td>
+              <td>Define whether Darwin targets are local-only or SSH targets. If SSH is required, <code>bin/deploy</code> must use <code>targetHost</code>, copy the built activation package or build remotely, and run activation on the target. Build and dry-run paths already exist locally.</td>
+            </tr>
+            <tr>
+              <td>Full CI wiring</td>
+              <td><code>.github/workflows/plain-nix.yml</code> already runs <code>bin/check</code>, unit tests, <code>nix-build ci.nix -A plain-eval</code>, treefmt checks, deploy planning, and hive evaluation. <code>.github/workflows/nix-cache.yml</code> builds explicit heavy package targets and the plain <code>odin</code> toplevel, which covers local packages in Odin's closure. Add Darwin evaluation when a Darwin host returns to the plain fleet.</td>
+            </tr>
+            <tr>
+              <td>Runtime theming</td>
+              <td>Done for the plain Linux path: <code>features/theming</code> builds runtime theme profiles and installs <code>theme-apply</code>, <code>theme-current</code>, <code>theme-cycle</code>, <code>theme-list</code>, and <code>theme-select</code>. Continue testing live desktop reload behavior during normal use.</td>
+            </tr>
+            <tr>
+              <td>Docs and user workflow</td>
+              <td><code>docs/feat/service-routing.md</code> and <code>docs/feat/entity-system-modules.md</code> now describe the plain resolver. <code>docs/feat/wrappers.md</code> documents the plain feature-owned wrapper replacements and keeps the old flake wrapper pattern as legacy reference material. <code>docs/feat/plain-workflows.md</code> documents the plain commands for evaluation, deployment, formatting, cache builds, and secret editing. Generated schema docs have been removed from tracked source.</td>
+            </tr>
+            <tr>
+              <td>Plain formatting and static checks</td>
+              <td>Done for treefmt: <code>treefmt.toml</code> is checked in, <code>shell.nix</code> provides the required tools, <code>.envrc</code> loads the plain shell, and plain CI runs <code>treefmt --fail-on-change --no-cache</code>. Pre-commit installation is no longer part of the active plain workflow.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Migration Plan</h2>
+        <ol>
+          <li>
+            Done: add <code>npins</code>, <code>shell.nix</code>, and plain
+            <code>default.nix</code>.
+          </li>
+          <li>
+            Done: move generated fleet registries into <code>fleet/</code> as
+            plain data and add validation checks.
+          </li>
+          <li>
+            Done: create the dendritic <code>features/</code> API and migrate
+            the first feature set.
+          </li>
+          <li>
+            Done: implement service routing in <code>lib/services.nix</code> and port
+            <code>navidrome</code>, <code>pihole</code>, and
+            <code>llama-cpp</code>.
+          </li>
+          <li>
+            Done: add <code>hive.nix</code> and plain NixOS host builders.
+          </li>
+          <li>
+            Done: add <code>darwin.nix</code> and <code>bin/deploy</code>
+            dispatch for NixOS and Darwin host classes.
+          </li>
+          <li>
+            Next: finish real-host Darwin validation and remote Darwin activation
+            design.
+          </li>
+          <li>Done: remove the legacy flake output path.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Acceptance Criteria</h2>
+        <ul>
+          <li>No routine workflow requires <code>nix flake</code>.</li>
+          <li><code>bin/deploy --on &lt;host&gt;</code> works for NixOS and Darwin hosts.</li>
+          <li>Colmena hive contains only NixOS hosts.</li>
+          <li>Darwin configurations evaluate from <code>darwin.nix</code>.</li>
+          <li>Feature code is colocated by feature name across platforms.</li>
+          <li>Plain package and wrapper entrypoints replace legacy flake wrapper outputs.</li>
+          <li>Darwin feature behavior is audited against the old flake modules and either ported or intentionally documented as dropped.</li>
+          <li>Service primary and backup routing is validated and visible as <code>host.services</code>.</li>
+          <li>Service-owned secrets are declared by feature metadata rather than hard-coded top-level service names.</li>
+          <li>Agenix secrets remain encrypted in the repo and decrypt on target activation.</li>
+          <li>CI can validate fleet graph, feature resolution, hive evaluation, Darwin evaluation, formatting, and static checks.</li>
+          <li>The legacy flake and generated module trees are removed after parity checks pass.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Open Risks</h2>
+        <div class="note warn">
+          <strong>Darwin deployment is custom.</strong> The top-level deploy
+          script must treat Darwin activation as a first-class path and should
+          include dry-run/build-only modes before any remote activation logic.
+          The current script activates Darwin builds locally and does not yet
+          use <code>targetHost</code> for remote Darwin targets.
+        </div>
+        <div class="note warn">
+          <strong>Wrapper modules may still be eval-heavy.</strong> Prior timing
+          showed flake-parts/gen-flake/gen-schema were not the dominant eval
+          cost. After migration, focus profiling on NixOS modules, wrappers, and
+          package overlays.
+        </div>
+        <div class="note warn">
+          <strong>Removal is now blocked by non-Linux cleanup.</strong> The
+          plain features cover the active Linux fleet. Before deleting the old
+          flake module tree, finish Darwin validation/remote activation choices,
+          and any explicit decision to revive or keep deferring the Codex
+          desktop Linux service.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
