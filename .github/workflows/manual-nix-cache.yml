@@ -1,8 +1,6 @@
 name: Manually build and cache Nix targets
 
 on:
-  push:
-    branches: architecture
   workflow_dispatch:
     inputs:
       bambu_studio:
