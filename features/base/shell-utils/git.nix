@@ -29,18 +29,15 @@
         export GIT_CONFIG_GLOBAL=${settings}
         exec ${pkgs.git}/bin/git "$@"
       '';
+      passthru = {
+        config = gitConfig;
+        configFile = settings;
+      };
     };
   in {
     environment.systemPackages = with pkgs; [
       gh
-      (gitWrapper.overrideAttrs (old: {
-        passthru =
-          (old.passthru or {})
-          // {
-            config = gitConfig;
-            configFile = settings;
-          };
-      }))
+      gitWrapper
     ];
 
     hjem.users.${user.name}.xdg.config.files = {
