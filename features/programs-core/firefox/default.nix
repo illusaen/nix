@@ -133,6 +133,7 @@
             "reader.parse-on-load.enabled" = false;
             "shimmer.remove-winctr-buttons" = true;
             "shimmer.remove-firefox-view-button" = true;
+            "webgl.force-enabled" = true;
           };
         };
       };
