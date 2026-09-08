@@ -48,9 +48,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "255a2b1725a20d060f566e4755dbf571bbbb5f76",
-      "url": "https://github.com/numtide/devshell/archive/255a2b1725a20d060f566e4755dbf571bbbb5f76.tar.gz",
-      "hash": "sha256-460jc0+CZfyaO8+w8JNtlClB2n4ui1RbHfPTLkpwhU8="
+      "revision": "a67c0f87b63bcbdbdcb56785bec0205a2e3d6026",
+      "url": "https://github.com/numtide/devshell/archive/a67c0f87b63bcbdbdcb56785bec0205a2e3d6026.tar.gz",
+      "hash": "sha256-EWkNM4JzBhZ/Yn1PG6lP4/QJuFAFeHYlY5gVxXu940Y="
     },
     "disko": {
       "type": "Git",
@@ -74,9 +74,9 @@
       },
       "branch": "master",
       "submodules": false,
-      "revision": "85331c5014af50dc08ce5d16fd2dc829520d21cf",
-      "url": "https://gitlab.com/api/v4/projects/rycee%2Fnur-expressions/repository/archive.tar.gz?sha=85331c5014af50dc08ce5d16fd2dc829520d21cf",
-      "hash": "sha256-AHUEkickUzn8Xs210zD9TtUgiVYaB/ezxesTGg432MY="
+      "revision": "555b23e68256c5abfb8a85a385231830d1d7ad1f",
+      "url": "https://gitlab.com/api/v4/projects/rycee%2Fnur-expressions/repository/archive.tar.gz?sha=555b23e68256c5abfb8a85a385231830d1d7ad1f",
+      "hash": "sha256-ej5jnQIfjbw4wwPzy8Y4ntG9F3asdF6YBkLqpYeGUxc="
     },
     "fromYaml": {
       "type": "Git",
@@ -100,9 +100,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "b610953d0c56da6b28fd39c21bd193b88e91341c",
-      "url": "https://github.com/feel-co/hjem/archive/b610953d0c56da6b28fd39c21bd193b88e91341c.tar.gz",
-      "hash": "sha256-qwppDYdtxqtDpI1iSp7bs8prOJ0KQSvhJchfROD04f0="
+      "revision": "d248f0e4f7abd6e1f0eb9ace778dd7928481943e",
+      "url": "https://github.com/feel-co/hjem/archive/d248f0e4f7abd6e1f0eb9ace778dd7928481943e.tar.gz",
+      "hash": "sha256-UrAlku7KST0DT+j1bdVGYI8tCz23PWL88uGMer3IZ2U="
     },
     "nixpkgs": {
       "type": "Git",
@@ -113,9 +113,9 @@
       },
       "branch": "nixos-unstable",
       "submodules": false,
-      "revision": "e5bdc4a41d4c072fe1e3787eaa0320a384741d44",
-      "url": "https://github.com/NixOS/nixpkgs/archive/e5bdc4a41d4c072fe1e3787eaa0320a384741d44.tar.gz",
-      "hash": "sha256-FBJRXmbGXiSUDvYEbfLYRkckayyZ6SK1UEqhCrIZ2Cs="
+      "revision": "dc5d91f840324650bac8c379428c7037a416959a",
+      "url": "https://github.com/NixOS/nixpkgs/archive/dc5d91f840324650bac8c379428c7037a416959a.tar.gz",
+      "hash": "sha256-VaWGJ6+cIYN2erfSecbRV+4ljI185Ty2wUrXyvQbgOw="
     },
     "noctalia": {
       "type": "Git",
@@ -126,9 +126,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "74db8e7a62c04e85c876da4827405700455c160c",
-      "url": "https://github.com/noctalia-dev/noctalia/archive/74db8e7a62c04e85c876da4827405700455c160c.tar.gz",
-      "hash": "sha256-sFyoCSeC+vwQUjQ54e2EBYh9EdYc7yGp31whjaYOOfk="
+      "revision": "69f623c977e3abb0df114f6f02849b0139e5a2f2",
+      "url": "https://github.com/noctalia-dev/noctalia/archive/69f623c977e3abb0df114f6f02849b0139e5a2f2.tar.gz",
+      "hash": "sha256-+hu9NgsdfW4LUm9tIim7wWCE1qzVMFBsPAh/pf4TekI="
     },
     "preservation": {
       "type": "Git",
