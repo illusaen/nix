@@ -1,4 +1,4 @@
-{sources}: {
+{inputs}: {
   imports = [./options.nix];
 
   modules.nixos = {
@@ -11,7 +11,7 @@
   }: let
     inherit (host.preservation) homeSnapshot persistMount rootSnapshot;
   in {
-    imports = ["${sources.preservation.outPath}/module.nix"];
+    imports = [inputs.preservation.nixosModules.default];
 
     preservation = {
       enable = true;

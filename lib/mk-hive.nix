@@ -2,9 +2,9 @@
   api,
   system,
 }: let
-  inherit (api) sources overlays fleet;
+  inherit (api) inputs overlays fleet;
   nixpkgs =
-    import sources.nixpkgs.outPath {
+    import inputs.nixpkgs {
       inherit system;
       overlays = [overlays];
     }
@@ -21,7 +21,7 @@ in
     _hostName: host: {
       imports = [
         (api.libs.hostLib.mkHostModule {
-          inherit host sources fleet;
+          inherit host inputs fleet;
         })
       ];
 

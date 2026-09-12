@@ -4,11 +4,11 @@
     host,
     lib,
     pkgs,
-    sources,
+    inputs,
     user,
     ...
   }: let
-    base16Lib = import (sources.base16.outPath + "/lib") sources.fromYaml.outPath {
+    base16Lib = inputs.base16.lib {
       inherit pkgs lib;
     };
     scheme = base16Lib.mkSchemeAttrs fleet.base16.theme;

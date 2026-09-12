@@ -1,5 +1,5 @@
-{sources}: let
-  nixpkgsLib = import (sources.nixpkgs.outPath + "/lib");
+{inputs}: let
+  nixpkgsLib = inputs.nixpkgs.lib;
   fleetLib = import ./fleet.nix {lib = nixpkgsLib;};
   packageLib = import ./packages.nix {lib = nixpkgsLib;};
   serviceLib = import ./services.nix {
@@ -7,14 +7,14 @@
     lib = nixpkgsLib;
   };
   featureLib = import ./features.nix {
-    inherit sources;
+    inherit inputs;
     lib = nixpkgsLib;
   };
   hostLib = import ./hosts.nix {
     inherit featureLib fleetLib packageLib serviceLib;
   };
   evalLib = import ./eval-configurations.nix {
-    inherit fleetLib hostLib sources;
+    inherit fleetLib hostLib inputs;
     lib = nixpkgsLib;
   };
   evalFleetLib = import ./eval-fleet.nix {
@@ -37,7 +37,7 @@
     lib = nixpkgsLib;
   };
 in {
-  inherit fleet sources checks libs;
+  inherit fleet inputs checks libs;
 
   nixosConfigurations = evalLib.mkNixosConfigurations {inherit fleet;};
   darwinConfigurations = evalLib.mkDarwinConfigurations {inherit fleet;};

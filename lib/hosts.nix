@@ -7,7 +7,7 @@
   mkHostModule = {
     fleet,
     host,
-    sources,
+    inputs,
   }: let
     user = fleet.users.${host.owner} // {name = host.owner;};
   in {
@@ -17,7 +17,7 @@
       nixpkgs.overlays = [packageLib.overlay];
 
       _module.args = {
-        inherit fleet fleetLib host serviceLib sources user;
+        inherit fleet fleetLib host inputs serviceLib user;
       };
     };
   };

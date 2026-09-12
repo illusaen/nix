@@ -1,15 +1,11 @@
 {
-  colmenaPackage,
-  sources,
+  inputs,
   system,
 }: let
   rawFleet = import ../fleet;
-  pkgs = import sources.nixpkgs.outPath {inherit system;};
+  pkgs = inputs.nixpkgs.legacyPackages.${system};
   inherit (pkgs) lib;
-  devshell = import sources.devshell.outPath {
-    nixpkgs = pkgs;
-  };
-  agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
+  devshell = inputs.devshell.legacyPackages.${system};
   treefmtCommand = pkgs.writeShellApplication {
     name = "treefmt";
     runtimeInputs = with pkgs; [
@@ -50,7 +46,7 @@
     (builtins.attrNames rawFleet.hosts);
   shell = devshell.mkShell {
     imports = [
-      "${sources.devshell.outPath}/extra/git/hooks.nix"
+      "${devshell.extraModulesPath}/git/hooks.nix"
     ];
 
     devshell = {
@@ -58,8 +54,8 @@
       motd = "$(type -p menu &>/dev/null && menu)";
       packages =
         [
-          agenixPackage
-          colmenaPackage
+          inputs.agenix.packages.${system}.agenix
+          inputs.colmena.packages.${system}.colmena
           treefmtCommand
         ]
         ++ (with pkgs; [

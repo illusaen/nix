@@ -4,7 +4,7 @@
     host,
     lib,
     pkgs,
-    sources,
+    inputs,
     user,
     ...
   }: let
@@ -13,7 +13,7 @@
     inherit (fleet.theming) cursor gtk icon;
     localThemePackage = theme: pkgs.local.${theme.packageName};
     profileStateDir = "\${XDG_STATE_HOME:-$HOME/.local/state}/nix-theme";
-    base16Lib = import (sources.base16.outPath + "/lib") sources.fromYaml.outPath {
+    base16Lib = inputs.base16.lib {
       inherit pkgs lib;
     };
     themeNames = builtins.attrNames themes.profiles;

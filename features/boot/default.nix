@@ -1,9 +1,9 @@
-{sources}: {
+{inputs}: {
   imports = [./hardware.nix];
 
   modules.nixos = {host, ...}: {
     imports = [
-      "${sources.disko.outPath}/module.nix"
+      inputs.disko.nixosModules.default
       ./disko.nix
     ];
 

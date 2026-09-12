@@ -1,4 +1,4 @@
-{sources}: {
+{inputs}: {
   imports = [
     ./shell-utils
     ./networking.nix
@@ -32,7 +32,7 @@
       extraGroups = lib.unique (posixGroups ++ lib.optional (user.system.isAdmin or false) "wheel");
     in {
       imports = [
-        (import "${sources.hjem.outPath}/modules/nixos").default
+        inputs.hjem.nixosModules.default
       ];
 
       system.stateVersion = "26.11";
@@ -49,7 +49,7 @@
 
     darwin = {host, ...}: {
       imports = [
-        (import "${sources.hjem.outPath}/modules/nix-darwin").default
+        inputs.hjem.darwinModules.default
       ];
 
       system.stateVersion = 6;

@@ -142,7 +142,7 @@
     else throw "synthetic Darwin parity configuration did not evaluate as expected";
 
   assertLocalPackageOverlay = let
-    pkgsWithLocal = import api.sources.nixpkgs.outPath {
+    pkgsWithLocal = import api.inputs.nixpkgs {
       system = "x86_64-linux";
       overlays = [api.overlays];
       config.allowUnfree = true;

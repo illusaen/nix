@@ -1,6 +1,6 @@
 {
   lib,
-  sources,
+  inputs,
 }: let
   inherit (builtins) attrNames concatLists concatMap filter hasAttr listToAttrs readDir concatStringsSep elem;
   inherit (lib) concatMapAttrs mapAttrs' mapAttrsToList nameValuePair optionals pipe unique filterAttrs;
@@ -86,7 +86,7 @@
       if builtins.isFunction feature
       then
         feature {
-          inherit sources;
+          inherit inputs;
         }
       else feature;
     feature = pipe (callFeature (import path)) [

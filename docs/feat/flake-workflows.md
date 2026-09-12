@@ -40,6 +40,13 @@ nix fmt -- --fail-on-change
 
 `treefmt.toml` remains the source of truth for formatting and static checks.
 
+## Inputs
+
+Dependencies are declared as native inputs in `flake.nix`. Modules and packages
+are consumed through their exported flake outputs, and compatible inputs follow
+the root `nixpkgs` to keep the lock graph consistent. The only non-flake source
+is base16's internal `fromYaml` dependency.
+
 ## Packages And Systems
 
 ```bash

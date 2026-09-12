@@ -21,11 +21,11 @@
   inputs = {
     agenix = {
       url = "github:ryantm/agenix/main";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.darwin.follows = "darwin";
     };
     base16 = {
       url = "github:SenchoPens/base16.nix/main";
-      flake = false;
     };
     colmena = {
       url = "github:nix-community/colmena/v0.4.0";
@@ -34,32 +34,27 @@
     };
     darwin = {
       url = "github:nix-darwin/nix-darwin/master";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     devshell = {
       url = "github:numtide/devshell/main";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     disko = {
       url = "github:nix-community/disko/master";
-      flake = false;
-    };
-    fromYaml = {
-      url = "github:SenchoPens/fromYaml/main";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     hjem = {
       url = "github:feel-co/hjem/main";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     noctalia = {
       url = "github:noctalia-dev/noctalia/main";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     preservation = {
       url = "github:nix-community/preservation/main";
-      flake = false;
     };
   };
 
@@ -70,22 +65,7 @@
     ...
   }: let
     inherit (nixpkgs) lib;
-    sources = {
-      inherit
-        (inputs)
-        agenix
-        base16
-        darwin
-        devshell
-        disko
-        fromYaml
-        hjem
-        nixpkgs
-        noctalia
-        preservation
-        ;
-    };
-    api = import ./lib/mk-api.nix {inherit sources;};
+    api = import ./lib/mk-api.nix {inherit inputs;};
     supportedSystems = import ./lib/supported-systems.nix;
     forAllSystems = lib.genAttrs supportedSystems;
     pkgsFor = system:
@@ -96,8 +76,7 @@
       };
     devFor = system:
       import ./lib/mk-dev-shell.nix {
-        inherit sources system;
-        colmenaPackage = colmena.packages.${system}.colmena;
+        inherit inputs system;
       };
     rawHive = import ./lib/mk-hive.nix {
       inherit api;

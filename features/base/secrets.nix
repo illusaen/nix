@@ -1,20 +1,10 @@
-{sources}: {
-  modules.generic = {
-    pkgs,
-    host,
-    ...
-  }: let
-    agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
-  in {
+{inputs}: {
+  modules.generic = {host, ...}: {
     imports = [
-      "${sources.agenix.outPath}/modules/age.nix"
+      inputs.agenix.nixosModules.default
     ];
 
     age.identityPaths = [host.privateKey];
-    environment.systemPackages = [
-      agenixPackage
-      pkgs.age
-    ];
   };
 
   modules.nixos = {

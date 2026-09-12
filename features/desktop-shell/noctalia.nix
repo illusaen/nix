@@ -1,13 +1,10 @@
-{sources}: {
-  modules.nixos = {pkgs, ...}: let
-    noctaliaModule = sources.noctalia.outPath + "/nix/nixos-module.nix";
-    noctaliaPackage = pkgs.callPackage (sources.noctalia.outPath + "/nix/package.nix") {};
-  in {
-    imports = [noctaliaModule];
+{inputs}: {
+  modules.nixos = {pkgs, ...}: {
+    imports = [inputs.noctalia.nixosModules.default];
 
     programs.noctalia = {
       enable = true;
-      package = noctaliaPackage;
+      package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
       recommendedServices.enable = true;
       systemd.enable = true;
     };
