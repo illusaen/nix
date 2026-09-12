@@ -1,7 +1,8 @@
 # Flake Workflows
 
 These are the routine entry points for the fleet. Run them from the repository
-root. The plain Nix files remain temporarily as migration rollback paths.
+root. `flake.nix` and `flake.lock` are the only dependency and evaluation
+entrypoints.
 
 ## Development Shell
 
@@ -48,11 +49,13 @@ nix build .#bambu-studio
 nix build .#llama-cpp-cuda
 nix build .#system-odin
 nix build .#system-huginn
+nix eval --json .#lib.supportedSystems
 ```
 
 Local packages are exposed on Linux. Each NixOS host is also exposed as
 `system-HOST` on the system matching that host, making cache jobs explicit and
-easy to reproduce locally.
+easy to reproduce locally. `lib/supported-systems.nix` is the single source of
+truth for fleet system validation and per-system flake outputs.
 
 ## Deployment
 
@@ -69,8 +72,7 @@ targets when it is available.
 
 ## Updating Inputs
 
-Inputs initially match the revisions previously recorded by `npins`. Update a
-single input deliberately, then run the full checks:
+Update a single locked input deliberately, then run the full checks:
 
 ```bash
 nix flake update nixpkgs

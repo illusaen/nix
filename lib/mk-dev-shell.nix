@@ -1,5 +1,5 @@
 {
-  colmenaPackage ? null,
+  colmenaPackage,
   sources,
   system,
 }: let
@@ -10,10 +10,6 @@
     nixpkgs = pkgs;
   };
   agenixPackage = pkgs.callPackage "${sources.agenix.outPath}/pkgs/agenix.nix" {};
-  selectedColmenaPackage =
-    if colmenaPackage == null
-    then pkgs.colmena
-    else colmenaPackage;
   treefmtCommand = pkgs.writeShellApplication {
     name = "treefmt";
     runtimeInputs = with pkgs; [
@@ -63,7 +59,7 @@
       packages =
         [
           agenixPackage
-          selectedColmenaPackage
+          colmenaPackage
           treefmtCommand
         ]
         ++ (with pkgs; [
@@ -73,7 +69,6 @@
           nh
           nix-tree
           nixd
-          npins
           ruff
           shellcheck
           statix

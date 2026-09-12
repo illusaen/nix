@@ -1,9 +1,9 @@
 {
-  api ? import ./default.nix,
-  pkgs ? import api.sources.nixpkgs.outPath {},
+  api,
+  pkgs,
+  hive,
+  darwinConfigurations,
   rawFleet ? import ./fleet,
-  hive ? import ./hive.nix,
-  darwinConfigurations ? import ./darwin.nix,
 }: let
   inherit (api) nixosConfigurations;
   darwinParityFleet = let
@@ -38,7 +38,7 @@
   assertNoFailedChecks =
     if failedChecks == []
     then true
-    else throw "plain fleet checks failed: ${builtins.concatStringsSep ", " failedChecks}";
+    else throw "fleet checks failed: ${builtins.concatStringsSep ", " failedChecks}";
 
   assertHiveHosts =
     if
@@ -108,12 +108,12 @@
       && nixosConfigurations.odin.config.services.tailscale.enable == true
       && builtins.elem "192.168.1.161" nixosConfigurations.odin.config.programs.ssh.knownHosts.huginn.hostNames
     then true
-    else throw "nixosConfigurations plain API did not evaluate as expected";
+    else throw "nixosConfigurations did not evaluate as expected";
 
   assertDarwinConfigurations =
     if builtins.attrNames darwinConfigurations == api.libs.deployLib.darwinHostNames
     then true
-    else throw "darwinConfigurations plain API did not match fleet Darwin hosts";
+    else throw "darwinConfigurations did not match fleet Darwin hosts";
 
   assertDarwinParity = let
     caskNames = map (entry: entry.name) darwinParityConfig.homebrew.casks;
@@ -164,13 +164,13 @@
     then true
     else throw "local package overlay did not expose expected packages";
 in {
-  plain-eval = assert assertNoFailedChecks;
+  evaluation = assert assertNoFailedChecks;
   assert assertHiveHosts;
   assert assertNixosConfigurations;
   assert assertDarwinConfigurations;
   assert assertDarwinParity;
   assert assertLocalPackageOverlay;
-    pkgs.runCommand "plain-fleet-eval-checks" {} ''
+    pkgs.runCommand "fleet-eval-checks" {} ''
       touch $out
     '';
 }

@@ -5,6 +5,7 @@
   resolveFleet,
   serviceLib,
 }: let
+  supportedSystems = import ../lib/supported-systems.nix;
   baseFleet = {
     domain = "home.arpa";
     timeZone = "America/Chicago";
@@ -340,6 +341,37 @@ in {
     && evaluated.users.wendy.system.isAdmin == false
     && evaluated.services.app.backups == []
     && evaluated.services.app.feature == "llama-cpp";
+
+  supportedSystemPlatforms =
+    builtins.all (
+      system: let
+        evaluated = evalFleet (testFleet {
+          hosts.test = {
+            inherit system;
+            owner = "wendy";
+            targetHost = "test.home.arpa";
+          };
+        });
+      in
+        evaluated.hosts.test.platform
+        == (
+          if builtins.match ".*-darwin" system != null
+          then "darwin"
+          else "nixos"
+        )
+    )
+    supportedSystems;
+
+  unsupportedSystemRejected = let
+    evaluated = evalFleet (testFleet {
+      hosts.test = {
+        system = "x86_64-darwin";
+        owner = "wendy";
+        targetHost = "test.home.arpa";
+      };
+    });
+  in
+    !(builtins.tryEval (builtins.deepSeq evaluated true)).success;
 
   servicePortConflicts =
     serviceLib.portConflicts (testFleet {

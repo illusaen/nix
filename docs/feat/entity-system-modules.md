@@ -2,7 +2,7 @@
 
 Hosts contribute to final NixOS or Darwin systems through derived feature names
 and optional manual feature names in `fleet/hosts.nix`. The fleet registry is
-plain Nix data; the resolver turns that data into platform-specific module
+declarative Nix data; the resolver turns that data into platform-specific module
 imports.
 
 ## Host Features
@@ -57,6 +57,9 @@ aarch64-linux   -> nixos
 aarch64-darwin  -> darwin
 ```
 
+`lib/supported-systems.nix` defines this supported set for both the fleet option
+type and the flake's per-system outputs.
+
 ## Derived Configurations
 
 Normal system outputs are derived from the fleet registry:
@@ -64,7 +67,6 @@ Normal system outputs are derived from the fleet registry:
 - `nixosConfigurations` exposes every NixOS host through the flake.
 - `darwinConfigurations` exposes every Darwin host through the flake.
 - `colmenaHive` exposes only NixOS hosts for Colmena.
-- `hive.nix` and `darwin.nix` remain temporary plain compatibility entry points.
 - `lib/hosts.nix` builds both output classes through the same host module
   resolver.
 
@@ -87,7 +89,7 @@ A feature can imply other features with its `imports` field:
 
 If a host enables `"base"`, and `base` imports `"ssh"`, the resolver imports
 both features for that host. Cycles and missing features are checked by
-`lib/features.nix` and `default.nix`.
+`lib/features.nix` and `tests/checks.nix`.
 
 `imports` can also include local paths. String entries are feature dependencies;
 path entries are feature fragments that are merged into the current feature:

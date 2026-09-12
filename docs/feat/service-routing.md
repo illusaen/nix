@@ -1,7 +1,7 @@
 # Service Routing
 
 Service instances live in `fleet/services.nix`. Each service declares a
-`primary` host and optional `backups` by host name. The plain resolver validates
+`primary` host and optional `backups` by host name. The fleet resolver validates
 those names against `fleet.hosts` and derives per-host `host.services`. Feature
 resolution then adds routed service feature names to each routed host.
 
@@ -69,9 +69,10 @@ Modules that need primary/backup-specific behavior should branch on
 
 ## Service Secrets
 
-Service features can expose a `serviceSecrets` function. `default.nix` asks the
-feature resolver for all routed service secret requirements and checks that the
-encrypted files are declared and that recipients cover the routed hosts.
+Service features can expose a `serviceSecrets` function. The shared test suite
+asks the feature resolver for all routed service secret requirements and checks
+that the encrypted files are declared and that recipients cover the routed
+hosts.
 
 This keeps service-owned secrets colocated with the feature metadata instead of
 hard-coding service names in top-level checks.

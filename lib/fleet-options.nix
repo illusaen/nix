@@ -1,5 +1,6 @@
 {lib, ...}: let
   inherit (lib) mkOption types;
+  supportedSystems = import ./supported-systems.nix;
 
   sshKeyType = types.submodule {
     options = {
@@ -80,7 +81,7 @@
       };
 
       system = mkOption {
-        type = types.enum ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
+        type = types.enum supportedSystems;
         description = "Nix system identifier.";
       };
 

@@ -86,11 +86,7 @@
         ;
     };
     api = import ./lib/mk-api.nix {inherit sources;};
-    supportedSystems = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
+    supportedSystems = import ./lib/supported-systems.nix;
     forAllSystems = lib.genAttrs supportedSystems;
     pkgsFor = system:
       import nixpkgs {
@@ -134,7 +130,7 @@
         inherit (api) darwinConfigurations;
       };
     in {
-      fleet = ci.plain-eval;
+      fleet = ci.evaluation;
       formatting =
         pkgs.runCommand "repository-formatting" {
           nativeBuildInputs = [dev.formatter];
@@ -151,7 +147,12 @@
 
     colmenaHive = colmena.lib.makeHive rawHive;
 
-    lib = api.libs // {inherit (api) fleet;};
+    lib =
+      api.libs
+      // {
+        inherit (api) fleet;
+        inherit supportedSystems;
+      };
 
     overlays.default = api.overlays;
 
