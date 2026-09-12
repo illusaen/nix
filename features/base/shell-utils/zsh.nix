@@ -38,13 +38,14 @@ in {
         interactiveShellInit = ''
           eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd n)"
           source <(${pkgs.fzf}/bin/fzf --zsh)
-          export ZSH_COMPDUMP="$HOME/.cache/zsh/zcompdump-$ZSH_VERSION"
 
           ${builtins.readFile ./interactive.zsh}
         '';
-        promptInit = ''
+        shellInit = ''
           # Prevent the Zsh new user configuration menu from appearing
           zsh-newuser-install() { :; }
+        '';
+        promptInit = ''
           eval "$(${pkgs.starship}/bin/starship init zsh)"
         '';
       };
@@ -58,6 +59,11 @@ in {
       lib.mkMerge [
         {
           programs.zsh.shellAliases = shellAliases;
+
+          environment.sessionVariables = {
+            ZSH_COMPDUMP = "$HOME/.cache/zsh/zcompdump-$ZSH_VERSION";
+            FZF_DEFAULT_OPTS = "--no-height --preview";
+          };
         }
         (lib.mkIf (options ? persistUser) {
           persistUser.files = [
