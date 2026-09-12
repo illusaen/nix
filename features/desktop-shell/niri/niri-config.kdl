@@ -63,7 +63,7 @@
 }
 "window-rule"  {
   "match" "app-id"="mpv"
-  "match" "app-id"="youtube-music-desktop-app"
+  "match" "app-id"="com.github.th-ch.youtube-music"
   "default-column-width"  {
     "proportion" 1.0
   }

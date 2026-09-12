@@ -18,6 +18,22 @@ bindkey '^[[7~' beginning-of-line
 bindkey '^[[8~' end-of-line
 bindkey '^[[3~' delete-char
 
+# Function to fetch env variables, preview values, and insert with $
+fzf-env-widget() {
+  local selected=$(printenv | cut -d= -f1 | fzf \
+    --height 40% \
+    --layout=reverse \
+    --preview 'printenv {1}' \
+    --preview-window=right:60%:wrap)
+    
+  if [ -n "$selected" ]; then
+    LBUFFER+="\$$selected"
+  fi
+  zle reset-prompt
+}
+zle -N fzf-env-widget
+bindkey '^V' fzf-env-widget
+
 dot_cd_accept_line() {
   emulate -L zsh
 
