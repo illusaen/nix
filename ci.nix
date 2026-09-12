@@ -78,8 +78,9 @@ let
       && nixosConfigurations.odin.config.hardware.facter.reportPath != null
       && nixosConfigurations.odin.config.nix.package.pname == "lix"
       && nixosConfigurations.odin.config.programs.nix-ld.enable == true
-      && nixosConfigurations.odin.config.programs.firefox.languagePacks == ["en-US" "zh-CN"]
-      && nixosConfigurations.odin.config.programs.firefox.policies.ExtensionSettings ? "uBlock0@raymondhill.net"
+      && nixosConfigurations.odin.config.programs.google-chrome.enable == true
+      && builtins.elem "ddkjiahejlhfcafbddmgiahcphecmpfh" nixosConfigurations.odin.config.programs.google-chrome.extensions
+      && nixosConfigurations.odin.config.programs.google-chrome.policies.PasswordManagerEnabled == false
       && odinHasPackageMatching "starship-.*"
       && nixosConfigurations.odin.config.programs.steam.enable == true
       && nixosConfigurations.odin.config.programs.zsh.enable == true
@@ -125,7 +126,6 @@ let
       == "test-darwin"
       && darwinParityConfig.homebrew.enable == true
       && darwinParityConfig.homebrew.user == "wendy"
-      && builtins.elem "firefox" caskNames
       && builtins.elem "codex-app" caskNames
       && builtins.elem "bambu-studio" caskNames
       && builtins.elem "steam" caskNames
