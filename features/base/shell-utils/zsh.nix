@@ -17,10 +17,12 @@ let
     gp = "git push";
     gpf = "git push --force-with-lease";
     gst = "git status";
-    l = "eza -alg";
-    ll = "eza --tree --git-ignore --all";
+    l = ''eza -alg -I "$(tr "\n" "|" < ~/.hidden | sed 's/|$//')"'';
+    ll = ''eza -Ta --git-ignore -L 2 -I "$(tr "\n" "|" < ~/.hidden | sed 's/|$//')"'';
     whichstore = "nix_store_for_command";
     nd = "dix /run/current-system";
+    hdmi = "switcher hdmi1";
+    dp = "switcher dp";
   };
 in {
   modules = {
@@ -36,10 +38,13 @@ in {
         interactiveShellInit = ''
           eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd n)"
           source <(${pkgs.fzf}/bin/fzf --zsh)
+          export ZSH_COMPDUMP="$HOME/.cache/zsh/zcompdump-$ZSH_VERSION"
 
           ${builtins.readFile ./interactive.zsh}
         '';
         promptInit = ''
+          # Prevent the Zsh new user configuration menu from appearing
+          zsh-newuser-install() { :; }
           eval "$(${pkgs.starship}/bin/starship init zsh)"
         '';
       };

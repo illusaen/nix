@@ -3,7 +3,20 @@ let
 in {
   imports = [./git.nix ./starship.nix ./zsh.nix];
 
-  modules.generic = {pkgs, ...}: {
+  modules.generic = {
+    pkgs,
+    user,
+    ...
+  }: {
+    hjem.users.${user.name}.files.".hidden".text = ''
+      .vscode
+      .vscode-shared
+      .steam
+      .steampath
+      .steampid
+      .mozilla
+    '';
+
     programs.direnv = {
       enable = true;
       silent = true;
@@ -51,6 +64,18 @@ in {
     lib.mkMerge [
       {
         programs.nix-ld.enable = true;
+
+        environment.sessionVariables = {
+          # Pki files for certificate files for electron apps
+          NSS_DEFAULT_DB_TYPE = "sql";
+          NSS_USE_SHARED_DB = "sql:$HOME/.local/share/pki/nssdb";
+          # Redirect the OpenGL/Vulkan shader cache
+          __GL_SHADER_DISK_CACHE_PATH = "$HOME/.cache/nv";
+          CUDA_CACHE_PATH = "$HOME/.cache/nv/ComputeCache";
+          # pulseaudio
+          PULSE_COOKIE = "$HOME/.config/pulse/cookie";
+          NIXOS_OZONE_WL = 1;
+        };
       }
       (lib.mkIf (options ? persistUser) {
         persistUser.directories = [".local/share/zoxide"];

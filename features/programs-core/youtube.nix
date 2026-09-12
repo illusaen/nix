@@ -3,19 +3,19 @@
     wrappedYtDlp = pkgs.writeShellApplication {
       name = "yt-dlp";
       text = ''
-        exec ${pkgs.yt-dlp}/bin/yt-dlp -t aac --cookies-from-browser firefox "$@"
+        exec ${pkgs.yt-dlp}/bin/yt-dlp -t aac --cookies-from-browser chrome "$@"
       '';
     };
   in {
-    environment.systemPackages = [pkgs.ytmdesktop wrappedYtDlp];
+    environment.systemPackages = [pkgs.pear-desktop wrappedYtDlp];
 
     persistUser.directories = [
-      ".config/YouTube Music Desktop App"
+      ".config/YouTube Music"
     ];
 
     systemdAutostart = [
       {
-        package = pkgs.ytmdesktop;
+        package = pkgs.pear-desktop;
       }
     ];
   };

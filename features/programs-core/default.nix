@@ -1,1 +1,1 @@
-{imports = [./firefox ./onepassword.nix ./youtube.nix ./chrome.nix];}
+{imports = [./onepassword.nix ./youtube.nix ./chrome.nix];}

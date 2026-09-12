@@ -11,7 +11,6 @@
           inkscape
           bambu-studio
           image-roll
-          onlyoffice-desktopeditors
         ];
 
         xdg.mime.defaultApplications."image/*" = "com.github.weclaw1.ImageRoll.desktop";
