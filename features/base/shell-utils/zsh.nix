@@ -7,6 +7,7 @@ let
     fd = "fd --hidden --follow --exclude .git";
     ga = "git add -A";
     gb = "git branch";
+    gbd = "git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -d";
     gcm = "git_commit_with_message";
     gcma = "git commit --amend";
     gco = "git checkout";

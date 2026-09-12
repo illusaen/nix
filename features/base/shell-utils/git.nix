@@ -12,6 +12,7 @@
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
+      fetch.prune = true;
       user = {
         inherit (user.identity) email;
         name = user.identity.displayName;
