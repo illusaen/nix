@@ -9,8 +9,10 @@
 
   hostsWithTag = tag:
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
+  deploymentTags = host:
+    ["nixos"] ++ builtins.filter (tag: tag == "desktop" || tag == "server") (host.tags or []);
 in {
-  inherit darwinHostNames nixosHosts;
+  inherit darwinHostNames deploymentTags nixosHosts;
   selectHostNames = target:
     if target == "@all"
     then hostNames

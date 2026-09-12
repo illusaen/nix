@@ -1,42 +1,58 @@
-# Plain Workflows
+# Flake Workflows
 
-These commands are the routine plain entrypoints during the migration. Run them
-from the repository root.
+These are the routine entry points for the fleet. Run them from the repository
+root. The plain Nix files remain temporarily as migration rollback paths.
 
 ## Development Shell
 
 ```bash
-nix-shell shell.nix
+nix develop
 ```
 
-The shell provides the plain toolchain: `agenix`, `colmena`, `dix`, `treefmt`,
-`statix`, `deadnix`, `nil`, `shellcheck`, and formatter helpers.
+The shell provides `agenix`, `colmena`, `dix`, `treefmt`, `statix`, `deadnix`,
+`nixd`, `shellcheck`, and the repository command helpers. Direnv loads this same
+shell through `.envrc`.
 
 ## Evaluation And Checks
 
 ```bash
-bin/check
-nix-instantiate --eval --strict --json --expr '
-  let api = import ./default.nix;
-  in import ./tests/fleet.nix {
-    inherit (api.libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
-  }
-'
-nix-build ci.nix -A plain-eval
+nix flake check
+nix flake check --no-build
+tests
 ```
 
-Use these before changing host, fleet, feature, service-routing, or deployment
-logic. `bin/check` is the fast migration guard; `plain-eval` is the CI aggregate.
+`nix flake check` evaluates every conventional output and builds the checks for
+the current system. The `fleet` check contains the fleet, feature, service,
+configuration, Darwin parity, hive, and local-package assertions. The
+`formatting` check runs the repository's treefmt configuration.
+
+New files must be added to Git before evaluating the repository as a Git flake.
+Use `path:.` only when intentionally testing untracked files and when the
+working tree contains no sensitive ignored files.
 
 ## Formatting
 
 ```bash
 nix fmt
-nix-shell shell.nix --run 'treefmt --fail-on-change --no-cache'
+nix fmt -- --fail-on-change
 ```
 
-`treefmt.toml` is the source of truth for formatting and static Nix checks.
-Direnv loads this same plain shell through `.envrc`.
+`treefmt.toml` remains the source of truth for formatting and static checks.
+
+## Packages And Systems
+
+```bash
+nix build .#mactahoe-cursors
+nix build .#niri-scripts
+nix build .#bambu-studio
+nix build .#llama-cpp-cuda
+nix build .#system-odin
+nix build .#system-huginn
+```
+
+Local packages are exposed on Linux. Each NixOS host is also exposed as
+`system-HOST` on the system matching that host, making cache jobs explicit and
+easy to reproduce locally.
 
 ## Deployment
 
@@ -47,40 +63,32 @@ bin/deploy --build --on odin
 bin/deploy --apply --on odin
 ```
 
-NixOS hosts deploy through `hive.nix` and Colmena. Darwin hosts evaluate through
-`darwin.nix`; remote Darwin activation is still an explicit migration gap.
+NixOS hosts deploy through the flake's `colmenaHive`. Darwin hosts build from
+`darwinConfigurations`. Builds and applies run `dix` automatically for local
+targets when it is available.
 
-Builds and applies run `dix` automatically for local targets when `dix` is in
-`PATH`.
+## Updating Inputs
 
-## Cache Builds
+Inputs initially match the revisions previously recorded by `npins`. Update a
+single input deliberately, then run the full checks:
 
 ```bash
-nix-build ci.nix -A nixosConfigurations.odin.config.system.build.toplevel
-nix-build --expr '
-  let
-    api = import ./default.nix;
-    configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
-  in
-    configs.odin.config.services.llama-cpp.package
-'
-nix-build --expr '
-  let
-    api = import ./default.nix;
-    configs = api.evalLib.mkNixosConfigurations { inherit (api) fleet; };
-  in
-    configs.odin.config.system.build.toplevel
-'
+nix flake update nixpkgs
+nix flake check
 ```
 
-These mirror the current plain cache workflow in
-`.github/workflows/nix-cache.yml`.
+Avoid combining input updates with changes to fleet or feature behavior.
 
 ## Secrets
 
+Do not load credentials from a plaintext `.env`. Inject them for a single
+command from a secret manager or an already-established shell environment.
+
 ```bash
-nix-shell shell.nix --run 'RULES=secrets/secrets.nix agenix -i ~/.config/agenix/wendy.agekey -e secrets/hosts/huginn/pihole-web-password.age'
+RULES=secrets/secrets.nix nix develop -c agenix \
+  -i "$HOME/.config/agenix/wendy.agekey" \
+  -e secrets/hosts/huginn/pihole-web-password.age
 ```
 
-Secret policy lives in `secrets/secrets.nix`; feature modules should consume
-decrypted paths from normal agenix NixOS options.
+Secret policy remains in `secrets/secrets.nix`; feature modules consume
+decrypted paths through the normal agenix module options.

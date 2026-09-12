@@ -59,15 +59,17 @@ aarch64-darwin  -> darwin
 
 ## Derived Configurations
 
-Normal system outputs are derived from the plain fleet registry:
+Normal system outputs are derived from the fleet registry:
 
-- `hive.nix` exposes only NixOS hosts for Colmena.
-- `darwin.nix` exposes Darwin hosts for nix-darwin.
+- `nixosConfigurations` exposes every NixOS host through the flake.
+- `darwinConfigurations` exposes every Darwin host through the flake.
+- `colmenaHive` exposes only NixOS hosts for Colmena.
+- `hive.nix` and `darwin.nix` remain temporary plain compatibility entry points.
 - `lib/hosts.nix` builds both output classes through the same host module
   resolver.
 
 There is no separate configuration registry and no gen-schema instance layer in
-the plain path.
+the flake path.
 
 ## Feature Imports
 

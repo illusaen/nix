@@ -1,6 +1,6 @@
 # Wrappers
 
-Status: most active wrapper behavior has been ported to plain feature-owned
+Status: most active wrapper behavior has been ported to feature-owned
 packages where it is still used by the current fleet. The old
 `flake.wrappers` output API is legacy reference material and is intentionally
 not recreated unless an external consumer needs standalone wrapper outputs.
@@ -17,18 +17,18 @@ The plain replacements are:
   starship wrapper settings.
 - `features/desktop-shell`: renders the old Niri wrapper settings into a
   generated `config.kdl` and installs it during user activation.
-- `features/desktop-shell` imports Noctalia from the `npins` source, enables its
+- `features/desktop-shell` imports Noctalia from the locked source set, enables its
   upstream NixOS module, and points the systemd user service at the active
   runtime theme profile.
 - `features/theming` generates `noctalia/config.toml` inside every runtime theme
   profile.
 
 The generated-config wrapper API from `nix-wrapper-modules`, including
-`constructFiles`, remains legacy-only. Plain modules should prefer native NixOS
+`constructFiles`, remains legacy-only. Feature modules should prefer native NixOS
 options, runtime theme profile files, or feature-local wrapper packages.
 
-The legacy flake path uses `nix-wrapper-modules` for portable wrapper
-derivations. There is one wrapper declaration path there: the upstream
+The former generated flake path used `nix-wrapper-modules` for portable wrapper
+derivations. The new thin flake intentionally does not recreate the upstream
 `flake.wrappers` shape.
 
 ## Original Shape

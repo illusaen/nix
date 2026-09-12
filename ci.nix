@@ -1,9 +1,10 @@
-let
-  api = import ./default.nix;
-  pkgs = import api.sources.nixpkgs.outPath {};
-  rawFleet = import ./fleet;
-  hive = import ./hive.nix;
-  darwinConfigurations = import ./darwin.nix;
+{
+  api ? import ./default.nix,
+  pkgs ? import api.sources.nixpkgs.outPath {},
+  rawFleet ? import ./fleet,
+  hive ? import ./hive.nix,
+  darwinConfigurations ? import ./darwin.nix,
+}: let
   inherit (api) nixosConfigurations;
   darwinParityFleet = let
     raw =

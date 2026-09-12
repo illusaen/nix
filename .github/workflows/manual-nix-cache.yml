@@ -35,7 +35,8 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
-            experimental-features = nix-command
+            accept-flake-config = true
+            experimental-features = nix-command flakes
             max-jobs = auto
             cores = 0
 
@@ -46,37 +47,12 @@ jobs:
 
       - name: Build Bambu Studio
         if: ${{ inputs.bambu_studio }}
-        run: |
-          nix-build --expr '
-            let
-              api = import ./default.nix;
-              configs = api.libs.evalLib.mkNixosConfigurations { inherit (api) fleet; };
-            in
-              builtins.head (
-                builtins.filter
-                  (pkg: (pkg.pname or "") == "bambu-studio")
-                  configs.odin.config.environment.systemPackages
-              )
-          '
+        run: nix build .#bambu-studio
 
       - name: Build CUDA llama.cpp service package
         if: ${{ inputs.llama_cpp }}
-        run: |
-          nix-build --expr '
-            let
-              api = import ./default.nix;
-              configs = api.libs.evalLib.mkNixosConfigurations { inherit (api) fleet; };
-            in
-              configs.odin.config.services.llama-cpp.package
-          '
+        run: nix build .#llama-cpp-cuda
 
       - name: Build entire Odin NixOS system
         if: ${{ inputs.entire_host }}
-        run: |
-          nix-build --expr '
-            let
-              api = import ./default.nix;
-              configs = api.libs.evalLib.mkNixosConfigurations { inherit (api) fleet; };
-            in
-              configs.odin.config.system.build.toplevel
-          '
+        run: nix build .#system-odin

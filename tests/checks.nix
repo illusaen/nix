@@ -12,9 +12,6 @@
       inherit (libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
     })
     // featureLib.tests;
-  hive = import ../hive.nix;
-  hiveNodes = removeAttrs hive ["meta"];
-
   hostFeatures = pipe fleet.hosts [
     builtins.attrNames
     (map (name: fleet.hosts.${name}.features))
@@ -76,9 +73,11 @@ in
       && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
       && deployLib.selectHostNames "@darwin" == []
       && deployLib.selectHostNames "@server" == ["huginn" "muninn"]
-      && builtins.all (host: builtins.elem "nixos" host.deployment.tags) (builtins.attrValues hiveNodes)
-      && builtins.elem "server" hive.huginn.deployment.tags
-      && builtins.elem "desktop" hive.odin.deployment.tags
-      && !(builtins.elem "gpu:nvidia" hive.odin.deployment.tags)
-      && !(builtins.elem "feature:dev" hive.odin.deployment.tags);
+      && builtins.all (
+        host: builtins.elem "nixos" (deployLib.deploymentTags host)
+      ) (builtins.attrValues deployLib.nixosHosts)
+      && builtins.elem "server" (deployLib.deploymentTags fleet.hosts.huginn)
+      && builtins.elem "desktop" (deployLib.deploymentTags fleet.hosts.odin)
+      && !(builtins.elem "gpu:nvidia" (deployLib.deploymentTags fleet.hosts.odin))
+      && !(builtins.elem "feature:dev" (deployLib.deploymentTags fleet.hosts.odin));
   }

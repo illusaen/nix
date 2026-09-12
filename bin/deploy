@@ -70,10 +70,6 @@ case "$target" in
     ;;
 esac
 
-eval_expr() {
-  nix --extra-experimental-features nix-command eval --impure --raw --expr "$1"
-}
-
 colmena_nix_config() {
   if [ -n "${NIX_CONFIG:-}" ]; then
     printf '%s\nabort-on-warn = false\n' "$NIX_CONFIG"
@@ -87,15 +83,17 @@ colmena_cmd() {
 }
 
 select_hosts() {
-  eval_expr "let api = import ./default.nix; in builtins.concatStringsSep \"\n\" (api.libs.deployLib.selectHostNames \"$target\")"
+  nix eval --raw \
+    --apply "lib: builtins.concatStringsSep \"\n\" (lib.deployLib.selectHostNames \"$target\")" \
+    .#lib
 }
 
 platform_for() {
-  eval_expr "let api = import ./default.nix; in api.fleet.hosts.\"$1\".platform"
+  nix eval --raw ".#lib.fleet.hosts.\"$1\".platform"
 }
 
 target_host_for() {
-  eval_expr "let api = import ./default.nix; in api.fleet.hosts.\"$1\".targetHost"
+  nix eval --raw ".#lib.fleet.hosts.\"$1\".targetHost"
 }
 
 is_local_target() {
@@ -198,14 +196,14 @@ deploy_nixos() {
       plan_host "$host"
       ;;
     dry-run)
-      colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host" --dry-run
+      colmena_cmd apply --eval-node-limit 1 --on "$host" --dry-run
       ;;
     build)
       colmena_log="$(mktemp "${TMPDIR:-/tmp}/colmena-build-${host}.XXXXXX")"
       status_file="$(mktemp "${TMPDIR:-/tmp}/colmena-build-status-${host}.XXXXXX")"
       set +e
       {
-        colmena_cmd -f hive.nix build --eval-node-limit 1 --on "$host" 2>&1
+        colmena_cmd build --eval-node-limit 1 --on "$host" 2>&1
         printf '%s\n' "$?" >"$status_file"
       } | tee "$colmena_log"
       set -e
@@ -225,7 +223,7 @@ deploy_nixos() {
       ;;
     apply)
       old_system="$(current_system_path)"
-      colmena_cmd -f hive.nix apply --eval-node-limit 1 --on "$host"
+      colmena_cmd apply --eval-node-limit 1 --on "$host"
       diff_system_build "$host" "$old_system" /run/current-system
       ;;
   esac
@@ -233,20 +231,20 @@ deploy_nixos() {
 
 deploy_darwin() {
   host="$1"
-  attr="${host}.config.system.build.toplevel"
+  flake_attr=".#darwinConfigurations.${host}.config.system.build.toplevel"
   case "$mode" in
     plan)
       plan_host "$host"
       ;;
     dry-run|build)
-      result="$(nix-build darwin.nix -A "$attr")"
+      result="$(nix build --no-link --print-out-paths "$flake_attr")"
       if [ "$mode" = build ]; then
         diff_system_build "$host" "$(current_system_path)" "$result"
       fi
       ;;
     apply)
       old_system="$(current_system_path)"
-      result="$(nix-build darwin.nix -A "$attr")"
+      result="$(nix build --no-link --print-out-paths "$flake_attr")"
       if [ -x "$result/activate-user" ]; then
         "$result/activate-user"
       fi

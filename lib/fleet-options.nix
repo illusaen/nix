@@ -80,7 +80,7 @@
       };
 
       system = mkOption {
-        type = types.enum ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+        type = types.enum ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
         description = "Nix system identifier.";
       };
 
