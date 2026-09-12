@@ -8,6 +8,7 @@
         "dbepggeogbaibhgnhhndojpepiihcmeb" # Vimium
         "ldgfbffkinooeloadekpmfoklnobpien" # Raindrop
         "nplimhmoanghlebhdiboeellhgmgommi" # Tab Groups
+        "cgfpgnepljlgenjclbekbjdlgcodfmjp" # Tab Sort
         "cemphncflepgmgfhcdegkbkekifodacd" # Custom CSS
         "hnafhkjheookmokbkpnfpmemlppjdgoi" # Allow Right Click
       ];
