@@ -38,6 +38,7 @@
   "git.autofetch": true,
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
+  "chat.disableAIFeatures": true,
   "js/ts.implementationsCodeLens.enabled": true,
   "js/ts.inlayHints.enumMemberValues.enabled": true,
   "js/ts.inlayHints.functionLikeReturnTypes.enabled": true,
