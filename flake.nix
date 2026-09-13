@@ -62,7 +62,6 @@
     inherit (nixpkgs) lib;
     api = import ./lib/mk-api.nix {inherit inputs;};
     supportedSystems = import ./lib/supported-systems.nix;
-    forAllSystems = lib.genAttrs supportedSystems;
     formattingSource = lib.fileset.toSource {
       root = ./.;
       fileset = lib.fileset.unions [
@@ -71,19 +70,10 @@
         (lib.fileset.fileFilter (file: file.hasExt "nix" || file.hasExt "py") ./.)
       ];
     };
-    pkgsFor = system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = [api.overlays];
-      };
-    devFor = system:
-      import ./lib/mk-dev-shell.nix {
-        inherit inputs system;
-        hostNames = builtins.attrNames api.fleet.hosts;
-      };
     rawHive = import ./lib/mk-hive.nix {
-      inherit api;
+      inherit inputs;
+      inherit (api) fleet overlay;
+      inherit (api.lib) deployLib hostLib;
       system = "x86_64-linux";
     };
     hostPackagesFor = system:
@@ -95,18 +85,20 @@
           name: _configuration: api.fleet.hosts.${name}.system == system
         )
         api.nixosConfigurations);
-    packagesFor = system: let
-      pkgs = pkgsFor system;
+    perSystem = lib.genAttrs supportedSystems (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [api.overlay];
+      };
+      dev = import ./lib/mk-dev-shell.nix {
+        inherit inputs pkgs;
+      };
       localPackages = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux pkgs.local;
       cachePackages = lib.optionalAttrs (system == "x86_64-linux") {
         inherit (pkgs) bambu-studio;
         llama-cpp-cuda = api.nixosConfigurations.odin.config.services.llama-cpp.package;
       };
-    in
-      localPackages // hostPackagesFor system // cachePackages;
-    checksFor = system: let
-      pkgs = pkgsFor system;
-      dev = devFor system;
       integration = import ./tests/integration.nix {
         inherit api pkgs;
         hive = rawHive;
@@ -117,38 +109,52 @@
           inherit api lib pkgs;
         };
       };
-    in
-      {
-        fleet = integration.evaluation;
-        formatting =
-          pkgs.runCommand "repository-formatting" {
-            nativeBuildInputs = [dev.formatter];
-          } ''
-            cp -r ${formattingSource} source
-            chmod -R u+w source
-            cd source
-            treefmt --fail-on-change
-            touch $out
-          '';
-      }
-      // runtimeThemeCheck;
+    in {
+      apps.deploy = {
+        type = "app";
+        program = lib.getExe dev.deploy;
+      };
+      checks =
+        {
+          fleet = integration.evaluation;
+          formatting =
+            pkgs.runCommand "repository-formatting" {
+              nativeBuildInputs = [dev.formatter];
+            } ''
+              cp -r ${formattingSource} source
+              chmod -R u+w source
+              cd source
+              treefmt --fail-on-change
+              touch $out
+            '';
+        }
+        // runtimeThemeCheck;
+      devShells.default = dev.shell;
+      inherit (dev) formatter;
+      packages =
+        localPackages
+        // hostPackagesFor system
+        // cachePackages
+        // {inherit (dev) deploy;};
+    });
   in {
     inherit (api) nixosConfigurations darwinConfigurations;
 
     colmenaHive = colmena.lib.makeHive rawHive;
 
     lib =
-      api.libs
+      api.lib
       // {
         inherit (api) fleet;
         inherit supportedSystems;
       };
 
-    overlays.default = api.overlays;
+    overlays.default = api.overlay;
 
-    checks = forAllSystems checksFor;
-    devShells = forAllSystems (system: {default = (devFor system).shell;});
-    formatter = forAllSystems (system: (devFor system).formatter);
-    packages = forAllSystems packagesFor;
+    apps = lib.mapAttrs (_system: outputs: outputs.apps) perSystem;
+    checks = lib.mapAttrs (_system: outputs: outputs.checks) perSystem;
+    devShells = lib.mapAttrs (_system: outputs: outputs.devShells) perSystem;
+    formatter = lib.mapAttrs (_system: outputs: outputs.formatter) perSystem;
+    packages = lib.mapAttrs (_system: outputs: outputs.packages) perSystem;
   };
 }

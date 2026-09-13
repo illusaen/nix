@@ -24,9 +24,9 @@
           };
       };
   in
-    api.libs.resolveFleet raw;
+    api.lib.resolveFleet raw;
   darwinParityConfig =
-    (api.libs.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
+    (api.lib.evalLib.mkDarwinConfigurations {fleet = darwinParityFleet;}).test-darwin.config;
 
   failedChecks =
     builtins.filter (name: api.checks.${name} != true)
@@ -111,7 +111,7 @@
     else throw "nixosConfigurations did not evaluate as expected";
 
   assertDarwinConfigurations =
-    if builtins.attrNames darwinConfigurations == api.libs.deployLib.darwinHostNames
+    if builtins.attrNames darwinConfigurations == api.lib.deployLib.darwinHostNames
     then true
     else throw "darwinConfigurations did not match fleet Darwin hosts";
 

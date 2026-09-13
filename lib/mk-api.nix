@@ -15,7 +15,6 @@
   };
   evalLib = import ./eval-configurations.nix {
     inherit fleetLib hostLib inputs;
-    lib = nixpkgsLib;
   };
   evalFleetLib = import ./eval-fleet.nix {
     inherit featureLib serviceLib;
@@ -27,19 +26,21 @@
   deployLib = import ./deploy.nix {
     inherit fleet fleetLib;
   };
-  libs = {
-    inherit evalFleet evalLib featureLib fleetLib hostLib packageLib serviceLib deployLib resolveFleet;
-    nixpkgs = nixpkgsLib;
+  apiLib = {
+    inherit deployLib evalFleet evalLib featureLib fleetLib hostLib resolveFleet serviceLib;
   };
   checks = import ../tests/checks.nix {
-    inherit fleet libs;
+    inherit fleet;
+    inherit (apiLib) deployLib evalFleet featureLib fleetLib resolveFleet serviceLib;
     lib = nixpkgsLib;
   };
 in {
-  inherit fleet inputs checks libs;
+  inherit fleet checks;
+
+  lib = apiLib;
 
   nixosConfigurations = evalLib.mkNixosConfigurations {inherit fleet;};
   darwinConfigurations = evalLib.mkDarwinConfigurations {inherit fleet;};
 
-  overlays = packageLib.overlay;
+  inherit (packageLib) overlay;
 }

@@ -56,6 +56,7 @@ nix build .#mactahoe-cursors
 nix build .#niri-scripts
 nix build .#bambu-studio
 nix build .#llama-cpp-cuda
+nix build .#deploy
 nix build .#system-odin
 nix build .#system-huginn
 nix eval --json .#lib.supportedSystems
@@ -67,6 +68,20 @@ easy to reproduce locally. `lib/supported-systems.nix` is the single source of
 truth for fleet system validation and per-system flake outputs.
 
 ## Deployment
+
+```bash
+nix run .#deploy -- --plan --on @all
+nix run .#deploy -- --dry-run --on odin
+```
+
+Inside the development shell, the shorter packaged command is available:
+
+```bash
+deploy --plan --on @all
+deploy --dry-run --on odin
+```
+
+The source-tree entrypoint remains useful for development:
 
 ```bash
 bin/deploy --plan --on @all

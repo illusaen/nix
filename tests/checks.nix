@@ -1,14 +1,18 @@
 {
+  deployLib,
+  evalFleet,
+  featureLib,
   fleet,
+  fleetLib,
   lib,
-  libs,
+  resolveFleet,
+  serviceLib,
 }: let
   inherit (lib) pipe;
-  inherit (libs) deployLib featureLib serviceLib;
 
   testResults =
     (import ./fleet.nix {
-      inherit (libs) evalFleet featureLib fleetLib resolveFleet serviceLib;
+      inherit evalFleet featureLib fleetLib resolveFleet serviceLib;
     })
     // featureLib.tests;
   hostFeatures = pipe fleet.hosts [

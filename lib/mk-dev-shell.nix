@@ -1,10 +1,9 @@
 {
-  hostNames,
   inputs,
-  system,
+  pkgs,
 }: let
-  pkgs = inputs.nixpkgs.legacyPackages.${system};
   inherit (pkgs) lib;
+  system = pkgs.stdenv.hostPlatform.system;
   devshell = inputs.devshell.legacyPackages.${system};
   treefmtCommand = pkgs.writeShellApplication {
     name = "treefmt";
@@ -30,20 +29,21 @@
       exec nix flake check "$@"
     '';
   };
-  deployCommand = hostName:
-    pkgs.writeShellApplication {
-      name = hostName;
-      text = ''
-        exec ./bin/deploy "$@" ${lib.escapeShellArg hostName}
-      '';
-    };
-  deployCommands =
-    map
-    (hostName: {
-      package = deployCommand hostName;
-      help = "Deploy ${hostName}";
-    })
-    hostNames;
+  deployCommand = pkgs.writeShellApplication {
+    name = "deploy";
+    runtimeInputs = [
+      inputs.colmena.packages.${system}.colmena
+      pkgs.coreutils
+      pkgs.dix
+      pkgs.gawk
+      pkgs.gnugrep
+      pkgs.hostname
+      pkgs.nix
+    ];
+    text = ''
+      exec ${../bin/deploy} "$@"
+    '';
+  };
   shell = devshell.mkShell {
     imports = [
       "${devshell.extraModulesPath}/git/hooks.nix"
@@ -68,26 +68,28 @@
         ]);
     };
 
-    commands =
-      [
-        {
-          package = treefmtCommand;
-          help = "Format all files";
-        }
-        {
-          package = pkgs.nh;
-          help = "nh builder";
-        }
-        {
-          package = pkgs.nix-tree;
-          help = "Interactively browse dependency graphs of Nix derivations";
-        }
-        {
-          package = testsCommand;
-          help = "Run flake checks";
-        }
-      ]
-      ++ deployCommands;
+    commands = [
+      {
+        package = treefmtCommand;
+        help = "Format all files";
+      }
+      {
+        package = pkgs.nh;
+        help = "nh builder";
+      }
+      {
+        package = pkgs.nix-tree;
+        help = "Interactively browse dependency graphs of Nix derivations";
+      }
+      {
+        package = testsCommand;
+        help = "Run flake checks";
+      }
+      {
+        package = deployCommand;
+        help = "Build or deploy fleet hosts";
+      }
+    ];
 
     git.hooks = {
       enable = true;
@@ -98,6 +100,7 @@
     };
   };
 in {
+  deploy = deployCommand;
   formatter = treefmtCommand;
   inherit shell;
 }

@@ -1,16 +1,15 @@
 {
-  api,
+  deployLib,
+  fleet,
+  hostLib,
+  inputs,
+  overlay,
   system,
 }: let
-  inherit (api) inputs overlays fleet;
-  nixpkgs =
-    import inputs.nixpkgs {
-      inherit system;
-      overlays = [overlays];
-    }
-    // {
-      inherit system;
-    };
+  nixpkgs = import inputs.nixpkgs {
+    inherit system;
+    overlays = [overlay];
+  };
 in
   {
     meta = {
@@ -20,7 +19,7 @@ in
   // builtins.mapAttrs (
     _hostName: host: {
       imports = [
-        (api.libs.hostLib.mkHostModule {
+        (hostLib.mkHostModule {
           inherit host inputs fleet;
         })
       ];
@@ -29,9 +28,9 @@ in
         inherit (host) targetHost;
         targetUser = host.owner;
         buildOnTarget = false;
-        tags = api.libs.deployLib.deploymentTags host;
+        tags = deployLib.deploymentTags host;
         allowLocalDeployment = true;
       };
     }
   )
-  api.libs.deployLib.nixosHosts
+  deployLib.nixosHosts

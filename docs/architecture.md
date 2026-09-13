@@ -10,7 +10,7 @@ flake inputs
 fleet/*.nix ------> lib/mk-api.nix ------> nixosConfigurations
     |                    |                 darwinConfigurations
     |                    |                 colmenaHive
-    |                    `---------------> packages / checks / devShells
+    |                    `---------------> apps / packages / checks / devShells
     |
     `--> resolved host --> feature modules --> system configuration
              ^
@@ -104,6 +104,7 @@ secret recipient lists.
 - `nixosConfigurations` and `darwinConfigurations` contain host systems.
 - `colmenaHive` contains NixOS deployment nodes.
 - `packages` contains local packages, host systems, and explicit cache targets.
+- `apps.deploy` provides the packaged fleet deployment entrypoint.
 - `checks` contains fleet integration, formatting, and runtime-theme tests.
 - `devShells` and `formatter` provide the development workflow.
 - `lib` exposes fleet data and the small reusable resolver libraries used by
