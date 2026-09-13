@@ -3,7 +3,7 @@
   pkgs,
   hive,
   darwinConfigurations,
-  rawFleet ? import ./fleet,
+  rawFleet ? import ../fleet,
 }: let
   inherit (api) nixosConfigurations;
   darwinParityFleet = let

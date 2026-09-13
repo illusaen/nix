@@ -115,7 +115,7 @@ Feature modules receive resolved host context through module arguments:
   fleet,
   fleetLib,
   host,
-  sources,
+  inputs,
   user,
   ...
 }: {
@@ -138,6 +138,6 @@ See `docs/feat/service-routing.md` for the routing rules.
 ## Future Variants
 
 Installers, ISOs, or other variants should build from a host registry entry plus
-small output-specific changes. A future plain `fleet.outputs` layer can model
+small output-specific changes. A future `fleet.outputs` layer can model
 those variants without splitting normal host identity across multiple sources
 of truth.

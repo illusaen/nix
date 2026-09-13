@@ -103,13 +103,13 @@
     checksFor = system: let
       pkgs = pkgsFor system;
       dev = devFor system;
-      ci = import ./ci.nix {
+      integration = import ./tests/integration.nix {
         inherit api pkgs;
         hive = rawHive;
         inherit (api) darwinConfigurations;
       };
     in {
-      fleet = ci.evaluation;
+      fleet = integration.evaluation;
       formatting =
         pkgs.runCommand "repository-formatting" {
           nativeBuildInputs = [dev.formatter];

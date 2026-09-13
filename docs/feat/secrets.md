@@ -2,7 +2,8 @@
 
 ## Decision
 
-Use plain `agenix` for the first secrets implementation.
+Use the `agenix` flake input for secret declarations, activation-time
+decryption, and the development-shell editing command.
 
 This repository already tracks host SSH public keys in
 `secrets/hosts/<host>/host_ed25519.pub` and exposes that path through the host
@@ -95,7 +96,7 @@ Bootstrap flow for a new host:
 2. Commit `secrets/hosts/<host>/host_ed25519.pub`.
 3. Add the host as a recipient in `secrets/secrets.nix`.
 4. Re-encrypt affected secrets with `agenix`.
-5. Run the future Colmena deployment for that host.
+5. Run `bin/deploy --apply --on <host>`.
 
 If `agenix-rekey` is adopted later, its Colmena integration should be planned
 around hive introspection so rekeying sees the same host graph that Colmena

@@ -5,7 +5,7 @@ packages where it is still used by the current fleet. The old
 `flake.wrappers` output API is legacy reference material and is intentionally
 not recreated unless an external consumer needs standalone wrapper outputs.
 
-The plain replacements are:
+The current replacements are:
 
 - `features/shell-utils`: wraps `alacritty` and `bat` so they read the active
   runtime theme profile.
@@ -17,8 +17,8 @@ The plain replacements are:
   starship wrapper settings.
 - `features/desktop-shell`: renders the old Niri wrapper settings into a
   generated `config.kdl` and installs it during user activation.
-- `features/desktop-shell` imports Noctalia from the locked source set, enables its
-  upstream NixOS module, and points the systemd user service at the active
+- `features/desktop-shell` imports Noctalia from its locked flake input, enables
+  its upstream NixOS module, and points the systemd user service at the active
   runtime theme profile.
 - `features/theming` generates `noctalia/config.toml` inside every runtime theme
   profile.
