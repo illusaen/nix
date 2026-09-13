@@ -1,1 +1,1 @@
-* runtime theming is ported to `features/theming`; continue testing it during normal desktop use
+* runtime theming has automated profile and link-switch checks; continue validating live Niri, GTK, and Noctalia reload behavior during normal desktop use

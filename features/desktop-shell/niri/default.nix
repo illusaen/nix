@@ -4,14 +4,9 @@
     host,
     lib,
     pkgs,
-    inputs,
     user,
     ...
   }: let
-    base16Lib = inputs.base16.lib {
-      inherit pkgs lib;
-    };
-    scheme = base16Lib.mkSchemeAttrs fleet.base16.theme;
     inherit (fleet.theming) cursor;
   in {
     environment.systemPackages = with pkgs; [xwayland-satellite local.niri-scripts];
@@ -49,9 +44,6 @@
             }
           '';
         };
-      state.files."nix-theme/niri-colors.kdl".source = pkgs.replaceVars ./niri-colors.kdl {
-        inherit (scheme) base00 base02 base03 base08 base12 base15 base0C base0D;
-      };
     };
   };
 }

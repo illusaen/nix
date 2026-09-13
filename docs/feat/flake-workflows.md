@@ -25,7 +25,9 @@ tests
 `nix flake check` evaluates every conventional output and builds the checks for
 the current system. The `fleet` check contains the fleet, feature, service,
 configuration, Darwin parity, hive, and local-package assertions. The
-`formatting` check runs the repository's treefmt configuration.
+`runtime-themes` check builds every configured theme profile and exercises an
+isolated theme switch. The `formatting` check runs the repository's treefmt
+configuration.
 
 New files must be added to Git before evaluating the repository as a Git flake.
 Use `path:.` only when intentionally testing untracked files and when the

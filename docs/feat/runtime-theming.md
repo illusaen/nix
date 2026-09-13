@@ -24,10 +24,10 @@ theme-list
 theme-list --json
 ```
 
-`theme-apply` updates GTK and Qt config links, applies GNOME interface settings
-when `gsettings` is available, and best-effort restarts user services that are
-expected to reload theme-sensitive UI, currently `noctalia.service` and
-`waybar.service`.
+`theme-apply` updates GTK and Qt config links, switches the Niri color include,
+applies GNOME interface settings when `gsettings` is available, and best-effort
+restarts user services that are expected to reload theme-sensitive UI,
+currently `noctalia.service` and `waybar.service`.
 
 Theme-sensitive wrappers stay reproducible by reading config from the active
 profile. The profile contents are still Nix-built store paths during normal

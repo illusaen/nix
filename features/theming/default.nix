@@ -123,6 +123,11 @@
         set recolor-darkcolor "${scheme.withHashtag.base06}"
       '';
 
+    mkNiriColors = scheme:
+      pkgs.replaceVars ../desktop-shell/niri/niri-colors.kdl {
+        inherit (scheme) base00 base02 base03 base08 base12 base15 base0C base0D;
+      };
+
     mkProfileLinkCommands = files:
       lib.concatStringsSep "\n" (
         lib.mapAttrsToList (
@@ -174,6 +179,7 @@
           imageDirectory = wallpaper.directory;
           location = lib.last (lib.splitString "/" fleet.timeZone);
         };
+        "niri-colors.kdl" = mkNiriColors scheme;
         "qt5ct/qt5ct.conf" = mkQtctConf profile;
         "qt6ct/qt6ct.conf" = mkQtctConf profile;
         "zathura/zathurarc" = mkZathurarc scheme;
@@ -261,6 +267,8 @@
         mkdir -p "$state_dir"
         ln -sfn "$profile" "$state_dir/current.next"
         mv -Tf "$state_dir/current.next" "$state_dir/current"
+        ln -sfn "$state_dir/current/niri-colors.kdl" "$state_dir/niri-colors.kdl.next"
+        mv -Tf "$state_dir/niri-colors.kdl.next" "$state_dir/niri-colors.kdl"
         printf '%s\n' "$theme" > "$state_dir/selected"
 
         # shellcheck disable=SC1091
