@@ -23,7 +23,6 @@
   };
   inherit (evalFleetLib) evalFleet resolveFleet;
   rawFleet = import ../fleet;
-  typedFleet = evalFleet rawFleet;
   fleet = fleetLib.assertValid (resolveFleet rawFleet);
   deployLib = import ./deploy.nix {
     inherit fleet fleetLib;
@@ -33,7 +32,7 @@
     nixpkgs = nixpkgsLib;
   };
   checks = import ../tests/checks.nix {
-    inherit fleet libs typedFleet;
+    inherit fleet libs;
     lib = nixpkgsLib;
   };
 in {

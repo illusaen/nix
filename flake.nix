@@ -55,7 +55,6 @@
   };
 
   outputs = inputs @ {
-    self,
     colmena,
     nixpkgs,
     ...
@@ -64,6 +63,14 @@
     api = import ./lib/mk-api.nix {inherit inputs;};
     supportedSystems = import ./lib/supported-systems.nix;
     forAllSystems = lib.genAttrs supportedSystems;
+    formattingSource = lib.fileset.toSource {
+      root = ./.;
+      fileset = lib.fileset.unions [
+        ./treefmt.toml
+        ./bin/deploy
+        (lib.fileset.fileFilter (file: file.hasExt "nix" || file.hasExt "py") ./.)
+      ];
+    };
     pkgsFor = system:
       import nixpkgs {
         inherit system;
@@ -73,6 +80,7 @@
     devFor = system:
       import ./lib/mk-dev-shell.nix {
         inherit inputs system;
+        hostNames = builtins.attrNames api.fleet.hosts;
       };
     rawHive = import ./lib/mk-hive.nix {
       inherit api;
@@ -116,7 +124,7 @@
           pkgs.runCommand "repository-formatting" {
             nativeBuildInputs = [dev.formatter];
           } ''
-            cp -r ${self} source
+            cp -r ${formattingSource} source
             chmod -R u+w source
             cd source
             treefmt --fail-on-change

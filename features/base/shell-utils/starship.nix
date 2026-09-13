@@ -68,15 +68,17 @@ let
   };
   starshipSettings = pkgs: (pkgs.formats.toml {}).generate "starship-config.toml" settings;
 in {
-  modules.generic = {pkgs, ...}: {
-    environment.systemPackages = with pkgs; [starship];
-  };
+  modules = {
+    generic = {pkgs, ...}: {
+      environment.systemPackages = with pkgs; [starship];
+    };
 
-  modules.nixos = {pkgs, ...}: {
-    environment.sessionVariables.STARSHIP_CONFIG = "${starshipSettings pkgs}";
-  };
+    nixos = {pkgs, ...}: {
+      environment.sessionVariables.STARSHIP_CONFIG = "${starshipSettings pkgs}";
+    };
 
-  modules.darwin = {pkgs, ...}: {
-    environment.variables.STARSHIP_CONFIG = "${starshipSettings pkgs}";
+    darwin = {pkgs, ...}: {
+      environment.variables.STARSHIP_CONFIG = "${starshipSettings pkgs}";
+    };
   };
 }

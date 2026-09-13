@@ -2,7 +2,6 @@
   fleet,
   lib,
   libs,
-  typedFleet,
 }: let
   inherit (lib) pipe;
   inherit (libs) deployLib featureLib serviceLib;
@@ -21,7 +20,7 @@
 
   secretDeclarations = import ../secrets/secrets.nix;
   declaredSecrets = builtins.attrNames secretDeclarations;
-  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor typedFleet.services;
+  serviceSecretRequirements = featureLib.serviceSecretRequirementsFor fleet.services;
   expectedServiceSecrets = pipe serviceSecretRequirements [
     (map (requirement: requirement.secret))
     lib.unique
@@ -64,7 +63,7 @@ in
     hostPublicKeysExist = builtins.all (name: builtins.pathExists fleet.hosts.${name}.publicKey) (builtins.attrNames fleet.hosts);
     serviceSecretsDeclared = missingServiceSecretDeclarations == [];
     serviceSecretRecipientsCoverRoutedHosts = missingServiceSecretRecipients == [];
-    servicePortsDoNotConflict = serviceLib.portConflicts typedFleet == [];
+    servicePortsDoNotConflict = serviceLib.portConflicts fleet == [];
     inherit themeProfilesValid;
     deploySelectors =
       deployLib.selectHostNames "odin"
@@ -73,6 +72,7 @@ in
       && deployLib.selectHostNames "@nixos" == ["huginn" "muninn" "odin"]
       && deployLib.selectHostNames "@darwin" == []
       && deployLib.selectHostNames "@server" == ["huginn" "muninn"]
+      && deployLib.selectHostRows "odin" == ["odin\tnixos\todin.home.arpa"]
       && builtins.all (
         host: builtins.elem "nixos" (deployLib.deploymentTags host)
       ) (builtins.attrValues deployLib.nixosHosts)

@@ -142,12 +142,7 @@
     else throw "synthetic Darwin parity configuration did not evaluate as expected";
 
   assertLocalPackageOverlay = let
-    pkgsWithLocal = import api.inputs.nixpkgs {
-      system = "x86_64-linux";
-      overlays = [api.overlays];
-      config.allowUnfree = true;
-    };
-    localPackages = pkgsWithLocal.local;
+    localPackages = pkgs.local;
     expectedPackageNames = [
       "mactahoe-cursors"
       "mactahoe-gtk-theme"

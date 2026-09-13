@@ -1,8 +1,8 @@
 {
+  hostNames,
   inputs,
   system,
 }: let
-  rawFleet = import ../fleet;
   pkgs = inputs.nixpkgs.legacyPackages.${system};
   inherit (pkgs) lib;
   devshell = inputs.devshell.legacyPackages.${system};
@@ -43,7 +43,7 @@
       package = deployCommand hostName;
       help = "Deploy ${hostName}";
     })
-    (builtins.attrNames rawFleet.hosts);
+    hostNames;
   shell = devshell.mkShell {
     imports = [
       "${devshell.extraModulesPath}/git/hooks.nix"
@@ -56,14 +56,11 @@
         [
           inputs.agenix.packages.${system}.agenix
           inputs.colmena.packages.${system}.colmena
-          treefmtCommand
         ]
         ++ (with pkgs; [
           alejandra
           deadnix
           dix
-          nh
-          nix-tree
           nixd
           ruff
           shellcheck
@@ -91,13 +88,6 @@
         }
       ]
       ++ deployCommands;
-
-    env = [
-      {
-        name = "TREEFMT_NO_CACHE";
-        value = "1";
-      }
-    ];
 
     git.hooks = {
       enable = true;

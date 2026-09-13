@@ -11,8 +11,6 @@
     builtins.filter (name: builtins.elem tag (fleet.hosts.${name}.tags or [])) hostNames;
   deploymentTags = host:
     ["nixos"] ++ builtins.filter (tag: tag == "desktop" || tag == "server") (host.tags or []);
-in {
-  inherit darwinHostNames deploymentTags nixosHosts;
   selectHostNames = target:
     if target == "@all"
     then hostNames
@@ -25,4 +23,14 @@ in {
     else if builtins.hasAttr target fleet.hosts
     then [target]
     else throw "unknown deploy target '${target}'";
+in {
+  inherit darwinHostNames deploymentTags nixosHosts selectHostNames;
+
+  selectHostRows = target:
+    map (
+      name: let
+        host = fleet.hosts.${name};
+      in
+        builtins.concatStringsSep "\t" [name host.platform host.targetHost]
+    ) (selectHostNames target);
 }

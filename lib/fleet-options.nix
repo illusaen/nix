@@ -152,12 +152,6 @@
         default = {};
         description = "Preservation settings.";
       };
-
-      services = mkOption {
-        type = types.attrsOf types.attrs;
-        default = {};
-        description = "Services routed to this host.";
-      };
     };
   });
 

@@ -82,23 +82,15 @@ colmena_cmd() {
   NIX_CONFIG="$(colmena_nix_config)" colmena "$@"
 }
 
-select_hosts() {
+select_host_rows() {
   nix eval --raw \
-    --apply "lib: builtins.concatStringsSep \"\n\" (lib.deployLib.selectHostNames \"$target\")" \
+    --apply "lib: builtins.concatStringsSep \"\n\" (lib.deployLib.selectHostRows \"$target\")" \
     .#lib
-}
-
-platform_for() {
-  nix eval --raw ".#lib.fleet.hosts.\"$1\".platform"
-}
-
-target_host_for() {
-  nix eval --raw ".#lib.fleet.hosts.\"$1\".targetHost"
 }
 
 is_local_target() {
   host="$1"
-  target_host="$(target_host_for "$host")"
+  target_host="$2"
   short_hostname="$(hostname 2>/dev/null || true)"
   fqdn_hostname="$(hostname -f 2>/dev/null || true)"
 
@@ -129,11 +121,12 @@ current_system_path() {
 
 diff_system_build() {
   host="$1"
-  old_path="$2"
-  new_path="$3"
+  target_host="$2"
+  old_path="$3"
+  new_path="$4"
 
-  if ! is_local_target "$host"; then
-    printf 'skipping dix diff for remote target: %s (%s)\n' "$host" "$(target_host_for "$host")"
+  if ! is_local_target "$host" "$target_host"; then
+    printf 'skipping dix diff for remote target: %s (%s)\n' "$host" "$target_host"
     return 0
   fi
 
@@ -184,16 +177,17 @@ store_path_from_colmena_log() {
 
 plan_host() {
   host="$1"
-  platform="$(platform_for "$host")"
-  target_host="$(target_host_for "$host")"
+  platform="$2"
+  target_host="$3"
   printf '%s\t%s\t%s\t%s\n' "$mode" "$host" "$platform" "$target_host"
 }
 
 deploy_nixos() {
   host="$1"
+  target_host="$2"
   case "$mode" in
     plan)
-      plan_host "$host"
+      plan_host "$host" nixos "$target_host"
       ;;
     dry-run)
       colmena_cmd apply --eval-node-limit 1 --on "$host" --dry-run
@@ -218,28 +212,29 @@ deploy_nixos() {
       if [ -z "$result" ]; then
         printf 'skipping dix diff because Colmena output did not include a system store path for %s\n' "$host" >&2
       else
-        diff_system_build "$host" "$(current_system_path)" "$result"
+        diff_system_build "$host" "$target_host" "$(current_system_path)" "$result"
       fi
       ;;
     apply)
       old_system="$(current_system_path)"
       colmena_cmd apply --eval-node-limit 1 --on "$host"
-      diff_system_build "$host" "$old_system" /run/current-system
+      diff_system_build "$host" "$target_host" "$old_system" /run/current-system
       ;;
   esac
 }
 
 deploy_darwin() {
   host="$1"
+  target_host="$2"
   flake_attr=".#darwinConfigurations.${host}.config.system.build.toplevel"
   case "$mode" in
     plan)
-      plan_host "$host"
+      plan_host "$host" darwin "$target_host"
       ;;
     dry-run|build)
       result="$(nix build --no-link --print-out-paths "$flake_attr")"
       if [ "$mode" = build ]; then
-        diff_system_build "$host" "$(current_system_path)" "$result"
+        diff_system_build "$host" "$target_host" "$(current_system_path)" "$result"
       fi
       ;;
     apply)
@@ -253,17 +248,17 @@ deploy_darwin() {
         exit 1
       fi
       "$result/activate"
-      diff_system_build "$host" "$old_system" "$result"
+      diff_system_build "$host" "$target_host" "$old_system" "$result"
       ;;
   esac
 }
 
-hosts="$(select_hosts)"
+host_rows="$(select_host_rows)"
 if [ "$mode" = plan ]; then
   printf 'mode\thost\tplatform\ttargetHost\n'
 fi
 
-if [ -z "$hosts" ]; then
+if [ -z "$host_rows" ]; then
   if [ "$mode" = plan ]; then
     exit 0
   fi
@@ -272,18 +267,19 @@ if [ -z "$hosts" ]; then
   exit 1
 fi
 
-for host in $hosts; do
-  platform="$(platform_for "$host")"
+while IFS="$(printf '\t')" read -r host platform target_host; do
   case "$platform" in
     nixos)
-      deploy_nixos "$host"
+      deploy_nixos "$host" "$target_host"
       ;;
     darwin)
-      deploy_darwin "$host"
+      deploy_darwin "$host" "$target_host"
       ;;
     *)
       printf 'unsupported host platform: %s (%s)\n' "$host" "$platform" >&2
       exit 1
       ;;
   esac
-done
+done <<EOF
+$host_rows
+EOF
