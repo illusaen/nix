@@ -45,6 +45,8 @@ in
       hash = "sha256-tuon9XxMdrz9XNTp50sbss2gtx6H9hEZh8t2jSoqx28=";
     };
 
+    patches = [./nautilus-background.patch];
+
     nativeBuildInputs = [
       dialog
       glib
