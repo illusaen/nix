@@ -172,9 +172,6 @@
   "Ctrl+Alt+Delete"  {
     "quit" 
   }
-  "Ctrl+Alt+Space" "hotkey-overlay-title"="Calculator" {
-    "spawn-sh" "rofi-calculator"
-  }
   "Ctrl+Space" "hotkey-overlay-title"="Launcher" {
     "spawn-sh" "noctalia msg panel-toggle launcher"
   }
@@ -242,7 +239,7 @@
     "move-column-left" 
   }
   "Mod+Ctrl+Space" "hotkey-overlay-title"="Power Menu" {
-    "spawn-sh" "rofi-power-menu"
+    "spawn-sh" "noctalia msg panel-toggle session"
   }
   "Mod+Ctrl+Up"  {
     "move-window-up-or-to-workspace-up" 
@@ -382,7 +379,7 @@
     "accel-speed" 1
     "middle-emulation" 
     "scroll-button" 274
-    "scroll-factor" 1.1
+    "scroll-factor" 1.3
     "scroll-method" "on-button-down"
   }
   "warp-mouse-to-focus" 

@@ -10,8 +10,8 @@
   };
 
   modules.nixos = {
-    pkgs,
     user,
+    config,
     ...
   }: {
     programs._1password-gui.polkitPolicyOwners = [user.name];
@@ -23,7 +23,7 @@
     systemdAutostart = [
       {
         name = "one-password";
-        package = pkgs._1password-gui-beta;
+        package = config.programs._1password-gui.package;
       }
     ];
   };

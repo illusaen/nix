@@ -3,7 +3,6 @@
     config,
     fleet,
     lib,
-    options,
     pkgs,
     ...
   }: let
@@ -32,7 +31,7 @@
       ".local/share/Steam"
     ];
 
-    systemdAutostart = lib.mkIf (options ? systemdAutostart) [
+    systemdAutostart = [
       {package = config.programs.steam.package;}
     ];
   };

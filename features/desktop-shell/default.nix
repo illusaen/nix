@@ -1,10 +1,9 @@
 {
-  imports = [./niri ./audio.nix ./autostart.nix ./fonts.nix ./nautilus.nix ./noctalia.nix ./sddm.nix];
+  imports = [./niri ./audio.nix ./autostart.nix ./fonts.nix ./nautilus.nix ./noctalia.nix ./sddm.nix ./weylus.nix];
 
   modules.nixos = {
     config,
     lib,
-    options,
     pkgs,
     ...
   }: {
@@ -22,7 +21,7 @@
     };
     services.blueman.enable = true;
 
-    systemdAutostart = lib.mkIf (options ? systemdAutostart) [
+    systemdAutostart = [
       rec {
         inherit (config.services.tailscale) package;
         name = "tailscale-systray";

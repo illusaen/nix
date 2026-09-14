@@ -6,8 +6,9 @@
         exec ${pkgs.yt-dlp}/bin/yt-dlp -t aac --cookies-from-browser chrome "$@"
       '';
     };
+    music = pkgs.pear-desktop;
   in {
-    environment.systemPackages = [pkgs.pear-desktop wrappedYtDlp];
+    environment.systemPackages = [music wrappedYtDlp];
 
     persistUser.directories = [
       ".config/YouTube Music"
@@ -15,7 +16,7 @@
 
     systemdAutostart = [
       {
-        package = pkgs.pear-desktop;
+        package = music;
       }
     ];
   };

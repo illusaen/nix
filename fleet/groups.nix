@@ -24,6 +24,11 @@
     members = ["system-access"];
   };
 
+  input = {
+    isPosix = true;
+    members = ["system-access"];
+  };
+
   system-access = {
     isPosix = false;
     members = [];
