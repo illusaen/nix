@@ -63,7 +63,7 @@ in {
 
           environment.sessionVariables = {
             ZSH_COMPDUMP = "$HOME/.cache/zsh/zcompdump-$ZSH_VERSION";
-            FZF_DEFAULT_OPTS = "--no-height --preview";
+            FZF_DEFAULT_OPTS = "--no-height --style=full";
           };
         }
         (lib.mkIf (options ? persistUser) {

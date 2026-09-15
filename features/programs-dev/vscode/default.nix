@@ -123,6 +123,7 @@
 
     persistUser.directories = [
       ".config/Code/User/globalStorage"
+      ".config/Code/User/workspaceStorage"
     ];
   };
 }
